@@ -60,10 +60,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         {/* ===== ESTILOS ===== */}
         <style>{`
-/* 0) Limpieza de overlays */
+/* Limpieza de overlays que puedan interferir */
 #bg-root, .belt, .bank, .puffs, .cloud-svg, .nebula, .grain, .vignette { display: none !important; }
 
-/* 1) BLOQUEO AGRESIVO DE STARFIELDS EXTERNOS (CSS) */
+/* BLOQUEO AGRESIVO DE STARFIELDS EXTERNOS */
 html::before, html::after, body::before, body::after { content: none !important; display: none !important; }
 :where(.starfield, .bg-stars, .twinkle, .twinkling, .particles, .particle, .dots){ display:none !important; }
 :where([id^="stars"], [class^="stars"], [class*=" stars"], [id*="starfield"], [class*="starfield"]){ display:none !important; }
@@ -74,7 +74,7 @@ html::before, html::after, body::before, body::after { content: none !important;
 #sky #stars { display:block !important; }
 #sky .featured-star{ display:block !important; }
 
-/* 2) SKY y NUBES */
+/* SKY y NUBES */
 #sky { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: visible; visibility: hidden; }
 #sky.ready { visibility: visible; }
 
@@ -141,7 +141,7 @@ html::before, html::after, body::before, body::after { content: none !important;
 }
 @keyframes glowPulse{ 0% { opacity:.38; transform: scale(1); } 100% { opacity:.52; transform: scale(1.03); } }
 
-/* 3) Estilo de nuestras 10 estrellas — DIM MUY LENTO */
+/* ===== Estrellas (DIM MUY LENTO) ===== */
 .featured-star{
   position:absolute;
   width: var(--sz, 4.5px); height: var(--sz, 4.5px);
@@ -151,15 +151,15 @@ html::before, html::after, body::before, body::after { content: none !important;
     radial-gradient(circle at 50% 50%, rgba(168,85,247,.55) 0%, rgba(168,85,247,0) 70%),
     radial-gradient(circle at 50% 50%, rgba(244,114,182,.45) 0%, rgba(244,114,182,0) 78%);
   filter: drop-shadow(0 0 12px rgba(255,255,255,.85)) drop-shadow(0 0 22px rgba(168,85,247,.55));
-  /* Por defecto ~40s si no se define --ftDur */
-  animation: featuredTwinkle var(--ftDur, 40s) ease-in-out infinite;
+  /* ★ Por defecto 120s si no viene --ftDur desde JS */
+  animation: featuredTwinkle var(--ftDur, 120s) cubic-bezier(.42,0,.58,1) infinite;
 }
-/* Curva: sube lento, se mantiene brillante, baja lento */
+/* Curva lenta: larga subida, meseta, larga bajada */
 @keyframes featuredTwinkle {
   0%   { opacity: 0;   }
-  20%  { opacity: .25; }
-  55%  { opacity: 1;   }
-  85%  { opacity: .22; }
+  30%  { opacity: .18; }
+  55%  { opacity: .95; }
+  75%  { opacity: .90; }
   100% { opacity: 0;   }
 }
 
@@ -278,7 +278,7 @@ html::before, html::after, body::before, body::after { content: none !important;
 })();
         `}</Script>
 
-        {/* ===== SCRIPT: Mata starfields + EXACTAMENTE 10 estrellas (ahora 32–60s por ciclo) ===== */}
+        {/* ===== SCRIPT: Mata starfields + EXACTAMENTE 10 estrellas (ahora 90–180s por ciclo) ===== */}
         <Script id="tune-stars" strategy="afterInteractive">{`
 (function () {
   function createStar(parent){
@@ -289,7 +289,7 @@ html::before, html::after, body::before, body::after { content: none !important;
   }
   function randomizeStar(s){
     const size  = 4 + Math.random()*1.8;   // 4–5.8px
-    const dur   = 32 + Math.random()*28;   // ★ 32–60s (MUCHO más lento)
+    const dur   = 90 + Math.random()*90;   // ★ 90–180s, MUY lento
     const delay = -Math.random()*dur;      // desincroniza
     const top   = Math.random()*100;       // vh
     const left  = Math.random()*100;       // vw
