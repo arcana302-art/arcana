@@ -32,30 +32,29 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         {/* ===== ESTILOS ===== */}
         <style>{`
-/* NO ocultamos el canvas; sólo apagamos restos viejos específicos si existieran */
+/* Apaga restos viejos si existieran (no toques el canvas .cloud) */
 #bg-root, .stars, .belt, .bank, .puffs, .cloud-svg, .nebula, .grain, .vignette { display: none !important; }
 
 #sky { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: visible; }
 
+/* pista que mueve la nube (solo transform → sin flicker) */
 .cloud-track {
   position: absolute; top: 23vh; left: 0; width: 100%;
   transform: translate3d(110vw,0,0);
   animation: cloud-drift 140s linear infinite;
 }
 
-/* Fallback visible por si el script no corre todavía:
-   - altura explícita (calc) + aspect-ratio
-   - radial-gradient vaporoso
-*/
+/* Fallback visible por si el script aún no corrió */
 .cloud {
   display:block;
   width: min(84vw, 1400px);
   height: calc(min(84vw, 1400px) * 0.40625); /* 6.5/16 */
   aspect-ratio: 16 / 6.5;
   background:
-    radial-gradient(60% 50% at 50% 52%, rgba(255,255,255,.38) 0%, rgba(255,255,255,.22) 45%, rgba(255,255,255,0) 72%);
-  filter: blur(20px) drop-shadow(0 10px 22px rgba(0,0,0,.12));
-  opacity: 0.78;
+    radial-gradient(60% 50% at 50% 52%, rgba(255,255,255,.34) 0%, rgba(255,255,255,.18) 45%, rgba(255,255,255,0) 72%);
+  /* >>> Opción A: MÁS VAPOR <<< */
+  filter: blur(24px) drop-shadow(0 10px 22px rgba(0,0,0,.12));
+  opacity: 0.72;
   border-radius: 9999px/60%;
 }
 
@@ -88,13 +87,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   .cloud {
     width: 96vw;
     height: calc(96vw * 0.40625);
-    filter: blur(18px) drop-shadow(0 8px 18px rgba(0,0,0,.10));
-    opacity:.76;
+    filter: blur(22px) drop-shadow(0 8px 18px rgba(0,0,0,.10));
+    opacity:.70;
   }
 }
         `}</style>
 
-        {/* ===== SCRIPT (cliente, robusto) ===== */}
+        {/* ===== SCRIPT (cliente) — Opción A aplicada ===== */}
         <Script id="paint-cloud" strategy="afterInteractive">{`
 (function(){
   function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
@@ -121,7 +120,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   function paintCloud(canvas){
     try{
-      // Asegura medidas válidas (fallback si el layout aún no está)
+      // medidas robustas
       var wCSS = canvas.offsetWidth || 800;
       var hCSS = canvas.offsetHeight || Math.round(wCSS * 0.40625);
       var dpi  = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
@@ -134,18 +133,27 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       var img = ctx.createImageData(canvas.width, canvas.height);
       var data = img.data;
 
+      // >>> Opción A (Más vapor): parámetros
+      // escalas → estructura grande y vaporosa
       var s1=0.010, s2=0.020, s3=0.040;
       var w1=0.60, w2=0.28, w3=0.12, inv=1/(w1+w2+w3);
 
-      var warpFreq=0.0045, warpAmp=1.75;
-      var cx=canvas.width*0.52, cy=canvas.height*0.52, rx=canvas.width*0.56, ry=canvas.height*0.46;
-      var featherIn=0.80, featherOut=1.00;
-      var baseAlpha=0.78; // si la ves tenue, súbela a 0.82
+      // domain warp (más orgánico, rompe cualquier alineación)
+      var warpFreq=0.0038, warpAmp=2.2;
 
-      var tiltX=0.05, tiltY=-0.025;
+      // feather elíptico (contorno menos “caja”)
+      var cx=canvas.width*0.52, cy=canvas.height*0.52, rx=canvas.width*0.60, ry=canvas.height*0.48;
+      var featherIn=0.84, featherOut=1.06;
+
+      // opacidad base (más bajo = más vapor)
+      var baseAlpha=0.72;
+
+      // inclinación leve del dominio
+      var tiltX=0.06, tiltY=-0.03;
 
       for (var y=0; y<canvas.height; y++){
         for (var x=0; x<canvas.width; x++){
+          // domain warp
           var wx = perlin2(x*warpFreq, y*warpFreq) * warpAmp;
           var wy = perlin2((x+1000)*warpFreq, (y-777)*warpFreq) * warpAmp;
 
@@ -158,10 +166,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           var n  = (w1*n1 + w2*n2 + w3*n3) * inv; // [-1,1] -> [0,1]
           n = (n + 1) * 0.5;
 
+          // feather elíptico
           var dx=(x-cx)/rx, dy=(y-cy)/ry, r=Math.sqrt(dx*dx+dy*dy);
           var mask = 1 - smoothstep(featherIn, featherOut, r);
 
-          var a = smoothstep(0.42, 0.78, n) * mask * baseAlpha;
+          // curva suave para alpha vaporosa
+          var a = smoothstep(0.40, 0.75, n) * mask * baseAlpha;
 
           var i=(y*canvas.width + x)*4;
           data[i  ] = 255;
@@ -171,15 +181,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         }
       }
       ctx.putImageData(img,0,0);
-    }catch(e){ /* si algo falla, el fallback CSS mantiene una nube visible */ }
+    }catch(e){ /* fallback CSS mantiene una nube visible si fallara */ }
   }
 
   function init(){
     var c = document.getElementById('cloudCanvas');
     if(!c) return;
-    // pinta al estar listo el layout
     requestAnimationFrame(function(){ paintCloud(c); });
-    // repinta en eventos confiables
     var to=null;
     window.addEventListener('resize', function(){ clearTimeout(to); to=setTimeout(function(){ paintCloud(c); }, 120); }, {passive:true});
     window.addEventListener('pageshow', function(){ paintCloud(c); }, {passive:true});
