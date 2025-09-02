@@ -18,81 +18,92 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${inter.variable} ${playfair.variable} min-h-screen antialiased relative`}
         style={{ background: "linear-gradient(180deg,#0a1120,#0b1530)", color: "#e5e7eb" }}
       >
-        {/* ===== CIELO: UNA NUBE ULTRA-ETÉREA ===== */}
+        {/* ===== CIELO: UNA NUBE MUY VAPOROSA Y ORGÁNICA ===== */}
         <div id="sky" aria-hidden>
           <div className="cloud-track">
-            <svg className="cloud" viewBox="0 0 1600 600" role="img" aria-label="nube">
+            <svg className="cloud" viewBox="0 0 1800 720" role="img" aria-label="nube">
               <defs>
-                {/* Relleno blanco MUY suave */}
-                <radialGradient id="softWhite" cx="50%" cy="50%" r="65%">
-                  <stop offset="0%"  stopColor="#ffffff" stopOpacity="0.64" />
-                  <stop offset="55%" stopColor="#ffffff" stopOpacity="0.46" />
-                  <stop offset="100%" stopColor="#ffffff" stopOpacity="0.20" />
+                {/* Relleno blanco muy suave (más vapor) */}
+                <radialGradient id="softWhite" cx="50%" cy="48%" r="68%">
+                  <stop offset="0%"  stopColor="#ffffff" stopOpacity="0.56"/>
+                  <stop offset="55%" stopColor="#ffffff" stopOpacity="0.40"/>
+                  <stop offset="100%" stopColor="#ffffff" stopOpacity="0.18"/>
                 </radialGradient>
 
-                {/* Tinte (apenas perceptible) para profundidad */}
+                {/* Tinte sutil dorado/azul (casi imperceptible) */}
                 <linearGradient id="tint" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%"  stopColor="rgba(212,175,55,0.04)" />
-                  <stop offset="100%" stopColor="rgba(59,130,246,0.035)" />
+                  <stop offset="0%"  stopColor="rgba(212,175,55,0.035)" />
+                  <stop offset="100%" stopColor="rgba(59,130,246,0.03)" />
                 </linearGradient>
 
-                {/* Filtro: ruido MUY suave + blur alto + alpha curva suave */}
-                <filter id="fluffyCloud" x="-30%" y="-45%" width="160%" height="190%" colorInterpolationFilters="sRGB">
-                  <feTurbulence type="fractalNoise" baseFrequency="0.0055 0.0085" numOctaves="2" seed="17" result="noise"/>
-                  <feDisplacementMap in="SourceGraphic" in2="noise" scale="8" xChannelSelector="R" yChannelSelector="G" result="displaced"/>
-                  <feGaussianBlur in="displaced" stdDeviation="20" result="blurred"/>
+                {/* Filtro: ruido suave + blur alto + alpha suave (vapor) */}
+                <filter id="fluffyCloud" x="-35%" y="-50%" width="170%" height="200%" colorInterpolationFilters="sRGB">
+                  <!-- ruido de baja frecuencia para contorno orgánico no rígido -->
+                  <feTurbulence type="fractalNoise" baseFrequency="0.0048 0.0068" numOctaves="2" seed="21" result="noise"/>
+                  <!-- deformación ligera (no dentada) -->
+                  <feDisplacementMap in="SourceGraphic" in2="noise" scale="12" xChannelSelector="R" yChannelSelector="G" result="displaced"/>
+                  <!-- blur amplio para look vaporoso -->
+                  <feGaussianBlur in="displaced" stdDeviation="22" result="blurred"/>
+                  <!-- curva de alpha muy progresiva -->
                   <feComponentTransfer>
-                    <!-- curva de alpha muy progresiva -->
-                    <feFuncA type="table" tableValues="0 0.18 0.45 0.72" />
+                    <feFuncA type="table" tableValues="0 0.16 0.40 0.68"/>
                   </feComponentTransfer>
                 </filter>
 
-                {/* Máscara de pluma para desvanecer bordes (feather mask) */}
-                <radialGradient id="featherGrad" cx="50%" cy="50%" r="72%">
-                  <stop offset="0%"  stopColor="white" stopOpacity="1"/>
-                  <stop offset="70%" stopColor="white" stopOpacity="0.7"/>
-                  <stop offset="100%" stopColor="black" stopOpacity="0"/>
+                {/* Máscara elíptica (feather) para desvanecer bordes y quitar "cuadrado" */}
+                <radialGradient id="featherGrad" cx="50%" cy="50%" r="78%" gradientTransform="rotate(-6) scale(1.25, 0.9)">
+                  <stop offset="0%"   stopColor="#fff" stopOpacity="1"/>
+                  <stop offset="70%"  stopColor="#fff" stopOpacity="0.55"/>
+                  <stop offset="100%" stopColor="#000" stopOpacity="0"/>
                 </radialGradient>
                 <mask id="featherMask">
-                  <rect x="0" y="0" width="1600" height="600" fill="url(#featherGrad)"/>
+                  <rect x="0" y="0" width="1800" height="720" fill="url(#featherGrad)"/>
                 </mask>
+
+                {/* Velo exterior muy tenue para aire alrededor */}
+                <radialGradient id="veil" cx="50%" cy="52%" r="78%">
+                  <stop offset="0%"  stopColor="rgba(255,255,255,0.12)"/>
+                  <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+                </radialGradient>
               </defs>
 
-              {/* Grupo con filtro + máscara (ultra etéreo) */}
-              <g filter="url(#fluffyCloud)" mask="url(#featherMask)" opacity="0.78">
-                {/* Forma orgánica única (sin piezas rígidas) */}
+              {/* Grupo con filtro + máscara: súper etéreo y orgánico */}
+              <g filter="url(#fluffyCloud)" mask="url(#featherMask)" opacity="0.74">
+                {/* UNA sola forma orgánica (asimétrica, sin “caja”) */}
                 <path
                   fill="url(#softWhite)"
                   d="
-                    M 240 360
-                    C 308 270, 438 220, 556 252
-                    C 618 190, 760 182, 840 232
-                    C 918 170, 1060 170, 1122 242
-                    C 1206 228, 1306 270, 1326 332
-                    C 1408 356, 1444 408, 1416 446
-                    C 1260 474, 1140 486, 996 468
-                    C 876 494, 714 498, 596 468
-                    C 488 486, 366 468, 304 436
-                    C 266 410, 228 388, 240 360 Z
+                    M 210 410
+                    C 260 320, 410 250, 560 280
+                    C 610 210, 780 200, 880 250
+                    C 970 185, 1170 190, 1240 270
+                    C 1335 255, 1480 310, 1504 375
+                    C 1600 395, 1650 450, 1608 490
+                    C 1460 518, 1310 525, 1160 508
+                    C 1020 540, 820 545, 690 512
+                    C 560 540, 410 522, 330 485
+                    C 280 456, 232 432, 210 410 Z
                   "
                 />
-                {/* Tinte tenue sobre la misma forma */}
+                {/* Tinte tenue para profundidad */}
                 <path
                   fill="url(#tint)"
                   d="
-                    M 240 360
-                    C 308 270, 438 220, 556 252
-                    C 618 190, 760 182, 840 232
-                    C 918 170, 1060 170, 1122 242
-                    C 1206 228, 1306 270, 1326 332
-                    C 1408 356, 1444 408, 1416 446
-                    C 1260 474, 1140 486, 996 468
-                    C 876 494, 714 498, 596 468
-                    C 488 486, 366 468, 304 436
-                    C 266 410, 228 388, 240 360 Z
+                    M 210 410
+                    C 260 320, 410 250, 560 280
+                    C 610 210, 780 200, 880 250
+                    C 970 185, 1170 190, 1240 270
+                    C 1335 255, 1480 310, 1504 375
+                    C 1600 395, 1650 450, 1608 490
+                    C 1460 518, 1310 525, 1160 508
+                    C 1020 540, 820 545, 690 512
+                    C 560 540, 410 522, 330 485
+                    C 280 456, 232 432, 210 410 Z
                   "
                   opacity="0.18"
                 />
+                {/* velo exterior */}
+                <ellipse cx="900" cy="420" rx="690" ry="290" fill="url(#veil)" opacity="0.52"/>
               </g>
             </svg>
           </div>
@@ -103,23 +114,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         {/* ===== CSS ===== */}
         <style>{`
-/* Apaga cualquier fondo previo */
+/* Apaga fondos previos si quedaron */
 #bg-root, .stars, .belt, .bank, .puffs, .cloud, .nebula, .grain, .vignette { display: none !important; }
 
 /* Cielo y movimiento (solo transform → sin parpadeos) */
 #sky { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: visible; }
 
 .cloud-track {
-  position: absolute; top: 24vh; left: 0; width: 100%;
+  position: absolute; top: 23vh; left: 0; width: 100%;
   transform: translate3d(110vw,0,0);
-  animation: cloud-drift 140s linear infinite;
+  animation: cloud-drift 150s linear infinite;
 }
 
-/* Sombra muy suave para profundidad (no “bloque”) */
+/* Sombra muy suave para profundidad (nada sólido) */
 .cloud {
-  width: min(86vw, 1340px);
+  width: min(84vw, 1400px);
   height: auto;
-  filter: drop-shadow(0 12px 28px rgba(0,0,0,.14));
+  filter: drop-shadow(0 10px 22px rgba(0,0,0,.12));
 }
 
 /* Flotación sutil */
@@ -130,17 +141,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
 @keyframes cloud-drift {
   0%   { transform: translate3d(110vw,0,0); }
-  100% { transform: translate3d(-98vw,0,0); }
+  100% { transform: translate3d(-100vw,0,0); }
 }
 @keyframes cloud-float {
   0%   { transform: translateY(0); }
-  100% { transform: translateY(1.0vh); }
+  100% { transform: translateY(0.9vh); }
 }
 
 /* Responsivo */
 @media (max-width: 640px){
-  .cloud-track { top: 22vh; }
-  .cloud { width: 96vw; filter: drop-shadow(0 10px 22px rgba(0,0,0,.12)); }
+  .cloud-track { top: 21vh; }
+  .cloud { width: 96vw; filter: drop-shadow(0 8px 18px rgba(0,0,0,.10)); }
 }
         `}</style>
       </body>
