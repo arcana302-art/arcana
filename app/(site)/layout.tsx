@@ -14,18 +14,18 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <a href="/" className="flex items-center gap-2">
             <span className="font-display text-xl tracking-tight">
-              Arcana<span className="text-fuchsia-300">✶</span>
+              Arcana<span className="text-accent">✶</span>
             </span>
           </a>
           <nav className="hidden items-center gap-6 md:flex">
-            <a className="text-sm text-zinc-200 hover:text-white" href="#como-funciona">¿Cómo funciona?</a>
-            <a className="text-sm text-zinc-200 hover:text-white" href="#especialistas">Especialistas</a>
-            <a className="text-sm text-zinc-200 hover:text-white" href="#agenda">Agenda</a>
-            <a className="text-sm text-zinc-200 hover:text-white" href="#unete">Únete</a>
+            <a className="text-sm text-zinc-200 transition-colors hover:text-accent" href="#como-funciona">¿Cómo funciona?</a>
+            <a className="text-sm text-zinc-200 transition-colors hover:text-accent" href="#especialistas">Especialistas</a>
+            <a className="text-sm text-zinc-200 transition-colors hover:text-accent" href="#agenda">Agenda</a>
+            <a className="text-sm text-zinc-200 transition-colors hover:text-accent" href="#unete">Únete</a>
           </nav>
           <a
             href="#agenda"
-            className="rounded-xl border border-white/20 px-3 py-1.5 text-sm text-white hover:bg-white/10"
+            className="btn-arcana btn-arcana--outline rounded-xl px-3 py-1.5 text-sm"
           >
             Iniciar sesión
           </a>
@@ -40,7 +40,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
           <div className="flex flex-col justify-between gap-6 md:flex-row">
             <div>
               <div className="mb-2 flex items-center gap-2">
-                <span className="font-display text-lg">Arcana✶</span>
+                <span className="font-display text-lg">Arcana<span className="text-accent">✶</span></span>
               </div>
               <p>Guía mística con especialistas verificados.</p>
             </div>
@@ -48,17 +48,17 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
               <div>
                 <p className="mb-2 font-medium text-white">Explora</p>
                 <ul className="space-y-1">
-                  <li><a href="#especialistas" className="hover:underline">Perfiles</a></li>
-                  <li><a href="#como-funciona" className="hover:underline">Cómo funciona</a></li>
-                  <li><a href="#agenda" className="hover:underline">Agendar</a></li>
+                  <li><a href="#especialistas" className="hover:text-accent">Perfiles</a></li>
+                  <li><a href="#como-funciona" className="hover:text-accent">Cómo funciona</a></li>
+                  <li><a href="#agenda" className="hover:text-accent">Agendar</a></li>
                 </ul>
               </div>
               <div>
                 <p className="mb-2 font-medium text-white">Soporte</p>
                 <ul className="space-y-1">
-                  <li><a href="#" className="hover:underline">Centro de ayuda</a></li>
-                  <li><a href="#" className="hover:underline">Términos</a></li>
-                  <li><a href="#" className="hover:underline">Privacidad</a></li>
+                  <li><a href="#" className="hover:text-accent">Centro de ayuda</a></li>
+                  <li><a href="#" className="hover:text-accent">Términos</a></li>
+                  <li><a href="#" className="hover:text-accent">Privacidad</a></li>
                 </ul>
               </div>
             </div>
