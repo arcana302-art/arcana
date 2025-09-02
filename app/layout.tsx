@@ -75,7 +75,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   border-radius: 9999px/60%;
 }
 
-/* Ambas más grandes (como pediste antes) */
+/* Ambas más grandes (como pediste) */
 .cloud-a {
   width: min(52vw, 860px);
   height: calc(min(52vw, 860px) * 0.40625);
@@ -97,16 +97,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 
 /* ===== Animaciones ===== */
-/* Deriva horizontal + subida vertical.
-   Superior: igual que antes. Inferior: SUBE MUCHO MÁS. */
+/* Deriva con subida vertical (superior discreta, inferior marcada) */
 @keyframes cloud-drift-a {
   0%   { transform: translate3d(110vw,  1.5vh, 0); }
   100% { transform: translate3d(-100vw, -2.4vh, 0); }
 }
 @keyframes cloud-drift-b {
-  /* ↑ Aumentado: arranca un poco más abajo y termina MUCHO más arriba */
+  /* inferior: ascenso claramente mayor hasta -18vh */
   0%   { transform: translate3d(115vw,  6vh, 0); }
-  100% { transform: translate3d(-105vw, -14vh, 0); }
+  100% { transform: translate3d(-105vw, -18vh, 0); }
 }
 
 /* Flotación (pequeña oscilación) */
@@ -116,7 +115,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 @keyframes cloud-float-b {
   0%   { transform: translateY(0); }
-  100% { transform: translateY(1.5vh); } /* un poco más marcada en la inferior */
+  100% { transform: translateY(1.5vh); }
 }
 
 /* Reduce motion */
