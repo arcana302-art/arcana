@@ -2,10 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Tipografía de títulos (usa la variable del font de Next) */
+/* =========================
+   Paleta & tipografías
+   ========================= */
+:root {
+  --arcana-bg: #0a1120;        /* azul profundo */
+  --arcana-bg-2: #0b1530;      /* azul + oscuro */
+  --arcana-accent: #d4af37;    /* dorado */
+  --arcana-accent-soft: rgba(212, 175, 55, 0.6);
+}
+
 .font-display { font-family: var(--font-display); }
 
-/* Fondo cósmico: brillos + nubes + estrellas, sin parpadeos */
+/* =========================
+   Scroll suave y offset para anclas (header sticky)
+   ========================= */
+html { scroll-behavior: smooth; }
+/* Las secciones con id (anclas) “caen” debajo del header */
+[id] { scroll-margin-top: 84px; }
+
+/* =========================
+   Fondo cósmico: brillos + nubes + estrellas
+   ========================= */
 body::before {
   content: "";
   position: fixed;
@@ -13,9 +31,10 @@ body::before {
   pointer-events: none;
   z-index: -2;
   background:
-    radial-gradient(1200px 600px at 20% 20%, rgba(139,92,246,.12), transparent 50%),
-    radial-gradient(900px 500px at 80% 30%, rgba(59,130,246,.10), transparent 55%),
-    radial-gradient(800px 500px at 50% 80%, rgba(236,72,153,.08), transparent 55%);
+    radial-gradient(1200px 600px at 20% 20%, rgba(49, 130, 206, .12), transparent 50%),
+    radial-gradient(900px 500px at 80% 30%, rgba(88, 28, 135, .14), transparent 55%),
+    radial-gradient(800px 500px at 50% 80%, rgba(212, 175, 55, .08), transparent 55%),
+    linear-gradient(180deg, var(--arcana-bg) 0%, var(--arcana-bg-2) 100%);
 }
 
 body::after {
@@ -24,7 +43,7 @@ body::after {
   inset: 0;
   pointer-events: none;
   z-index: -1;
-  opacity: .18;
+  opacity: .16;
   background:
     radial-gradient(1px 1px at 15% 25%, rgba(255,255,255,.8), transparent 30%),
     radial-gradient(1px 1px at 35% 15%, rgba(255,255,255,.7), transparent 30%),
@@ -36,13 +55,62 @@ body::after {
   background-size: 100% 100%;
 }
 
-/* Tarjetas estilo “glass” */
+/* =========================
+   “Glassmorphism” y chips
+   ========================= */
 .glass {
   background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.14);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
 
-/* Selección */
-::selection { background: #18181b; color: #fff; }
+.chip {
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.06);
+}
+
+/* =========================
+   Botón con “chispa” (shimmer)
+   ========================= */
+.btn-arcana {
+  position: relative;
+  overflow: hidden;
+  transition: transform .2s ease, box-shadow .2s ease, background-color .2s ease;
+}
+.btn-arcana:hover { transform: translateY(-1px); }
+
+/* destello */
+.btn-arcana::after {
+  content: "";
+  position: absolute;
+  top: -40%;
+  left: -30%;
+  width: 60%;
+  height: 180%;
+  background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.45) 50%, transparent 100%);
+  transform: translateX(-120%) skewX(-20deg);
+  transition: transform .6s ease;
+}
+.btn-arcana:hover::after { transform: translateX(300%) skewX(-20deg); }
+
+/* variantes */
+.btn-arcana--primary {
+  background: var(--arcana-accent);
+  color: #0b0b0b;
+  border: 1px solid var(--arcana-accent-soft);
+  box-shadow: 0 8px 26px rgba(212, 175, 55, .2);
+}
+.btn-arcana--outline {
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.25);
+}
+
+/* =========================
+   Utilidades menores
+   ========================= */
+.text-accent { color: var(--arcana-accent); }
+.border-accent { border-color: var(--arcana-accent); }
+
+::selection { background: #0f172a; color: #fff; }
