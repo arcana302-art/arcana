@@ -19,20 +19,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${inter.variable} ${playfair.variable} min-h-screen antialiased relative`}
         style={{ background: "linear-gradient(180deg,#0a1120,#0b1530)", color: "#e5e7eb" }}
       >
-        {/* ===== CIELO (dos nubes; inferior asciende más; toques morado/rosa) ===== */}
+        {/* ===== CIELO (dos nubes; inferior con ASCENSO ÉPICO; color morado/rosa intenso) ===== */}
         <div id="sky" aria-hidden>
           {/* Nube superior */}
           <div className="cloud-track track-a">
-            <div className="cloud-wrap wrap-a">
-              <canvas id="cloudA" className="cloud cloud-a" />
-              <div className="veil veil-a" />
+            <div className="rise rise-a">
+              <div className="cloud-wrap wrap-a">
+                <canvas id="cloudA" className="cloud cloud-a" />
+                <div className="veil veil-a" />
+              </div>
             </div>
           </div>
-          {/* Nube inferior (sube más) */}
+          {/* Nube inferior */}
           <div className="cloud-track track-b">
-            <div className="cloud-wrap wrap-b">
-              <canvas id="cloudB" className="cloud cloud-b" />
-              <div className="veil veil-b" />
+            <div className="rise rise-b">
+              <div className="cloud-wrap wrap-b">
+                <canvas id="cloudB" className="cloud cloud-b" />
+                <div className="veil veil-b" />
+              </div>
             </div>
           </div>
         </div>
@@ -42,40 +46,74 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         {/* ===== ESTILOS ===== */}
         <style>{`
-/* Limpieza de fondos antiguos (no tocar .cloud) */
+/* limpia restos antiguos (no toques .cloud) */
 #bg-root, .stars, .belt, .bank, .puffs, .cloud-svg, .nebula, .grain, .vignette { display: none !important; }
 
 #sky { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: visible; }
 
-/* Deriva principal (solo transform) */
+/* ----- Deriva horizontal (solo X) ----- */
 .cloud-track {
   position: absolute; left: 0; width: 100%;
-  transform: translate3d(110vw,0,0);
   will-change: transform;
 }
-
-/* Separación + parallax (inferior más lenta) */
 .track-a { top: 12vh; animation: cloud-drift-a 150s linear infinite; }
-.track-b { top: 66vh; animation: cloud-drift-b 210s linear infinite; animation-delay: 8s; }
+.track-b { top: 66vh; animation: cloud-drift-b 210s linear infinite; animation-delay: 6s; }
 
-/* Flotación suave independiente */
+@keyframes cloud-drift-a {
+  0%   { transform: translateX(110vw); }
+  100% { transform: translateX(-100vw); }
+}
+@keyframes cloud-drift-b {
+  0%   { transform: translateX(115vw); }
+  100% { transform: translateX(-105vw); }
+}
+
+/* ----- Ascenso vertical (solo Y) ----- */
+.rise { will-change: transform; }
+.rise-a { animation: cloud-rise-a 150s linear infinite; }
+.rise-b { animation: cloud-rise-b 210s linear infinite; animation-delay: 6s; }
+
+/* superior: pequeña deriva vertical */
+@keyframes cloud-rise-a {
+  0%   { transform: translateY(1.5vh); }
+  100% { transform: translateY(-2.4vh); }
+}
+/* INFERIOR: ASCENSO ÉPICO (clarísimo) */
+@keyframes cloud-rise-b {
+  /* sube ~80vh a lo largo del cruce */
+  0%   { transform: translateY(20vh); }
+  100% { transform: translateY(-60vh); }
+}
+
+/* Flotación sutil (independiente) */
 .cloud-wrap { position: relative; will-change: transform; }
 .wrap-a { animation: cloud-float-a 17s ease-in-out infinite alternate; }
 .wrap-b { animation: cloud-float-b 22s ease-in-out infinite alternate; }
 
-/* Canvas + fallback visible (radial vaporosa) */
+@keyframes cloud-float-a {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(0.9vh); }
+}
+@keyframes cloud-float-b {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(1.5vh); }
+}
+
+/* Canvas + fallback (con leve tinte por si el script no corre) */
 .cloud {
   display:block;
   width: min(42vw, 700px);
-  height: calc(min(42vw, 700px) * 0.40625); /* 6.5/16 */
+  height: calc(min(42vw, 700px) * 0.40625);
   aspect-ratio: 16 / 6.5;
   background:
-    radial-gradient(60% 50% at 50% 52%, rgba(255,255,255,.30) 0%, rgba(255,255,255,.15) 45%, rgba(255,255,255,0) 72%);
+    radial-gradient(60% 50% at 50% 52%, rgba(255,255,255,.28) 0%, rgba(255,255,255,.14) 45%, rgba(255,255,255,0) 72%),
+    radial-gradient(40% 50% at 28% 40%, rgba(195,160,255,0.10), transparent 70%),
+    radial-gradient(42% 52% at 72% 62%, rgba(255,150,210,0.08), transparent 72%);
   filter: blur(24px) drop-shadow(0 10px 22px rgba(0,0,0,.12));
   border-radius: 9999px/60%;
 }
 
-/* Ambas más grandes */
+/* tamaños pedidos */
 .cloud-a {
   width: min(52vw, 860px);
   height: calc(min(52vw, 860px) * 0.40625);
@@ -88,56 +126,34 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   transform: scale(1.02);
 }
 
-/* Velo con toques de color (blend "screen" para efecto luz) */
+/* Velo de luz con morado/rosa más intensos (blend SCREEN) */
 .veil {
   position:absolute; inset: -14% -8%;
   background:
-    radial-gradient(42% 60% at 24% 44%, rgba(168,85,247,0.14), transparent 62%),      /* morado suave */
-    radial-gradient(46% 62% at 72% 60%, rgba(244,114,182,0.12), transparent 64%),     /* rosa suave */
-    radial-gradient(80% 70% at 50% 52%, rgba(255,255,255,.08), transparent 80%);      /* halo blanco */
+    radial-gradient(46% 58% at 24% 42%, rgba(168,85,247,0.24), transparent 64%),   /* morado */
+    radial-gradient(50% 60% at 74% 62%, rgba(244,114,182,0.20), transparent 66%),  /* rosa */
+    radial-gradient(80% 70% at 50% 52%, rgba(255,255,255,.10), transparent 80%);   /* halo blanco */
   mix-blend-mode: screen;
   filter: blur(12px);
   pointer-events:none;
 }
 
-/* ===== Animaciones ===== */
-/* Superior: diagonal sutil. */
-@keyframes cloud-drift-a {
-  0%   { transform: translate3d(110vw,  1.5vh, 0); }
-  100% { transform: translate3d(-100vw, -2.4vh, 0); }
-}
-/* Inferior: ascenso MUY marcado (se nota claro) */
-@keyframes cloud-drift-b {
-  0%   { transform: translate3d(115vw,  18vh, 0); }  /* empieza abajo */
-  100% { transform: translate3d(-105vw, -42vh, 0); } /* termina bien arriba */
-}
-
-/* Flotación (pequeña oscilación) */
-@keyframes cloud-float-a {
-  0%   { transform: translateY(0); }
-  100% { transform: translateY(0.9vh); }
-}
-@keyframes cloud-float-b {
-  0%   { transform: translateY(0); }
-  100% { transform: translateY(1.5vh); }
-}
-
 /* Reduce motion */
 @media (prefers-reduced-motion: reduce){
-  .cloud-track, .cloud-wrap { animation: none !important; transform: translate3d(0,0,0) !important; }
+  .cloud-track, .rise, .cloud-wrap { animation: none !important; transform: translate3d(0,0,0) !important; }
 }
 
 /* Responsivo */
 @media (max-width: 768px){
   .track-a { top: 10vh; }
-  .track-b { top: 72vh; }
+  .track-b { top: 74vh; }
   .cloud-a { width: 84vw; height: calc(84vw * 0.40625); opacity: .68; }
   .cloud-b { width: 96vw; height: calc(96vw * 0.40625); opacity: .72; }
   .cloud  { filter: blur(22px) drop-shadow(0 8px 18px rgba(0,0,0,.10)); }
 }
         `}</style>
 
-        {/* ===== SCRIPT: pinta ambas nubes con tintes morado/rosa (cliente) ===== */}
+        {/* ===== SCRIPT: pinta ambas nubes con color morado/rosa INTENSO ===== */}
         <Script id="paint-clouds" strategy="afterInteractive">{`
 (function(){
   function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
@@ -182,14 +198,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       var s1=0.010, s2=0.020, s3=0.040;
       var w1=0.60, w2=0.28, w3=0.12, inv=1/(w1+w2+w3);
 
-      // offsets distintos por variante para que no sean iguales
+      // offsets por variante para que no sean iguales
       var off = variant === 1 ? 5000 : 0;
 
       // domain warp (rompe alineaciones), distinta por nube
       var warpFreq= variant===0 ? 0.0039 : 0.0043;
       var warpAmp = variant===0 ? 2.0    : 2.2;
 
-      // feather elíptico (contorno no "cuadrado"), sutilmente distinto
+      // feather elíptico
       var cx=canvas.width*(variant===0?0.52:0.50);
       var cy=canvas.height*(variant===0?0.50:0.54);
       var rx=canvas.width*(variant===0?0.60:0.58);
@@ -197,16 +213,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       var featherIn = variant===0 ? 0.84 : 0.82;
       var featherOut= variant===0 ? 1.06 : 1.04;
 
-      // opacidad base (la inferior un pelín más densa)
+      // opacidad base
       var baseAlpha = variant===0 ? 0.72 : 0.75;
 
-      // leve inclinación del dominio (variadas)
+      // leve inclinación del dominio
       var tiltX = variant===0 ? 0.06 : 0.07;
       var tiltY = variant===0 ? -0.03 : -0.028;
 
-      // Colores de luz (morada y rosa)
-      var PURPLE = [195,160,255];  // #C3A0FF aprox
-      var PINK   = [255,150,210];  // #FF96D2 aprox
+      // Colores de luz (más intensos)
+      var PURPLE = [205,170,255];  // #CDAAFF
+      var PINK   = [255,135,205];  // #FF87CD
 
       for (var y=0; y<canvas.height; y++){
         for (var x=0; x<canvas.width; x++){
@@ -220,29 +236,29 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           var n1 = perlin2(nx, ny);
           var n2 = perlin2(nx * (s2/s1), ny * (s2/s1));
           var n3 = perlin2(nx * (s3/s1), ny * (s3/s1));
-          var n  = (w1*n1 + w2*n2 + w3*n3) * inv; // [-1,1] -> [0,1]
-          n = (n + 1) * 0.5;
+          var n  = (w1*n1 + w2*n2 + w3*n3) * inv; // [-1,1]
+          n = (n + 1) * 0.5; // [0,1]
 
           // feather elíptico
           var dx=(x-cx)/rx, dy=(y-cy)/ry, r=Math.sqrt(dx*dx+dy*dy);
           var mask = 1 - smoothstep(featherIn, featherOut, r);
 
-          // curva suave para alpha vaporosa
+          // alpha vaporosa
           var a = smoothstep(0.40, 0.75, n) * mask * baseAlpha;
 
-          // --- Toques de color: pesos radiales (izq-arriba morado, der-abajo rosa) ---
+          // Toques de color intensos (solo donde hay nube: multiplicamos por 'a')
           var u = x / canvas.width, v = y / canvas.height;
           var wPurple = Math.exp(-(
-            Math.pow((u-0.28)/0.28, 2) + Math.pow((v-0.35)/0.34, 2)
-          )); // foco izq-arriba
+            Math.pow((u-0.26)/0.24, 2) + Math.pow((v-0.38)/0.30, 2)
+          ));
           var wPink   = Math.exp(-(
-            Math.pow((u-0.72)/0.30, 2) + Math.pow((v-0.65)/0.36, 2)
-          )); // foco der-abajo
+            Math.pow((u-0.74)/0.26, 2) + Math.pow((v-0.60)/0.32, 2)
+          ));
+          // máximos más altos + escalados por 'a' (efecto luz realista en zonas densas)
+          var t1 = Math.min(0.42, wPurple * 0.42) * a;
+          var t2 = Math.min(0.36, wPink   * 0.36) * a;
 
-          var t1 = Math.min(0.28, wPurple * 0.28); // intensidad máx morado
-          var t2 = Math.min(0.22, wPink   * 0.22); // intensidad máx rosa
-
-          // Color base blanco → mezcla hacia morado y luego rosa
+          // Blanco → morado → rosa
           var rC = mix(255, PURPLE[0], t1);
           var gC = mix(255, PURPLE[1], t1);
           var bC = mix(255, PURPLE[2], t1);
@@ -252,9 +268,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           bC = mix(bC, PINK[2], t2);
 
           var i=(y*canvas.width + x)*4;
-          data[i  ] = rC | 0;
-          data[i+1] = gC | 0;
-          data[i+2] = bC | 0;
+          data[i  ] = rC|0;
+          data[i+1] = gC|0;
+          data[i+2] = bC|0;
           data[i+3] = Math.floor(clamp(a,0,1)*255);
         }
       }
