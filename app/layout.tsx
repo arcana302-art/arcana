@@ -303,7 +303,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 })();
         `}</Script>
 
-        {/* ===== SCRIPT: Ajuste de ESTRELLAS (conserva ~33%, 10 featured con dim; resto no desaparecen) ===== */}
+        {/* ===== SCRIPT: Ajuste de ESTRELLAS (conserva ~20%, 10 featured con dim; resto no desaparecen) ===== */}
         <Script id="tune-stars" strategy="afterInteractive">{`
 (function(){
   function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=(Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]];} return a; }
@@ -318,9 +318,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     var stars = Array.prototype.slice.call(list).filter(isStarLike);
     if (!stars.length) return;
 
-    // 1) Conservar ~33% (un tercio). Siempre al menos 10.
+    // 1) Conservar ~20% (un quinto). Siempre al menos 10.
     shuffle(stars);
-    var keep = Math.max(10, Math.ceil(stars.length * (1/3)));
+    var keep = Math.max(10, Math.ceil(stars.length * 0.20));
     var survivors = stars.slice(0, keep);
     var toRemove  = stars.slice(keep);
     toRemove.forEach(function(el){
