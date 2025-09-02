@@ -5,3 +5,9 @@
 /* Ajustes mínimos */
 :root { color-scheme: light; }
 ::selection { background: #18181b; color: white; }
+/* Brillos suaves opcionales (si quieres usarlos en el futuro)
+@keyframes twinkle {
+  0%, 100% { opacity: .6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.08); }
+}
+*/
