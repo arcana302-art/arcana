@@ -15,7 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es" className="h-full">
       <body
-        className={`${inter.variable} ${playfair.variable} font-sans min-h-screen bg-[#0b0b12] text-zinc-100 antialiased`}
+        className={`${inter.variable} ${playfair.variable} font-sans min-h-screen bg-[#0a1120] text-zinc-100 antialiased`}
       >
         {children}
       </body>
