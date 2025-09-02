@@ -19,7 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${inter.variable} ${playfair.variable} min-h-screen antialiased relative`}
         style={{ background: "linear-gradient(180deg,#0a1120,#0b1530)", color: "#e5e7eb" }}
       >
-        {/* ===== CIELO (dos nubes, más grandes, parallax lento y deriva vertical +50%) ===== */}
+        {/* ===== CIELO (dos nubes, parallax; la inferior sube más) ===== */}
         <div id="sky" aria-hidden>
           {/* Nube superior */}
           <div className="cloud-track track-a">
@@ -54,7 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   will-change: transform;
 }
 
-/* Más separación + parallax más lento (inferior aún más lenta) */
+/* Más separación + parallax (inferior más lenta) */
 .track-a { top: 12vh; animation: cloud-drift-a 150s linear infinite; }
 .track-b { top: 62vh; animation: cloud-drift-b 220s linear infinite; animation-delay: 8s; }
 
@@ -75,7 +75,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   border-radius: 9999px/60%;
 }
 
-/* Ambas más grandes */
+/* Ambas más grandes (como pediste antes) */
 .cloud-a {
   width: min(52vw, 860px);
   height: calc(min(52vw, 860px) * 0.40625);
@@ -97,14 +97,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 
 /* ===== Animaciones ===== */
-/* Deriva con subida vertical (+50% respecto a la anterior) */
+/* Deriva horizontal + subida vertical.
+   Superior: igual que antes. Inferior: SUBE MUCHO MÁS. */
 @keyframes cloud-drift-a {
   0%   { transform: translate3d(110vw,  1.5vh, 0); }
   100% { transform: translate3d(-100vw, -2.4vh, 0); }
 }
 @keyframes cloud-drift-b {
-  0%   { transform: translate3d(115vw,  3.2vh, 0); }
-  100% { transform: translate3d(-105vw, -4.8vh, 0); }
+  /* ↑ Aumentado: arranca un poco más abajo y termina MUCHO más arriba */
+  0%   { transform: translate3d(115vw,  6vh, 0); }
+  100% { transform: translate3d(-105vw, -14vh, 0); }
 }
 
 /* Flotación (pequeña oscilación) */
@@ -114,7 +116,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 @keyframes cloud-float-b {
   0%   { transform: translateY(0); }
-  100% { transform: translateY(1.2vh); }
+  100% { transform: translateY(1.5vh); } /* un poco más marcada en la inferior */
 }
 
 /* Reduce motion */
