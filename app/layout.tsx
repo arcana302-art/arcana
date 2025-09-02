@@ -18,34 +18,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${inter.variable} ${playfair.variable} min-h-screen antialiased relative`}
         style={{ background: "linear-gradient(180deg,#0a1120,#0b1530)", color: "#e5e7eb" }}
       >
-        {/* ===== SOLO UNA NUBE (más unida y con cuerpo) ===== */}
+        {/* ===== SOLO UNA NUBE (UNIDA, SIN ESPACIOS) ===== */}
         <div id="oc-stage" aria-hidden>
           <div id="oc-drift">
             <div id="oc-float">
               <div className="oc-cloud">
-                {/* Capa de cuerpo/masa interior (relleno) */}
-                <span className="oc-core" />
-                {/* Capa de fusión inferior (rellena huecos desde abajo) */}
+                {/* Capa base: silueta continua a lo largo de toda la nube */}
+                <span className="oc-base" />
+                {/* Masa sólida interior: rellena completamente la forma */}
+                <span className="oc-solid" />
+                {/* Fusión inferior: termina de cerrar huecos por debajo */}
                 <span className="oc-merge" />
-                {/* Puffs elípticos (algodón) */}
-                <span className="oc-puff p1" />
-                <span className="oc-puff p2" />
-                <span className="oc-puff p3" />
-                <span className="oc-puff p4" />
-                <span className="oc-puff p5" />
-                <span className="oc-puff p6" />
-                <span className="oc-puff p7" />
-                <span className="oc-puff p8" />
-                <span className="oc-puff p9" />
-                <span className="oc-puff p10" />
-                <span className="oc-puff p11" />
-                <span className="oc-puff p12" />
-                <span className="oc-puff p13" />
-                <span className="oc-puff p14" />
-                <span className="oc-puff p15" />
-                {/* Suavizado superior (une bordes) */}
+                {/* Suavizado superior: unifica bordes y transiciones */}
                 <span className="oc-soften" />
-                {/* Velo etéreo + halo exterior */}
+                {/* Velo etéreo + halo exterior para naturalidad */}
                 <span className="oc-veil" />
                 <span className="oc-haze" />
               </div>
@@ -80,106 +66,91 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 /* Contenedor de la nube */
 .oc-cloud{
   position: relative;
-  width: clamp(580px, 62vw, 1080px);
-  height: clamp(210px, 25vw, 400px);
-  margin-left: -36vw;      /* entra desde la derecha */
+  width: clamp(600px, 64vw, 1120px);
+  height: clamp(220px, 26vw, 410px);
+  margin-left: -38vw;   /* entra desde la derecha */
   isolation: isolate;
   transform: translateZ(0);
 }
 
-/* === NUEVA CAPA: CUERPO/MASA INTERIOR ===
-   Grandes manchas suaves para dar 'cuerpo' y unir puffs desde el centro */
-.oc-core{
-  position:absolute; inset:-4% -6%;
+/* ========= CAPAS DE UNA SOLA NUBE (SIN HUECOS) ========= */
+/* 1) BASE: múltiples radiales grandes que construyen la silueta continua */
+.oc-base{
+  position:absolute; inset:-6% -8%;
   background:
-    radial-gradient(60% 50% at 45% 48%, rgba(255,255,255,.28), transparent 74%),
-    radial-gradient(70% 55% at 60% 52%, rgba(255,255,255,.24), transparent 76%),
-    radial-gradient(50% 45% at 38% 54%, rgba(212,175,55,.10), transparent 78%),
-    radial-gradient(55% 50% at 54% 44%, rgba(59,130,246,.08), transparent 78%);
-  filter: blur(16px);
-  opacity:.62;
-  border-radius: 30px;
-  z-index: 0;
-}
-
-/* Une por debajo: rellenos difusos */
-.oc-merge{
-  position:absolute; inset: -7% -9%;
-  background:
-    radial-gradient(60% 50% at 40% 45%, rgba(255,255,255,.22), transparent 72%),
-    radial-gradient(70% 55% at 62% 55%, rgba(255,255,255,.20), transparent 74%),
-    radial-gradient(80% 60% at 52% 52%, rgba(212,175,55,.09), transparent 76%),
-    radial-gradient(70% 60% at 48% 48%, rgba(59,130,246,.07), transparent 78%);
-  filter: blur(20px);
-  opacity:.58;
-  border-radius: 32px;
-  z-index: 1;
-}
-
-/* Puffs elípticos: un poco más de cuerpo (opacidad ↑, blur ↓) */
-.oc-puff{
-  position:absolute; border-radius:50%;
-  background:
-    radial-gradient(closest-side, rgba(255,255,255,.80) 0%, rgba(255,255,255,.50) 54%, rgba(255,255,255,0) 82%),
-    radial-gradient(70% 60% at 60% 40%, rgba(212,175,55,.09) 0 70%, transparent 80%),
-    radial-gradient(70% 60% at 40% 60%, rgba(59,130,246,.07) 0 70%, transparent 80%);
-  filter: blur(16px);
-  opacity:.84;
-  transform: translateZ(0);
-  z-index: 2;
-}
-
-/* Suavizado superior: sella uniones, sin "bordes de disco" */
-.oc-soften{
-  position:absolute; inset:-6%;
-  background:
-    radial-gradient(60% 60% at 50% 45%, rgba(255,255,255,.14), transparent 70%),
-    radial-gradient(70% 70% at 50% 55%, rgba(255,255,255,.12), transparent 72%);
-  filter: blur(20px);
-  border-radius: 30px;
-  opacity:.68;
-  z-index: 3;
-}
-
-/* Velo/Halo etéreo */
-.oc-veil{
-  position:absolute; inset:-5%;
-  background: radial-gradient(85% 70% at 55% 50%, rgba(255,255,255,.10), transparent 82%);
-  filter: blur(10px);
-  opacity:.42;
-  border-radius: 28px;
-  z-index: 4;
-}
-.oc-haze{
-  position:absolute; inset:-9%;
-  background: radial-gradient(90% 80% at 50% 50%, rgba(255,255,255,.08), transparent 86%);
+    /* crestas altas */
+    radial-gradient(34% 24% at 22% 24%, rgba(255,255,255,.85) 56%, transparent 85%),
+    radial-gradient(40% 26% at 42% 20%, rgba(255,255,255,.82) 58%, transparent 86%),
+    radial-gradient(32% 23% at 62% 24%, rgba(255,255,255,.84) 56%, transparent 85%),
+    radial-gradient(28% 22% at 78% 27%, rgba(255,255,255,.80) 54%, transparent 84%),
+    /* vientre medio */
+    radial-gradient(48% 30% at 36% 46%, rgba(255,255,255,.86) 62%, transparent 86%),
+    radial-gradient(52% 32% at 60% 44%, rgba(255,255,255,.84) 64%, transparent 86%),
+    /* barriga inferior ondulada */
+    radial-gradient(38% 26% at 28% 66%, rgba(255,255,255,.80) 58%, transparent 86%),
+    radial-gradient(44% 28% at 50% 68%, rgba(255,255,255,.82) 60%, transparent 86%),
+    radial-gradient(36% 24% at 70% 70%, rgba(255,255,255,.78) 58%, transparent 86%),
+    /* tonos muy suaves dorado/azul para profundidad */
+    radial-gradient(70% 55% at 48% 52%, rgba(212,175,55,.10), transparent 86%),
+    radial-gradient(68% 55% at 52% 50%, rgba(59,130,246,.08), transparent 86%);
   filter: blur(18px);
-  opacity:.33;
+  opacity:.96;
   border-radius: 36px;
   z-index: 1;
 }
 
-/* --- Disposición de puffs (elipses + ligeras rotaciones) --- */
-/* fila superior */
-.p1  { width: 18%; height: 11%; left: 12%; top: 9%;  transform: rotate(-6deg); }
-.p2  { width: 23%; height: 13%; left: 27%; top: 6%;  transform: rotate(4deg);  }
-.p3  { width: 20%; height: 12%; left: 46%; top: 8%;  transform: rotate(-3deg); }
-.p4  { width: 16%; height: 11%; left: 63%; top: 11%; transform: rotate(6deg);  }
-/* fila media */
-.p5  { width: 26%; height: 18%; left: 15%; top: 23%; transform: rotate(-4deg); }
-.p6  { width: 33%; height: 21%; left: 35%; top: 20%; transform: rotate(2deg);  }
-.p7  { width: 28%; height: 19%; left: 57%; top: 25%; transform: rotate(-2deg); }
-/* relleno intermedio */
-.p8  { width: 14%; height: 10%; left: 7%;  top: 30%; transform: rotate(5deg);  }
-.p9  { width: 12%; height: 10%; left: 76%; top: 28%; transform: rotate(-5deg); }
-.p10 { width: 11%; height: 9%;  left: 86%; top: 32%; transform: rotate(3deg);  }
-/* barriga inferior */
-.p11 { width: 22%; height: 16%; left: 19%; top: 49%; transform: rotate(-3deg); }
-.p12 { width: 26%; height: 18%; left: 40%; top: 51%; transform: rotate(2deg);  }
-.p13 { width: 20%; height: 15%; left: 62%; top: 52%; transform: rotate(-2deg); }
-/* puffs pequeños para romper patrón */
-.p14 { width: 10%; height: 8%;  left: 32%; top: 34%; transform: rotate(-8deg); }
-.p15 { width: 9%;  height: 7%;  left: 55%; top: 36%; transform: rotate(7deg); }
+/* 2) SOLID: masa interior que rellena por completo (cuerpo) */
+.oc-solid{
+  position:absolute; inset:-4% -5%;
+  background:
+    radial-gradient(80% 65% at 50% 50%, rgba(255,255,255,.82) 0%, rgba(255,255,255,.66) 42%, rgba(255,255,255,.40) 70%, transparent 88%);
+  filter: blur(20px);
+  opacity:.94;            /* da cuerpo y elimina huecos */
+  border-radius: 36px;
+  z-index: 2;
+}
+
+/* 3) MERGE: fusión inferior y lateral para cerrar cualquier corte */
+.oc-merge{
+  position:absolute; inset:-8% -10%;
+  background:
+    radial-gradient(70% 55% at 45% 58%, rgba(255,255,255,.26), transparent 80%),
+    radial-gradient(68% 55% at 55% 56%, rgba(255,255,255,.22), transparent 82%);
+  filter: blur(22px);
+  opacity:.70;
+  border-radius: 40px;
+  z-index: 0;
+}
+
+/* 4) SOFTEN: suavizado superior que unifica transiciones */
+.oc-soften{
+  position:absolute; inset:-6%;
+  background:
+    radial-gradient(60% 60% at 50% 45%, rgba(255,255,255,.14), transparent 72%),
+    radial-gradient(70% 70% at 50% 55%, rgba(255,255,255,.12), transparent 74%);
+  filter: blur(20px);
+  opacity:.68;
+  border-radius: 34px;
+  z-index: 3;
+}
+
+/* 5) Velo + Halo: apariencia más etérea sin abrir huecos */
+.oc-veil{
+  position:absolute; inset:-5%;
+  background: radial-gradient(88% 72% at 55% 52%, rgba(255,255,255,.10), transparent 84%);
+  filter: blur(12px);
+  opacity:.42;
+  border-radius: 34px;
+  z-index: 4;
+}
+.oc-haze{
+  position:absolute; inset:-10%;
+  background: radial-gradient(92% 84% at 50% 50%, rgba(255,255,255,.08), transparent 88%);
+  filter: blur(22px);
+  opacity:.34;
+  border-radius: 40px;
+  z-index: 1;
+}
 
 /* Animaciones (solo transform) */
 @keyframes oc-drift {
@@ -188,23 +159,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 @keyframes oc-float {
   0%   { transform: translate3d(0,0,0); }
-  100% { transform: translate3d(0,1.2vh,0); }
+  100% { transform: translate3d(0,1.1vh,0); }
 }
 
 /* Responsivo */
 @media (max-width: 640px){
   #oc-drift{ top: 24vh; }
   .oc-cloud{
-    width: clamp(330px, 92vw, 580px);
-    height: clamp(150px, 38vw, 240px);
-    margin-left: -46vw;
+    width: clamp(340px, 92vw, 600px);
+    height: clamp(160px, 38vw, 250px);
+    margin-left: -48vw;
   }
-  .oc-core{ filter: blur(14px); opacity:.58; }
-  .oc-merge{ filter: blur(18px); opacity:.54; }
-  .oc-puff{ filter: blur(14px); opacity:.82; }
+  .oc-base{ filter: blur(16px); }
+  .oc-solid{ filter: blur(18px); opacity:.93; }
+  .oc-merge{ filter: blur(20px); opacity:.66; }
   .oc-soften{ filter: blur(18px); opacity:.64; }
   .oc-veil{ opacity:.38; }
-  .oc-haze{ opacity:.28; }
+  .oc-haze{ opacity:.30; }
 }
         `}</style>
       </body>
