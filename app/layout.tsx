@@ -19,7 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${inter.variable} ${playfair.variable} min-h-screen antialiased relative`}
         style={{ background: "linear-gradient(180deg,#0a1120,#0b1530)", color: "#e5e7eb" }}
       >
-        {/* ===== CIELO (dos nubes, parallax; la inferior sube más) ===== */}
+        {/* ===== CIELO (dos nubes; la inferior asciende mucho) ===== */}
         <div id="sky" aria-hidden>
           {/* Nube superior */}
           <div className="cloud-track track-a">
@@ -54,9 +54,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   will-change: transform;
 }
 
-/* Más separación + parallax (inferior más lenta) */
+/* Más separación; inferior arranca aún más abajo para que el ascenso se note */
 .track-a { top: 12vh; animation: cloud-drift-a 150s linear infinite; }
-.track-b { top: 62vh; animation: cloud-drift-b 220s linear infinite; animation-delay: 8s; }
+.track-b { top: 66vh; animation: cloud-drift-b 200s linear infinite; animation-delay: 8s; }
 
 /* Flotación suave independiente */
 .cloud-wrap { position: relative; will-change: transform; }
@@ -75,7 +75,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   border-radius: 9999px/60%;
 }
 
-/* Ambas más grandes (como pediste) */
+/* Ambas más grandes */
 .cloud-a {
   width: min(52vw, 860px);
   height: calc(min(52vw, 860px) * 0.40625);
@@ -97,15 +97,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 
 /* ===== Animaciones ===== */
-/* Deriva con subida vertical (superior discreta, inferior marcada) */
+/* Superior: diagonal suave. Inferior: MUCHA subida visible. */
 @keyframes cloud-drift-a {
   0%   { transform: translate3d(110vw,  1.5vh, 0); }
   100% { transform: translate3d(-100vw, -2.4vh, 0); }
 }
 @keyframes cloud-drift-b {
-  /* inferior: ascenso claramente mayor hasta -18vh */
-  0%   { transform: translate3d(115vw,  6vh, 0); }
-  100% { transform: translate3d(-105vw, -18vh, 0); }
+  /* Arranca bien abajo (+14vh) y termina muy arriba (-30vh) => ascenso total ~44vh
+     Como el track tiene top:66vh, visualmente cruza desde ~80vh hasta ~36vh. */
+  0%   { transform: translate3d(115vw,  14vh, 0); }
+  100% { transform: translate3d(-105vw, -30vh, 0); }
 }
 
 /* Flotación (pequeña oscilación) */
@@ -126,7 +127,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 /* Responsivo */
 @media (max-width: 768px){
   .track-a { top: 10vh; }
-  .track-b { top: 70vh; }
+  .track-b { top: 72vh; } /* un poco más abajo en móvil para que el ascenso siga notándose */
   .cloud-a { width: 84vw; height: calc(84vw * 0.40625); opacity: .68; }
   .cloud-b { width: 96vw; height: calc(96vw * 0.40625); opacity: .72; }
   .cloud  { filter: blur(22px) drop-shadow(0 8px 18px rgba(0,0,0,.10)); }
