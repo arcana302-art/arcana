@@ -19,14 +19,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${inter.variable} ${playfair.variable} min-h-screen antialiased relative`}
         style={{ background: "linear-gradient(180deg,#0a1120,#0b1530)", color: "#e5e7eb" }}
       >
-        {/* ===== CIELO (dos nubes, medio tamaño, con desfase) ===== */}
+        {/* ===== CIELO (dos nubes separadas, parallax y desfase) ===== */}
         <div id="sky" aria-hidden>
           {/* Nube superior */}
           <div className="cloud-track track-a">
             <canvas id="cloudA" className="cloud cloud-a" />
             <div className="veil veil-a" />
           </div>
-          {/* Nube inferior (parallax + delay) */}
+          {/* Nube inferior (más lenta, más grande, con delay) */}
           <div className="cloud-track track-b">
             <canvas id="cloudB" className="cloud cloud-b" />
             <div className="veil veil-b" />
@@ -48,10 +48,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   position: absolute; left: 0; width: 100%;
   transform: translate3d(110vw,0,0);
 }
-.track-a { top: 18vh; animation: cloud-drift-a 140s linear infinite; }
-.track-b { top: 38vh; animation: cloud-drift-b 165s linear infinite; animation-delay: 6s; }
 
-/* Canvas de cada nube (≈ mitad de la anterior) + fallback visible */
+/* Más separación vertical + parallax marcado */
+.track-a { top: 14vh; animation: cloud-drift-a 135s linear infinite; }
+.track-b { top: 56vh; animation: cloud-drift-b 178s linear infinite; animation-delay: 8s; }
+
+/* Canvas de cada nube (≈ la mitad del diseño original) + fallback visible */
 .cloud {
   display:block;
   width: min(42vw, 700px);
@@ -62,8 +64,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   filter: blur(24px) drop-shadow(0 10px 22px rgba(0,0,0,.12));
   border-radius: 9999px/60%;
 }
-.cloud-a { opacity: 0.72; }
-.cloud-b { opacity: 0.74; transform: scale(0.98); } /* leve diferencia, más natural */
+
+/* Diferencias sutiles (tamaño/opacidad) para naturalidad */
+.cloud-a { width: min(40vw, 660px); opacity: 0.70; }
+.cloud-b { width: min(48vw, 780px); opacity: 0.76; transform: scale(1.02); }
 
 /* Velo exterior sutil */
 .veil {
@@ -73,27 +77,29 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   pointer-events:none;
 }
 
-/* Flotación vertical sutil, distinta para cada track */
+/* Flotaciones distintas para cada nube (parallax vertical) */
 .cloud-track::after { content:""; position:absolute; inset:0; }
-.track-a::after { animation: cloud-float-a 18s ease-in-out infinite alternate; }
-.track-b::after { animation: cloud-float-b 22s ease-in-out infinite alternate; }
+.track-a::after { animation: cloud-float-a 17s ease-in-out infinite alternate; }
+.track-b::after { animation: cloud-float-b 21s ease-in-out infinite alternate; }
 
-/* Animaciones */
+/* Animaciones horizontales */
 @keyframes cloud-drift-a {
-  0% { transform: translate3d(110vw,0,0); }
+  0%   { transform: translate3d(110vw,0,0); }
   100% { transform: translate3d(-100vw,0,0); }
 }
 @keyframes cloud-drift-b {
-  0% { transform: translate3d(115vw,0,0); }
+  0%   { transform: translate3d(115vw,0,0); }
   100% { transform: translate3d(-105vw,0,0); }
 }
+
+/* Flotación vertical */
 @keyframes cloud-float-a {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(1.0vh); }
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(0.9vh); }
 }
 @keyframes cloud-float-b {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(1.3vh); }
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(1.2vh); }
 }
 
 /* Reduce motion */
@@ -104,11 +110,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
 /* Responsivo */
 @media (max-width: 768px){
-  .track-a { top: 16vh; }
-  .track-b { top: 52vh; }
-  .cloud { width: 78vw; height: calc(78vw * 0.40625); filter: blur(22px) drop-shadow(0 8px 18px rgba(0,0,0,.10)); }
-  .cloud-a { opacity: .70; }
-  .cloud-b { opacity: .72; }
+  .track-a { top: 12vh; }
+  .track-b { top: 62vh; }
+  .cloud-a { width: 72vw; height: calc(72vw * 0.40625); opacity: .68; }
+  .cloud-b { width: 88vw; height: calc(88vw * 0.40625); opacity: .72; }
+  .cloud { filter: blur(22px) drop-shadow(0 8px 18px rgba(0,0,0,.10)); }
 }
         `}</style>
 
@@ -118,7 +124,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
   function smoothstep(e0,e1,x){ var t=clamp((x-e0)/(e1-e0),0,1); return t*t*(3-2*t); }
 
-  // Perlin 2D (perm común) + "domain warp" con offset por variante para que no sean idénticas
+  // Perlin 2D (perm común)
   var p=new Uint8Array(512);
   (function(){
     var perm=new Uint8Array(256); for(var i=0;i<256;i++) perm[i]=i;
@@ -159,9 +165,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       // offsets distintos por variante para que no sean iguales
       var off = variant === 1 ? 5000 : 0;
 
-      // domain warp (rompe alineaciones), variado por variante
-      var warpFreq= variant===0 ? 0.0038 : 0.0041;
-      var warpAmp = variant===0 ? 2.1    : 1.9;
+      // domain warp (rompe alineaciones), más marcado en la inferior
+      var warpFreq= variant===0 ? 0.0039 : 0.0043;
+      var warpAmp = variant===0 ? 2.0    : 2.2;
 
       // feather elíptico (contorno no "cuadrado"), sutilmente distinto
       var cx=canvas.width*(variant===0?0.52:0.50);
@@ -171,10 +177,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       var featherIn = variant===0 ? 0.84 : 0.82;
       var featherOut= variant===0 ? 1.06 : 1.04;
 
-      // opacidad base: casi igual pero no idéntica
-      var baseAlpha = variant===0 ? 0.72 : 0.74;
+      // opacidad base (la inferior un pelín más densa)
+      var baseAlpha = variant===0 ? 0.72 : 0.75;
 
-      // leve inclinación del dominio (distinta en cada nube)
+      // leve inclinación del dominio (variadas)
       var tiltX = variant===0 ? 0.06 : 0.07;
       var tiltY = variant===0 ? -0.03 : -0.028;
 
@@ -208,7 +214,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         }
       }
       ctx.putImageData(img,0,0);
-    }catch(e){ /* fallback CSS mantiene la nube visible si fallara */ }
+    }catch(e){ /* fallback CSS mantiene visible si algo fallara */ }
   }
 
   function paintAll(){
