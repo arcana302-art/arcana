@@ -9,17 +9,19 @@ export const metadata: Metadata = {
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      {/* FONDO ANIMADO en z-0 */}
+      {/* === FONDO ANIMADO VISIBLE (z-0) === */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        {/* Estrellas en 3 tamaños (visibles) */}
         <div className="stars-fine" />
         <div className="stars-med" />
         <div className="stars-big" />
+        {/* Nubes/nebulosas */}
         <div className="cloud cloud-1" />
         <div className="cloud cloud-2" />
         <div className="cloud cloud-3" />
       </div>
 
-      {/* CONTENIDO sobre el fondo */}
+      {/* === CONTENIDO SOBRE EL FONDO (z-10) === */}
       <div className="relative z-10">
         {/* Header */}
         <header className="sticky top-0 z-20 border-b border-white/10 bg-white/5 backdrop-blur">
@@ -35,15 +37,13 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
               <a className="text-sm text-zinc-200 hover:text-[var(--arcana-accent)]" href="#agenda">Agenda</a>
               <a className="text-sm text-zinc-200 hover:text-[var(--arcana-accent)]" href="#unete">Únete</a>
             </nav>
-            <a
-              href="#agenda"
-              className="btn-arcana btn-arcana--outline rounded-xl px-3 py-1.5 text-sm"
-            >
+            <a href="#agenda" className="rounded-xl border border-white/25 px-3 py-1.5 text-sm text-white hover:bg-white/10">
               Iniciar sesión
             </a>
           </div>
         </header>
 
+        {/* Contenido de cada página del segmento */}
         <main>{children}</main>
 
         {/* Footer */}
