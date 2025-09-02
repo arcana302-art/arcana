@@ -25,7 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="stars l2" />
           <div className="stars l3" />
 
-          {/* Bandas de nubes separadas que se mueven de derecha a izquierda */}
+          {/* Bandas de nubes separadas (parallax R→L) */}
           <div className="belt b1" />
           <div className="belt b2" />
           <div className="belt b3" />
@@ -77,74 +77,79 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   animation: stars-pan-3 260s linear infinite;
 }
 
-/* Estrellas: movimiento MUY suave (también derecha->izquierda para acompañar) */
+/* Estrellas: movimiento MUY suave R→L */
 @keyframes stars-pan-1 { 0%{background-position:0 0} 100%{background-position:-1200px 0} }
 @keyframes stars-pan-2 { 0%{background-position:0 0} 100%{background-position:-1400px 0} }
 @keyframes stars-pan-3 { 0%{background-position:0 0} 100%{background-position:-1600px 0} }
 
 /* =======================
-   BANDAS DE NUBES (separadas, R→L)
+   BANDAS DE NUBES (separadas, R→L, parallax)
    ======================= */
-/* Base: cada banda es un "tile" de 1000px que se repite en X.
-   Dentro del tile definimos varias nubes (radial-gradient) separadas, dando huecos claros. */
+/* Base bandas: tile más ANCHO (1400px) para dar separaciones claras */
 .belt {
   position:absolute; left:0; width:100%;
-  pointer-events:none; filter: blur(18px);
-  opacity:.92;                /* densidad general */
+  pointer-events:none; filter: blur(14px);      /* bordes “algodón” */
+  opacity:.94;
   background-repeat: repeat-x;
-  background-size: 1000px 100%;
+  background-size: 1400px 100%;
   will-change: background-position;
 }
 
-/* Banda 1: alta, nubes medianas separadas */
+/* --- Banda 1 (alta): grupos medianos con huecos grandes --- */
 .belt.b1 {
-  top: 10vh; height: 18vh;
-  /* tile con "nubes" circulares separadas */
+  top: 9vh; height: 16vh;
   background-image:
-    radial-gradient(circle at 80px 55%,  rgba(255,255,255,.98) 48%, transparent 70%),
-    radial-gradient(circle at 250px 45%, rgba(255,255,255,.95) 46%, transparent 70%),
-    radial-gradient(circle at 420px 60%, rgba(255,255,255,.98) 50%, transparent 72%),
-    radial-gradient(circle at 610px 50%, rgba(255,255,255,.94) 44%, transparent 70%),
-    radial-gradient(circle at 820px 58%, rgba(255,255,255,.98) 50%, transparent 72%),
-    /* halos sutiles */
-    radial-gradient(circle at 250px 45%, rgba(212,175,55,.16) 70%, transparent 85%),
-    radial-gradient(circle at 610px 50%, rgba(59,130,246,.14) 70%, transparent 85%);
-  animation: belt-move-slow 95s linear infinite;
+    /* Nubes principales (blancas) */
+    radial-gradient(circle at 120px 55%, rgba(255,255,255,.98) 52%, transparent 74%),
+    radial-gradient(circle at 380px 48%, rgba(255,255,255,.96) 48%, transparent 72%),
+    radial-gradient(circle at 680px 60%, rgba(255,255,255,.98) 54%, transparent 76%),
+    radial-gradient(circle at 980px 50%, rgba(255,255,255,.95) 50%, transparent 74%),
+    radial-gradient(circle at 1260px 58%, rgba(255,255,255,.98) 52%, transparent 76%),
+    /* Núcleos extra para “borreguito” */
+    radial-gradient(closest-side at 240px 54%, rgba(255,255,255,.85) 44%, transparent 68%),
+    radial-gradient(closest-side at 820px 52%, rgba(255,255,255,.85) 44%, transparent 68%),
+    /* Halos sutiles */
+    radial-gradient(circle at 380px 48%, rgba(212,175,55,.14) 70%, transparent 88%),
+    radial-gradient(circle at 980px 50%, rgba(59,130,246,.12) 70%, transparent 88%);
+  animation: belt-move-slow 110s linear infinite;
 }
 
-/* Banda 2: media, nubes más grandes y algo más juntas */
+/* --- Banda 2 (media): grupos grandes separados, capa central del parallax --- */
 .belt.b2 {
-  top: 42vh; height: 20vh;
+  top: 42vh; height: 18vh;
   background-image:
-    radial-gradient(circle at 100px 52%,  rgba(255,255,255,.98) 52%, transparent 72%),
-    radial-gradient(circle at 330px 48%,  rgba(255,255,255,.96) 50%, transparent 72%),
-    radial-gradient(circle at 560px 55%,  rgba(255,255,255,.98) 54%, transparent 74%),
-    radial-gradient(circle at 780px 47%,  rgba(255,255,255,.95) 50%, transparent 72%),
-    radial-gradient(circle at 930px 58%,  rgba(255,255,255,.98) 54%, transparent 74%),
-    radial-gradient(circle at 330px 48%,  rgba(212,175,55,.15) 72%, transparent 88%),
-    radial-gradient(circle at 780px 47%,  rgba(59,130,246,.13) 72%, transparent 88%);
-  animation: belt-move-med 70s linear infinite;
+    radial-gradient(circle at 100px 52%,  rgba(255,255,255,.98) 56%, transparent 76%),
+    radial-gradient(circle at 420px 48%,  rgba(255,255,255,.96) 54%, transparent 76%),
+    radial-gradient(circle at 780px 55%,  rgba(255,255,255,.98) 58%, transparent 78%),
+    radial-gradient(circle at 1120px 47%, rgba(255,255,255,.95) 54%, transparent 76%),
+    radial-gradient(circle at 1340px 58%, rgba(255,255,255,.98) 58%, transparent 78%),
+    radial-gradient(closest-side at 270px 50%, rgba(255,255,255,.86) 46%, transparent 70%),
+    radial-gradient(closest-side at 960px 53%, rgba(255,255,255,.86) 46%, transparent 70%),
+    radial-gradient(circle at 420px 48%,  rgba(212,175,55,.13) 72%, transparent 90%),
+    radial-gradient(circle at 1120px 47%, rgba(59,130,246,.11) 72%, transparent 90%);
+  animation: belt-move-med 80s linear infinite;
 }
 
-/* Banda 3: baja, nubes pequeñas y muy separadas */
+/* --- Banda 3 (baja): grupos pequeños y bien separados, la más rápida --- */
 .belt.b3 {
-  bottom: 8vh; height: 16vh;
+  bottom: 7vh; height: 14vh;
   background-image:
-    radial-gradient(circle at 70px 50%,   rgba(255,255,255,.98) 44%, transparent 68%),
-    radial-gradient(circle at 240px 60%,  rgba(255,255,255,.96) 42%, transparent 66%),
-    radial-gradient(circle at 430px 46%,  rgba(255,255,255,.98) 46%, transparent 70%),
-    radial-gradient(circle at 620px 55%,  rgba(255,255,255,.95) 44%, transparent 68%),
-    radial-gradient(circle at 820px 49%,  rgba(255,255,255,.98) 46%, transparent 70%),
-    radial-gradient(circle at 950px 58%,  rgba(255,255,255,.95) 44%, transparent 68%),
-    radial-gradient(circle at 430px 46%,  rgba(212,175,55,.12) 66%, transparent 86%),
-    radial-gradient(circle at 820px 49%,  rgba(59,130,246,.11) 66%, transparent 86%);
-  animation: belt-move-fast 55s linear infinite;
+    radial-gradient(circle at 90px 50%,   rgba(255,255,255,.98) 46%, transparent 70%),
+    radial-gradient(circle at 360px 60%,  rgba(255,255,255,.96) 44%, transparent 68%),
+    radial-gradient(circle at 640px 46%,  rgba(255,255,255,.98) 48%, transparent 72%),
+    radial-gradient(circle at 920px 55%,  rgba(255,255,255,.95) 44%, transparent 70%),
+    radial-gradient(circle at 1200px 49%, rgba(255,255,255,.98) 48%, transparent 72%),
+    radial-gradient(closest-side at 500px 52%, rgba(255,255,255,.84) 40%, transparent 66%),
+    radial-gradient(closest-side at 1080px 51%, rgba(255,255,255,.84) 40%, transparent 66%),
+    radial-gradient(circle at 360px 60%,  rgba(212,175,55,.12) 64%, transparent 86%),
+    radial-gradient(circle at 920px 55%,  rgba(59,130,246,.10) 64%, transparent 86%);
+  animation: belt-move-fast 58s linear infinite;
 }
 
-/* Movimiento continuo de derecha a izquierda (tile de 1000px) */
-@keyframes belt-move-slow { 0%{background-position:0 0} 100%{background-position:-1000px 0} }
-@keyframes belt-move-med  { 0%{background-position:0 0} 100%{background-position:-1000px 0} }
-@keyframes belt-move-fast { 0%{background-position:0 0} 100%{background-position:-1000px 0} }
+/* Movimiento continuo R→L con tile de 1400px */
+@keyframes belt-move-slow { 0%{background-position:0 0} 100%{background-position:-1400px 0} }
+@keyframes belt-move-med  { 0%{background-position:0 0} 100%{background-position:-1400px 0} }
+@keyframes belt-move-fast { 0%{background-position:0 0} 100%{background-position:-1400px 0} }
 
 /* Accesibilidad */
 @media (prefers-reduced-motion: reduce) {
