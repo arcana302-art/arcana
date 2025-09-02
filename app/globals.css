@@ -2,12 +2,47 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Ajustes mínimos */
-:root { color-scheme: light; }
-::selection { background: #18181b; color: white; }
-/* Brillos suaves opcionales (si quieres usarlos en el futuro)
-@keyframes twinkle {
-  0%, 100% { opacity: .6; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.08); }
+/* Tipografía de títulos (usa la variable del font de Next) */
+.font-display { font-family: var(--font-display); }
+
+/* Fondo cósmico: brillos + nubes + estrellas, sin parpadeos */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -2;
+  background:
+    radial-gradient(1200px 600px at 20% 20%, rgba(139,92,246,.12), transparent 50%),
+    radial-gradient(900px 500px at 80% 30%, rgba(59,130,246,.10), transparent 55%),
+    radial-gradient(800px 500px at 50% 80%, rgba(236,72,153,.08), transparent 55%);
 }
-*/
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  opacity: .18;
+  background:
+    radial-gradient(1px 1px at 15% 25%, rgba(255,255,255,.8), transparent 30%),
+    radial-gradient(1px 1px at 35% 15%, rgba(255,255,255,.7), transparent 30%),
+    radial-gradient(1px 1px at 60% 30%, rgba(255,255,255,.7), transparent 30%),
+    radial-gradient(1px 1px at 80% 20%, rgba(255,255,255,.6), transparent 30%),
+    radial-gradient(1px 1px at 25% 70%, rgba(255,255,255,.7), transparent 30%),
+    radial-gradient(1px 1px at 55% 85%, rgba(255,255,255,.6), transparent 30%),
+    radial-gradient(1px 1px at 75% 75%, rgba(255,255,255,.7), transparent 30%);
+  background-size: 100% 100%;
+}
+
+/* Tarjetas estilo “glass” */
+.glass {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Selección */
+::selection { background: #18181b; color: #fff; }
