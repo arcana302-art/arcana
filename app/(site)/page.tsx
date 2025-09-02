@@ -2,8 +2,9 @@
 "use client";
 import { useEffect, useState, type FormEvent } from "react";
 
-/* Fondo animado: estrellas parallax + nubes + cometas (CSS puro) */
-function AnimatedBackground({ animOn }: { animOn: boolean }) {
+/* Fondo animado: estrellas (parallax + twinkle) + nubes.
+   Cometas están OFF por defecto para evitar “solo líneas”. */
+function AnimatedBackground({ animOn, showComets }: { animOn: boolean; showComets: boolean }) {
   return (
     <>
       <div className={`fixed inset-0 -z-10 pointer-events-none overflow-hidden ${animOn ? "" : "anim-off"}`}>
@@ -15,67 +16,84 @@ function AnimatedBackground({ animOn }: { animOn: boolean }) {
         <div className="cloud cloud-1" />
         <div className="cloud cloud-2" />
         <div className="cloud cloud-3" />
-        {/* cometas */}
-        <div className="comet c1" />
-        <div className="comet c2" />
+        {/* cometas opcionales */}
+        {showComets && (
+          <>
+            <div className="comet c1" />
+            <div className="comet c2" />
+          </>
+        )}
       </div>
 
       {/* CSS global de las animaciones */}
       <style jsx global>{`
-        /* ===== Estrellas: 3 capas con distintas escalas y velocidad ===== */
+        /* ===== Estrellas: 3 capas con mayor densidad y brillo + twinkle ===== */
         .star-layer {
           position: absolute;
           inset: 0;
           background-image:
-            radial-gradient(1.6px 1.6px at 10px 10px, rgba(255,255,255,.95), transparent 60%),
-            radial-gradient(1.4px 1.4px at 25px 35px, rgba(255,255,255,.85), transparent 60%),
-            radial-gradient(1.2px 1.2px at 50px 15px, rgba(255,255,255,.8), transparent 60%),
-            radial-gradient(1.6px 1.6px at 15px 60px, rgba(255,255,255,.95), transparent 60%);
-          opacity: .28;
-          animation: stars-move 160s linear infinite;
-          background-size: 64px 64px;
+            radial-gradient(1.8px 1.8px at 12px 12px, rgba(255,255,255,.95), transparent 60%),
+            radial-gradient(1.4px 1.4px at 28px 40px, rgba(255,255,255,.85), transparent 60%),
+            radial-gradient(1.2px 1.2px at 52px 18px, rgba(255,255,255,.8), transparent 60%),
+            radial-gradient(1.6px 1.6px at 18px 64px, rgba(255,255,255,.95), transparent 60%);
+          background-size: 48px 48px;
+          opacity: .38;
+          animation: stars-move 200s linear infinite, twinkle 4.5s ease-in-out infinite alternate;
         }
-        .star-layer.layer-2 { opacity: .22; background-size: 96px 96px; animation-duration: 210s; }
-        .star-layer.layer-3 { opacity: .18; background-size: 128px 128px; animation-duration: 260s; }
+        .star-layer.layer-2 {
+          background-size: 72px 72px;
+          opacity: .30;
+          animation-duration: 240s, 5.5s;
+          filter: drop-shadow(0 0 2px rgba(255,255,255,.25));
+        }
+        .star-layer.layer-3 {
+          background-size: 96px 96px;
+          opacity: .24;
+          animation-duration: 280s, 6s;
+        }
         @keyframes stars-move {
           0%   { background-position: 0 0, 0 0, 0 0, 0 0; }
-          100% { background-position: 1800px 0, -1800px 0, 1400px 0, -1400px 0; }
+          100% { background-position: 1600px 0, -1600px 0, 1200px 0, -1200px 0; }
+        }
+        @keyframes twinkle {
+          0% { filter: brightness(.9) }
+          100% { filter: brightness(1.25) }
         }
 
-        /* ===== Nubes nebulosas: blobs con blur y mezcla ===== */
+        /* ===== Nubes nebulosas más visibles ===== */
         .cloud {
           position: absolute;
-          filter: blur(40px);
-          opacity: .38;
+          filter: blur(60px);
+          opacity: .48; /* más presencia */
           mix-blend-mode: screen;
           will-change: transform;
         }
         .cloud-1 {
-          width: 48vw; height: 48vw; left: -12vw; top: -8vw;
+          width: 52vw; height: 52vw; left: -12vw; top: -8vw;
           background:
-            radial-gradient(circle at 30% 30%, rgba(212,175,55,.20), transparent 60%),
-            radial-gradient(circle at 70% 70%, rgba(59,130,246,.20), transparent 60%);
+            radial-gradient(circle at 30% 30%, rgba(212,175,55,.22), transparent 60%),
+            radial-gradient(circle at 70% 70%, rgba(59,130,246,.22), transparent 60%);
           animation: drift1 60s ease-in-out infinite alternate;
         }
         .cloud-2 {
-          width: 36vw; height: 36vw; right: -12vw; top: 8vw;
+          width: 40vw; height: 40vw; right: -12vw; top: 8vw;
           background:
-            radial-gradient(circle at 60% 40%, rgba(139,92,246,.18), transparent 60%),
-            radial-gradient(circle at 40% 60%, rgba(212,175,55,.12), transparent 60%);
+            radial-gradient(circle at 60% 40%, rgba(139,92,246,.20), transparent 60%),
+            radial-gradient(circle at 40% 60%, rgba(212,175,55,.14), transparent 60%);
           animation: drift2 80s ease-in-out infinite alternate;
         }
         .cloud-3 {
-          width: 52vw; height: 52vw; left: 18vw; bottom: -16vw;
+          width: 58vw; height: 58vw; left: 18vw; bottom: -16vw;
           background:
-            radial-gradient(circle at 50% 50%, rgba(59,130,246,.16), transparent 60%),
-            radial-gradient(circle at 30% 70%, rgba(212,175,55,.13), transparent 60%);
+            radial-gradient(circle at 50% 50%, rgba(59,130,246,.18), transparent 60%),
+            radial-gradient(circle at 30% 70%, rgba(212,175,55,.14), transparent 60%);
           animation: drift3 90s ease-in-out infinite alternate;
         }
         @keyframes drift1 { from { transform: translateX(0) translateY(0); } to { transform: translateX(8vw)  translateY(2vw); } }
         @keyframes drift2 { from { transform: translateX(0) translateY(0); } to { transform: translateX(-6vw) translateY(-1vw); } }
         @keyframes drift3 { from { transform: translateX(0) translateY(0); } to { transform: translateX(5vw)  translateY(-3vw); } }
 
-        /* ===== Cometas: líneas diagonales con resplandor ===== */
+        /* ===== Cometas (apagados por defecto) ===== */
         .comet {
           position: absolute;
           width: 22vw; height: 2px;
@@ -86,24 +104,14 @@ function AnimatedBackground({ animOn }: { animOn: boolean }) {
           will-change: transform;
           filter: drop-shadow(0 0 6px rgba(212,175,55,.55));
         }
-        .comet.c1 {
-          top: -10vh; left: -20vw;
-          animation: shoot1 14s linear infinite;
-        }
-        .comet.c2 {
-          top: -15vh; left: -30vw;
-          animation: shoot2 19s linear infinite 3s;
-        }
+        .comet.c1 { top: -10vh; left: -20vw; animation: shoot1 16s linear infinite; }
+        .comet.c2 { top: -15vh; left: -30vw; animation: shoot2 22s linear infinite 4s; }
         @keyframes shoot1 { 0% { transform: translate(-10vw, -10vh) rotate(35deg); } 100% { transform: translate(120vw, 110vh) rotate(35deg); } }
         @keyframes shoot2 { 0% { transform: translate(-20vw, -15vh) rotate(35deg); } 100% { transform: translate(130vw, 120vh) rotate(35deg); } }
 
-        /* ===== Modo sin animación (toggle o accesibilidad) ===== */
+        /* ===== Modo sin animación (toggle / accesibilidad) ===== */
         .anim-off .star-layer, .anim-off .cloud, .anim-off .comet { animation: none !important; opacity: .18; }
-
-        /* Respeta accesibilidad por defecto (si el usuario reduce movimiento, arrancamos en OFF) */
-        @media (prefers-reduced-motion: reduce) {
-          .star-layer, .cloud, .comet { animation: none !important; }
-        }
+        @media (prefers-reduced-motion: reduce) { .star-layer, .cloud, .comet { animation: none !important; } }
       `}</style>
     </>
   );
@@ -115,13 +123,16 @@ export default function Page() {
     "Registros Akáshicos","Péndulo","Cartomancia","Videntes",
     "Quiromancia","Oráculos","Sueños","Piedras y Cristales",
   ];
-  const especialistas = Array.from({ length: 6 }).map((_, i) => ({ nombre: `Especialista #${i + 1}`, desc: "200+ lecturas • 4.9★" }));
+  const especialistas = Array.from({ length: 6 }).map((_, i) => ({
+    nombre: `Especialista #${i + 1}`,
+    desc: "200+ lecturas • 4.9★",
+  }));
 
   const [sentAgenda, setSentAgenda] = useState(false);
   const [sentUnete, setSentUnete] = useState(false);
   const [animOn, setAnimOn] = useState(true);
+  const [showComets, setShowComets] = useState(false); // OFF por defecto
 
-  // Si el sistema tiene "Reducir movimiento", arrancamos con animaciones apagadas
   useEffect(() => {
     if (typeof window !== "undefined" && "matchMedia" in window) {
       const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -135,22 +146,32 @@ export default function Page() {
   return (
     <>
       {/* Fondo animado */}
-      <AnimatedBackground animOn={animOn} />
+      <AnimatedBackground animOn={animOn} showComets={showComets} />
 
-      {/* pequeño switch flotante */}
-      <button
-        onClick={() => setAnimOn(v => !v)}
-        className="fixed bottom-4 right-4 z-30 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs text-white backdrop-blur transition hover:bg-white/20"
-        title="Alternar animación"
-      >
-        Animación: {animOn ? "ON" : "OFF"}
-      </button>
+      {/* toggles flotantes */}
+      <div className="fixed bottom-4 right-4 z-30 flex gap-2">
+        <button
+          onClick={() => setAnimOn(v => !v)}
+          className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs text-white backdrop-blur transition hover:bg-white/20"
+          title="Alternar animación"
+        >
+          Animación: {animOn ? "ON" : "OFF"}
+        </button>
+        <button
+          onClick={() => setShowComets(v => !v)}
+          className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs text-white backdrop-blur transition hover:bg-white/20"
+          title="Alternar cometas"
+        >
+          Cometas: {showComets ? "ON" : "OFF"}
+        </button>
+      </div>
 
       {/* HERO */}
       <section className="relative">
         <div className="mx-auto max-w-6xl px-4 pb-20 pt-16 text-center">
           <h1 className="font-display text-4xl font-semibold tracking-tight md:text-6xl">
-            Lecturas en vivo con <span className="rounded px-2 text-[var(--arcana-accent)]">expertos certificados</span>
+            Lecturas en vivo con{" "}
+            <span className="rounded px-2 text-[var(--arcana-accent)]">expertos certificados</span>
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-zinc-300">
             Tarot, Astrología, Numerología y más. Agenda en minutos y conéctate por videollamada en un entorno cuidado.
@@ -203,13 +224,13 @@ export default function Page() {
           <a href="#agenda" className="text-sm text-zinc-300 transition-colors hover:text-[var(--arcana-accent)]">Ver agenda</a>
         </div>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <article key={i} className="glass group rounded-2xl p-4 transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/10 hover:shadow-[0_10px_30px_rgba(212,175,55,.12)]">
+          {especialistas.map((e) => (
+            <article key={e.nombre} className="glass group rounded-2xl p-4 transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/10 hover:shadow-[0_10px_30px_rgba(212,175,55,.12)]">
               <div className="flex items-center gap-3">
                 <div className="h-12 w-12 shrink-0 rounded-full bg-gradient-to-br from-yellow-300/70 to-fuchsia-400/70 ring-2 ring-yellow-300/30" />
                 <div>
-                  <h3 className="font-medium text-white">Especialista #{i + 1}</h3>
-                  <p className="text-sm text-zinc-300">200+ lecturas • 4.9★</p>
+                  <h3 className="font-medium text-white">{e.nombre}</h3>
+                  <p className="text-sm text-zinc-300">{e.desc}</p>
                 </div>
               </div>
               <div className="mt-3 flex justify-between">
@@ -228,7 +249,7 @@ export default function Page() {
           {sentAgenda ? (
             <p className="mt-2 text-sm text-emerald-300">Solicitud enviada ✅. Te contactamos por correo.</p>
           ) : (
-            <form className="mt-4 grid gap-4 md:grid-cols-2" onSubmit={(e) => { e.preventDefault(); setSentAgenda(true); }}>
+            <form className="mt-4 grid gap-4 md:grid-cols-2" onSubmit={onSubmitAgenda}>
               <div className="grid gap-1">
                 <label className="text-sm text-zinc-300">Nombre</label>
                 <input className="rounded border border-white/15 bg-white/5 px-3 py-2 text-white placeholder-zinc-400" placeholder="Tu nombre" required name="nombre" />
@@ -262,7 +283,7 @@ export default function Page() {
           {sentUnete ? (
             <p className="mt-2 text-sm text-emerald-300">Aplicación enviada ✅. Te escribimos para el proceso.</p>
           ) : (
-            <form className="mt-4 grid gap-4 md:grid-cols-2" onSubmit={(e) => { e.preventDefault(); setSentUnete(true); }}>
+            <form className="mt-4 grid gap-4 md:grid-cols-2" onSubmit={onSubmitUnete}>
               <div className="grid gap-1">
                 <label className="text-sm text-zinc-300">Nombre artístico</label>
                 <input className="rounded border border-white/15 bg-white/5 px-3 py-2 text-white placeholder-zinc-400" placeholder="Ej. Luna Arcana" required name="nombreArtistico" />
