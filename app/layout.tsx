@@ -26,7 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <canvas id="cloudA" className="cloud cloud-a" />
             <div className="veil veil-a" />
           </div>
-          {/* Nube inferior (más lenta, más grande, con delay) */}
+          {/* Nube inferior (más grande) */}
           <div className="cloud-track track-b">
             <canvas id="cloudB" className="cloud cloud-b" />
             <div className="veil veil-b" />
@@ -49,11 +49,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   transform: translate3d(110vw,0,0);
 }
 
-/* Más separación vertical + parallax marcado */
+/* Separación vertical + parallax */
 .track-a { top: 14vh; animation: cloud-drift-a 135s linear infinite; }
 .track-b { top: 56vh; animation: cloud-drift-b 178s linear infinite; animation-delay: 8s; }
 
-/* Canvas de cada nube (≈ la mitad del diseño original) + fallback visible */
+/* Canvas base + fallback visible */
 .cloud {
   display:block;
   width: min(42vw, 700px);
@@ -65,9 +65,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   border-radius: 9999px/60%;
 }
 
-/* Diferencias sutiles (tamaño/opacidad) para naturalidad */
-.cloud-a { width: min(40vw, 660px); opacity: 0.70; }
-.cloud-b { width: min(48vw, 780px); opacity: 0.76; transform: scale(1.02); }
+/* >>> Ajustes individuales (superior e inferior) */
+.cloud-a {
+  width: min(40vw, 660px);
+  height: calc(min(40vw, 660px) * 0.40625);
+  opacity: 0.70;
+}
+
+/* *** SOLO MÁS GRANDE: nube inferior *** */
+.cloud-b {
+  width: min(56vw, 900px);
+  height: calc(min(56vw, 900px) * 0.40625);
+  opacity: 0.76;
+  transform: scale(1.02);
+}
 
 /* Velo exterior sutil */
 .veil {
@@ -113,7 +124,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   .track-a { top: 12vh; }
   .track-b { top: 62vh; }
   .cloud-a { width: 72vw; height: calc(72vw * 0.40625); opacity: .68; }
-  .cloud-b { width: 88vw; height: calc(88vw * 0.40625); opacity: .72; }
+  .cloud-b { width: 92vw; height: calc(92vw * 0.40625); opacity: .72; } /* un poco más grande también en móvil */
   .cloud { filter: blur(22px) drop-shadow(0 8px 18px rgba(0,0,0,.10)); }
 }
         `}</style>
