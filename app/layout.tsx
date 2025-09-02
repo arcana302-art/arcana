@@ -14,127 +14,125 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" className="h-full">
-      <body className={`${inter.variable} ${playfair.variable} font-sans min-h-screen bg-[#0a1120] text-zinc-100 antialiased relative`}>
-        {/* ==== FONDO ANIMADO GLOBAL (z-0) — ESTRELLAS GRANDES + NUBES VISIBLES ==== */}
-        <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden" id="arcana-bg">
-          {/* Nebulosas MUY VISIBLES */}
-          <div className="nebula n1" />
-          <div className="nebula n2" />
-          <div className="nebula n3" />
-          {/* Estrellas GRANDES (3 capas) */}
-          <div className="stars s1" />
-          <div className="stars s2" />
-          <div className="stars s3" />
-          {/* Halo central detrás del hero */}
-          <div className="aurora" />
-        </div>
+      <body className={`${inter.variable} ${playfair.variable} min-h-screen antialiased relative`} style={{ background: "linear-gradient(180deg,#0a1120,#0b1530)", color: "#e5e7eb" }}>
+        {/* ===== FONDO GLOBAL (z-0) ===== */}
+        <div id="bg-root" className="fixed inset-0 z-0 pointer-events-none overflow-hidden" aria-hidden />
 
-        {/* CONTENIDO SOBRE EL FONDO */}
+        {/* ===== CONTENIDO (z-10) ===== */}
         <div className="relative z-10">{children}</div>
 
-        {/* ==== CSS GLOBAL EMBEBIDO (no depende de otros archivos) ==== */}
-        <style jsx global>{`
-          :root { --arcana-accent: #d4af37; --bg1:#0a1120; --bg2:#0b1530; }
-          body { background: linear-gradient(180deg, var(--bg1), var(--bg2)); }
+        {/* ===== CSS GLOBAL (sin styled-jsx, siempre aplicado) ===== */}
+        <style>{`
+/* ---------- ESTRELLAS GRANDES + NUBES VISIBLES ---------- */
+#bg-root { position: fixed; inset: 0; }
 
-          /* ===== Nebulosas (sin mix-blend, colores fuertes y blur alto) ===== */
-          .nebula {
-            position: absolute;
-            filter: blur(120px);
-            opacity: 0.72;         /* MUY visibles */
-            will-change: transform;
-          }
-          .nebula.n1 {
-            width: 70vw; height: 70vw; left: -18vw; top: -12vw;
-            background:
-              radial-gradient(circle at 35% 35%, rgba(212,175,55,0.50), transparent 60%),
-              radial-gradient(circle at 70% 70%, rgba(59,130,246,0.45), transparent 60%);
-            animation: drift1 70s ease-in-out infinite alternate;
-          }
-          .nebula.n2 {
-            width: 55vw; height: 55vw; right: -16vw; top: 6vw;
-            background:
-              radial-gradient(circle at 60% 40%, rgba(139,92,246,0.48), transparent 60%),
-              radial-gradient(circle at 40% 60%, rgba(212,175,55,0.35), transparent 60%);
-            animation: drift2 90s ease-in-out infinite alternate;
-          }
-          .nebula.n3 {
-            width: 80vw; height: 80vw; left: 10vw; bottom: -22vw;
-            background:
-              radial-gradient(circle at 50% 50%, rgba(59,130,246,0.50), transparent 60%),
-              radial-gradient(circle at 30% 70%, rgba(212,175,55,0.38), transparent 60%);
-            animation: drift3 110s ease-in-out infinite alternate;
-          }
-          @keyframes drift1 { from { transform: translate(0,0); } to { transform: translate(10vw, 2vw); } }
-          @keyframes drift2 { from { transform: translate(0,0); } to { transform: translate(-8vw, -2vw); } }
-          @keyframes drift3 { from { transform: translate(0,0); } to { transform: translate(6vw, -4vw); } }
+/* Capas de estrellas: tamaños visibles (3px/6px/9px) y brillo */
+#bg-root::before,
+#bg-root::after {
+  content: "";
+  position: absolute; inset: 0;
+  pointer-events: none;
+}
 
-          /* ===== Estrellas GRANDES (claras y con brillo) ===== */
-          .stars {
-            position: absolute; inset: 0;
-            animation: scrollStars 220s linear infinite, twinkle 6.5s ease-in-out infinite alternate;
-            will-change: background-position, filter, opacity;
-          }
-          /* Capa densa (pequeñas) */
-          .stars.s1 {
-            opacity: 0.45;
-            background-image:
-              radial-gradient(2px 2px at 12px 12px, rgba(255,255,255,0.95), transparent 60%),
-              radial-gradient(1.6px 1.6px at 28px 40px, rgba(255,255,255,0.85), transparent 60%),
-              radial-gradient(1.8px 1.8px at 52px 18px, rgba(255,255,255,0.85), transparent 60%),
-              radial-gradient(2px 2px at 18px 64px, rgba(255,255,255,0.95), transparent 60%);
-            background-size: 64px 64px;
-            filter: drop-shadow(0 0 2px rgba(255,255,255,0.35));
-          }
-          /* Capa media (estrellas claras y visibles) */
-          .stars.s2 {
-            opacity: 0.40;
-            background-image:
-              radial-gradient(3.6px 3.6px at 22px 22px, #fff, transparent 55%),
-              radial-gradient(3px 3px at 66px 50px, rgba(255,255,255,0.98), transparent 55%),
-              radial-gradient(2.8px 2.8px at 90px 26px, rgba(255,255,255,0.95), transparent 55%);
-            background-size: 120px 120px;
-            animation-duration: 240s, 7s;
-            filter:
-              drop-shadow(0 0 4px rgba(255,255,255,0.45))
-              drop-shadow(0 0 10px rgba(212,175,55,0.25));
-          }
-          /* Capa GRANDE (impacto inmediato) */
-          .stars.s3 {
-            opacity: 0.38;
-            background-image:
-              radial-gradient(6px 6px at 40px 40px, #fff, transparent 45%),
-              radial-gradient(5px 5px at 120px 80px, rgba(255,255,255,0.98), transparent 45%);
-            background-size: 220px 220px; /* separa estrellas grandes */
-            animation-duration: 280s, 7.5s;
-            filter:
-              drop-shadow(0 0 6px rgba(255,255,255,0.6))
-              drop-shadow(0 0 14px rgba(212,175,55,0.35));
-          }
-          @keyframes scrollStars {
-            0% { background-position: 0 0, 0 0, 0 0, 0 0; }
-            100% { background-position: 1800px 0, -1600px 0, 1400px 0, -1200px 0; }
-          }
-          @keyframes twinkle { 0% { filter: brightness(0.95); } 100% { filter: brightness(1.3); } }
+/* Capa densa (puntos 3px) */
+#bg-stars-1, #bg-stars-2, #bg-stars-3 { position:absolute; inset:0; pointer-events:none; }
+#bg-stars-1 {
+  background-image:
+    radial-gradient(3px 3px at 12px 12px, rgba(255,255,255,0.9), transparent 55%),
+    radial-gradient(3px 3px at 48px 36px, rgba(255,255,255,0.85), transparent 55%),
+    radial-gradient(3px 3px at 72px 18px, rgba(255,255,255,0.85), transparent 55%),
+    radial-gradient(3px 3px at 24px 64px, rgba(255,255,255,0.9), transparent 55%);
+  background-size: 80px 80px;
+  opacity: .45;
+  animation: bg-pan-1 160s linear infinite, twinkle 5.5s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 3px rgba(255,255,255,.35));
+}
+/* Capa media (estrellas 6px) */
+#bg-stars-2 {
+  background-image:
+    radial-gradient(6px 6px at 22px 22px, #fff, transparent 45%),
+    radial-gradient(6px 6px at 86px 50px, rgba(255,255,255,.98), transparent 45%),
+    radial-gradient(5px 5px at 120px 26px, rgba(255,255,255,.95), transparent 45%);
+  background-size: 180px 180px;
+  opacity: .40;
+  animation: bg-pan-2 200s linear infinite, twinkle 6.5s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 6px rgba(255,255,255,.45)) drop-shadow(0 0 12px rgba(212,175,55,.28));
+}
+/* Capa grande (estrellas 9px) */
+#bg-stars-3 {
+  background-image:
+    radial-gradient(9px 9px at 40px 40px, #fff, transparent 40%),
+    radial-gradient(8px 8px at 140px 90px, rgba(255,255,255,.98), transparent 40%);
+  background-size: 260px 260px;
+  opacity: .36;
+  animation: bg-pan-3 240s linear infinite, twinkle 7.5s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 10px rgba(255,255,255,.55)) drop-shadow(0 0 18px rgba(212,175,55,.35));
+}
 
-          /* Halo/Aurora central para “wow” en el hero */
-          .aurora {
-            position: absolute; left: 50%; top: 16vh; transform: translateX(-50%);
-            width: 120vw; height: 70vh; pointer-events: none;
-            background:
-              radial-gradient(60% 50% at 50% 40%, rgba(212,175,55,0.18), transparent 70%),
-              radial-gradient(60% 50% at 50% 60%, rgba(59,130,246,0.14), transparent 70%);
-            filter: blur(40px);
-            opacity: 0.85;
-          }
+/* Nebulosas MUY visibles (sin mix-blend) */
+#bg-neb-1, #bg-neb-2, #bg-neb-3 {
+  position: absolute; pointer-events: none; filter: blur(120px);
+  opacity: .78; will-change: transform;
+}
+#bg-neb-1 {
+  width: 75vw; height: 75vw; left: -18vw; top: -12vw;
+  background:
+    radial-gradient(circle at 35% 35%, rgba(212,175,55,.55), transparent 60%),
+    radial-gradient(circle at 70% 70%, rgba(59,130,246,.50), transparent 60%);
+  animation: drift1 70s ease-in-out infinite alternate;
+}
+#bg-neb-2 {
+  width: 58vw; height: 58vw; right: -16vw; top: 6vw;
+  background:
+    radial-gradient(circle at 60% 40%, rgba(139,92,246,.52), transparent 60%),
+    radial-gradient(circle at 40% 60%, rgba(212,175,55,.38), transparent 60%);
+  animation: drift2 90s ease-in-out infinite alternate;
+}
+#bg-neb-3 {
+  width: 85vw; height: 85vw; left: 10vw; bottom: -24vw;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(59,130,246,.52), transparent 60%),
+    radial-gradient(circle at 30% 70%, rgba(212,175,55,.40), transparent 60%);
+  animation: drift3 110s ease-in-out infinite alternate;
+}
 
-          /* Accesibilidad: si el usuario reduce movimiento, fija y baja opacidad */
-          @media (prefers-reduced-motion: reduce) {
-            .nebula, .stars { animation: none !important; }
-            .nebula { opacity: .45; }
-            .stars { opacity: .35; }
-          }
+/* Halo/Aurora central (golpe visual en hero) */
+#bg-aurora {
+  position: absolute; left: 50%; top: 12vh; transform: translateX(-50%);
+  width: 120vw; height: 70vh; pointer-events: none;
+  background:
+    radial-gradient(60% 50% at 50% 40%, rgba(212,175,55,.22), transparent 70%),
+    radial-gradient(60% 50% at 50% 60%, rgba(59,130,246,.18), transparent 70%);
+  filter: blur(40px); opacity: .9;
+}
+
+/* Animaciones */
+@keyframes bg-pan-1 { 0%{background-position:0 0,0 0,0 0,0 0;} 100%{background-position:1400px 0,-1200px 0,1000px 0,-800px 0;} }
+@keyframes bg-pan-2 { 0%{background-position:0 0,0 0,0 0;} 100%{background-position:1600px 0,-1400px 0,1200px 0;} }
+@keyframes bg-pan-3 { 0%{background-position:0 0,0 0;} 100%{background-position:1800px 0,-1600px 0;} }
+@keyframes twinkle { 0%{filter:brightness(.95)} 100%{filter:brightness(1.28)} }
+
+@keyframes drift1 { from { transform: translate(0,0) } to { transform: translate(10vw, 2vw) } }
+@keyframes drift2 { from { transform: translate(0,0) } to { transform: translate(-8vw,-2vw) } }
+@keyframes drift3 { from { transform: translate(0,0) } to { transform: translate(6vw,-4vw) } }
+
+/* Respeta accesibilidad */
+@media (prefers-reduced-motion: reduce) {
+  #bg-stars-1, #bg-stars-2, #bg-stars-3, #bg-neb-1, #bg-neb-2, #bg-neb-3 { animation: none !important; opacity: .4; }
+}
+
+/* Inyección de las capas (usamos pseudo-elemento para montar hijos) */
+#bg-root::before { /* nada; reservamos canal para capas si hiciera falta */ }
         `}</style>
+
+        {/* ===== Montamos las capas como nodos hijos para asegurar render ===== */}
+        <div id="bg-stars-1" />
+        <div id="bg-stars-2" />
+        <div id="bg-stars-3" />
+        <div id="bg-neb-1" />
+        <div id="bg-neb-2" />
+        <div id="bg-neb-3" />
+        <div id="bg-aurora" />
       </body>
     </html>
   );
