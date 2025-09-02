@@ -142,31 +142,72 @@ html::before, html::after, body::before, body::after { content: none !important;
 }
 @keyframes glowPulse{ 0% { opacity:.38; transform: scale(1); } 100% { opacity:.52; transform: scale(1.03); } }
 
-/* ===== Estrellas — DIM LENTO (45–90s) ===== */
+/* ===== Estrellas — DIM LENTO (45–90s) + GLOW (un poco más intenso) ===== */
 .featured-star{
   position:absolute;
   width: var(--sz, 4.5px); height: var(--sz, 4.5px);
   border-radius: 999px;
+  pointer-events:none;
   background:
     radial-gradient(circle at 50% 50%, rgba(255,255,255,1) 0%, rgba(255,255,255,.95) 28%, rgba(255,255,255,0) 62%),
-    radial-gradient(circle at 50% 50%, rgba(168,85,247,.55) 0%, rgba(168,85,247,0) 70%),
-    radial-gradient(circle at 50% 50%, rgba(244,114,182,.45) 0%, rgba(244,114,182,0) 78%);
-  filter: drop-shadow(0 0 12px rgba(255,255,255,.85)) drop-shadow(0 0 22px rgba(168,85,247,.55));
+    radial-gradient(circle at 50% 50%, rgba(168,85,247,.58) 0%, rgba(168,85,247,0) 70%),
+    radial-gradient(circle at 50% 50%, rgba(244,114,182,.48) 0%, rgba(244,114,182,0) 78%);
+  /* Glow base ligeramente más fuerte */
+  filter:
+    drop-shadow(0 0 12px rgba(255,255,255,.75))
+    drop-shadow(0 0 22px rgba(168,85,247,.55))
+    drop-shadow(0 0 28px rgba(244,114,182,.35));
   will-change: opacity;
   transition: none !important;
   animation-name: featuredTwinkle !important;
-  animation-duration: var(--ftDur, 80s) !important; /* default ~80s si JS no define */
+  animation-duration: var(--ftDur, 80s) !important; /* default ~80s */
   animation-timing-function: cubic-bezier(.42,0,.58,1);
   animation-iteration-count: infinite;
   animation-fill-mode: both;
+  animation-delay: var(--twDelay, 0s);
 }
-/* Curva lenta: subida larga -> brillo -> bajada larga */
+/* ★ Halos (más amplios y con más blur/opacidad) */
+#sky .featured-star::before,
+#sky .featured-star::after{
+  content: "" !important;
+  position: absolute;
+  inset: -14px;                 /* antes -10px → halo más grande */
+  border-radius: 999px;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 50%,
+      rgba(255,255,255,.58) 0%,
+      rgba(255,255,255,.42) 24%,
+      rgba(168,85,247,.36) 44%,
+      rgba(244,114,182,.28) 60%,
+      rgba(255,255,255,0) 80%);
+  filter: blur(14px);           /* antes 10px */
+  opacity: .92;                 /* antes .85 */
+  animation: starHalo var(--ftDur, 80s) cubic-bezier(.42,0,.58,1) infinite;
+  animation-delay: var(--twDelay, 0s);
+}
+/* halo exterior aún más suave/amplio */
+#sky .featured-star::after{
+  inset: -24px;                 /* antes -18px */
+  filter: blur(24px);           /* antes 16px */
+  opacity: .72;                 /* antes .55 */
+}
+
+/* Curva lenta del titileo */
 @keyframes featuredTwinkle {
   0%   { opacity: 0;   }
   30%  { opacity: .18; }
   55%  { opacity: .95; }
-  75%  { opacity: .90; }
+  75%  { opacity: .92; }
   100% { opacity: 0;   }
+}
+/* El halo acompaña con leve respiración (un pelín más brillante) */
+@keyframes starHalo {
+  0%   { opacity: .25; transform: scale(0.96); }
+  35%  { opacity: .60; transform: scale(1.00); }
+  60%  { opacity: .96; transform: scale(1.06); } /* antes .90 */
+  80%  { opacity: .70; transform: scale(1.02); }
+  100% { opacity: .30; transform: scale(0.96); }
 }
 
 /* Responsivo */
@@ -224,7 +265,6 @@ html::before, html::after, body::before, body::after { content: none !important;
       var w1=0.60, w2=0.28, w3=0.12, inv=1/(w1+w2+w3);
 
       var off = (variant===1) ? 5000 : (variant===2 ? 9000 : 0);
-
       var warpFreq = (variant===0) ? 0.0039 : (variant===1 ? 0.0043 : 0.0041);
       var warpAmp  = (variant===0) ? 2.0    : (variant===1 ? 2.2    : 2.1);
 
@@ -246,11 +286,8 @@ html::before, html::after, body::before, body::after { content: none !important;
           var nx = (x + y*0.06 + wx) * s1;
           var ny = (y - x*0.03 + wy) * s1;
 
-          var n1 = perlin2(nx, ny);
-          var n2 = perlin2(nx * (s2/s1), ny * (s2/s1));
-          var n3 = perlin2(nx * (s3/s1), ny * (s3/s1));
-          var n  = (w1*n1 + w2*n2 + w3*n3) * inv;
-          n = (n + 1) * 0.5;
+          var n1 = perlin2(nx, ny), n2 = perlin2(nx*(s2/s1), ny*(s2/s1)), n3 = perlin2(nx*(s3/s1), ny*(s3/s1));
+          var n  = (w1*n1 + w2*n2 + w3*n3) * inv; n = (n + 1) * 0.5;
 
           var dx=(x-cx)/rx, dy=(y-cy)/ry, r=Math.sqrt(dx*dx+dy*dy);
           var mask = 1 - smoothstep(0.90, 1.02, r);
@@ -344,11 +381,18 @@ html::before, html::after, body::before, body::after { content: none !important;
       const size  = 4 + Math.random()*1.8;
       const top   = Math.random()*100;
       const left  = Math.random()*100;
+      const delay = -Math.random()*dur;
+
+      // tamaño/posicion
       s.style.setProperty('--sz', size.toFixed(2)+'px');
-      s.style.setProperty('--ftDur', dur.toFixed(2)+'s');
       s.style.top  = top.toFixed(2)+'vh';
       s.style.left = left.toFixed(2)+'vw';
-      s.style.animationDelay = (-Math.random()*dur).toFixed(2)+'s'; // fase aleatoria
+
+      // tiempo
+      s.style.setProperty('--ftDur', dur.toFixed(2)+'s');
+      s.style.setProperty('--twDelay', delay.toFixed(2)+'s'); // para halo y estrella
+      s.style.animationDelay = delay.toFixed(2)+'s';
+
       holder.appendChild(s);
     }
   }
