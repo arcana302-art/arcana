@@ -19,9 +19,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${inter.variable} ${playfair.variable} min-h-screen antialiased relative`}
         style={{ background: "linear-gradient(180deg,#0a1120,#0b1530)", color: "#e5e7eb" }}
       >
-        {/* ===== CIELO (nubes + estrellas) ===== */}
+        {/* ===== CIELO (nubes + contenedor de estrellas) ===== */}
         <div id="sky" aria-hidden>
-          {/* Contenedor para las 10 estrellas */}
           <div id="stars"></div>
 
           {/* Nube superior */}
@@ -34,7 +33,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </div>
             </div>
           </div>
-
           {/* Nube central */}
           <div className="cloud-track track-c">
             <div className="rise rise-c">
@@ -45,7 +43,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </div>
             </div>
           </div>
-
           {/* Nube inferior */}
           <div className="cloud-track track-b">
             <div className="rise rise-b">
@@ -63,7 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         {/* ===== ESTILOS ===== */}
         <style>{`
-/* Limpieza de restos que puedan interferir */
+/* Limpieza de overlays previos */
 #bg-root, .belt, .bank, .puffs, .cloud-svg, .nebula, .grain, .vignette { display: none !important; }
 
 /* --- SKY --- */
@@ -95,7 +92,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 @keyframes cloud-float-c { 0% { transform: translateY(0); } 100% { transform: translateY(1.1vh); } }
 @keyframes cloud-float-b { 0% { transform: translateY(0); } 100% { transform: translateY(1.5vh); } }
 
-/* Canvas de nube: sólido (sin niebla), halo leve */
+/* Canvas de nube: sólido con halo leve */
 .cloud, .veil, .glow { visibility: hidden; }
 .cloud {
   display:block;
@@ -135,9 +132,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 @keyframes glowPulse{ 0% { opacity:.38; transform: scale(1); } 100% { opacity:.52; transform: scale(1.03); } }
 
 /* ====== ESTRELLAS ====== */
-/* Forzar que cualquier .star no-featured no se muestre (backup) */
-#sky .star:not(.featured-star) { display: none !important; }
-/* Estética de las 10 estrellas featured */
+/* 1) Ocultar/neutralizar cualquier starfield externo (por si lo inyecta otra lib) */
+:where(.stars, #stars-bg, #starfield, #star-field, .starfield, .bg-stars){ display:none !important; }
+:where(.star, .twinkle, .particle){ display:none !important; }
+/* 2) Asegurar que nuestras 10 featured sí se vean */
+#sky .featured-star{ display:block !important; }
+
+/* Estilo de las 10 featured */
 .featured-star{
   position:absolute;
   width: var(--sz, 4.5px); height: var(--sz, 4.5px);
@@ -305,7 +306,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 })();
         `}</Script>
 
-        {/* ===== SCRIPT: Estrellas — EXACTAMENTE 10 (dim lento) ===== */}
+        {/* ===== SCRIPT: Estrellas — borrar todo lo externo y dejar exactamente 10 ===== */}
         <Script id="tune-stars" strategy="afterInteractive">{`
 (function () {
   function createStar(parent){
@@ -326,32 +327,46 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     s.style.left = left.toFixed(2)+'vw';
     s.style.animationDelay = delay.toFixed(2)+'s';
   }
-  function isStarLike(el){
+  function isTiny(el){
     const w = el.offsetWidth, h = el.offsetHeight;
     return w && h && w <= 14 && h <= 14;
+  }
+  function nukeForeignStars(){
+    // Elimina cualquier campo de estrellas común fuera/dentro de #sky
+    const selectors = [
+      '.star', '.stars', '.twinkle', '.particle',
+      '#starfield', '#star-field', '.starfield', '.bg-stars'
+    ];
+    document.querySelectorAll(selectors.join(',')).forEach(n => {
+      // no borres nuestras featured nuevas (aún no existen), y evita borrar íconos grandes
+      if (n.classList.contains('featured-star')) return;
+      if (isTiny(n) || n.matches('.stars, #starfield, #star-field, .starfield, .bg-stars')) {
+        try { n.remove(); } catch(e){}
+      }
+    });
   }
   function apply(){
     const sky = document.getElementById('sky');
     if (!sky) return;
     const holder = document.getElementById('stars') || sky;
 
-    // Eliminar TODAS las estrellas actuales dentro del cielo
-    const nodes = sky.querySelectorAll('.star, .featured-star');
-    [...nodes].forEach(n => { if (isStarLike(n)) { try { n.remove(); } catch(e){} } });
+    nukeForeignStars(); // limpia todo lo existente
 
-    // Crear EXACTAMENTE 10 nuevas "featured"
+    // Por si quedaron puntos dentro del cielo con otras clases
+    sky.querySelectorAll('.star, .twinkle, .particle, .featured-star').forEach(n => {
+      if (!n.classList.contains('featured-star') || isTiny(n)) { try { n.remove(); } catch(e){} }
+    });
+
+    // Crea EXACTAMENTE 10
     const N = 10;
     for (let i=0; i<N; i++) randomizeStar(createStar(holder));
   }
   function init(){
     apply();
-    const sky = document.getElementById('sky');
-    if (!sky) return;
+    const target = document.body; // observa todo el documento por si reinjectan
     let t;
-    new MutationObserver(() => {
-      clearTimeout(t);
-      t = setTimeout(apply, 200);
-    }).observe(sky, { childList: true, subtree: true });
+    new MutationObserver(() => { clearTimeout(t); t = setTimeout(apply, 250); })
+      .observe(target, { childList: true, subtree: true });
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init, { once:true });
