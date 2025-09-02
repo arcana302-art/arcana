@@ -18,49 +18,71 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${inter.variable} ${playfair.variable} min-h-screen antialiased relative`}
         style={{ background: "linear-gradient(180deg,#0a1120,#0b1530)", color: "#e5e7eb" }}
       >
-        {/* ====== UNA SOLA NUBE ORGÁNICA (SVG) ====== */}
+        {/* ===== CIELO: UNA SOLA NUBE ORGÁNICA ===== */}
         <div id="sky" aria-hidden>
-          <div className="cloud-drift">
-            <svg className="cloud-svg" viewBox="0 0 1600 600" role="img" aria-label="nube">
+          <div className="cloud-track">
+            <svg className="cloud" viewBox="0 0 1600 600" role="img" aria-label="nube">
               <defs>
-                {/* Filtro único: suaviza (blur) y deforma levemente con ruido fractal (sin flicker) */}
-                <filter id="cloudFilter" x="-20%" y="-30%" width="140%" height="160%" colorInterpolationFilters="sRGB">
-                  <!-- 1) Suavizado global: fusiona formas internas -->
-                  <feGaussianBlur in="SourceGraphic" stdDeviation="14" result="blurred"/>
-                  <!-- 2) Ruido fractal (base baja, 3 octavas) -->
-                  <feTurbulence type="fractalNoise" baseFrequency="0.010 0.016" numOctaves="3" seed="7" result="noise"/>
-                  <!-- 3) Ligera deformación de contorno con el ruido (orgánico, sin “bordes duros”) -->
-                  <feDisplacementMap in="blurred" in2="noise" scale="16" xChannelSelector="R" yChannelSelector="G" result="displaced"/>
-                  <!-- 4) Salida con alfa casi llena (evita parpadeos por alpha variable) -->
-                  <feColorMatrix in="displaced" type="matrix"
-                    values="
-                      1 0 0 0 0
-                      0 1 0 0 0
-                      0 0 1 0 0
-                      0 0 0 .96 0" />
-                </filter>
-
-                {/* Tinte muy sutil (calidez dorado/azul) */}
-                <linearGradient id="cloudTint" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%"  stopColor="rgba(212,175,55,0.08)" />
-                  <stop offset="100%" stopColor="rgba(59,130,246,0.07)" />
+                {/* Tinte sutil (calidez dorado/azul muy baja) */}
+                <radialGradient id="softWhite" cx="50%" cy="50%" r="60%">
+                  <stop offset="0%"  stopColor="#ffffff" stopOpacity="0.88"/>
+                  <stop offset="55%" stopColor="#ffffff" stopOpacity="0.76"/>
+                  <stop offset="100%" stopColor="#ffffff" stopOpacity="0.38"/>
+                </radialGradient>
+                <linearGradient id="tint" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%"  stopColor="rgba(212,175,55,0.10)" />
+                  <stop offset="100%" stopColor="rgba(59,130,246,0.08)" />
                 </linearGradient>
+
+                {/* Filtro: blur + ligera deformación por ruido (orgánico, sin rigidez) */}
+                <filter id="fluffyCloud" x="-25%" y="-40%" width="150%" height="180%" colorInterpolationFilters="sRGB">
+                  <!-- Ruido fractal de baja frecuencia (contorno irregular suave) -->
+                  <feTurbulence type="fractalNoise" baseFrequency="0.0075 0.012" numOctaves="3" seed="9" result="noise"/>
+                  <!-- Deforma suavemente el borde con el ruido -->
+                  <feDisplacementMap in="SourceGraphic" in2="noise" scale="18" xChannelSelector="R" yChannelSelector="G" result="displaced"/>
+                  <!-- Suaviza para aspecto “algodón” -->
+                  <feGaussianBlur in="displaced" stdDeviation="12" result="blurred"/>
+                  <!-- Ajuste de alpha: evita bordes duros y parpadeos -->
+                  <feComponentTransfer>
+                    <feFuncA type="table" tableValues="0 0.5 0.85 1"/>
+                  </feComponentTransfer>
+                </filter>
               </defs>
 
-              {/* Grupo con filtro: la combinación de elipses + blur + desplazamiento evita “círculos definidos” */}
-              <g filter="url(#cloudFilter)" opacity="0.92">
-                {/* Base orgánica: elipses grandes superpuestas (no perfectas, distintas orientaciones) */}
-                <ellipse cx="380"  cy="260" rx="220" ry="120" fill="#fff" fillOpacity="0.80" transform="rotate(-6 380 260)"/>
-                <ellipse cx="640"  cy="230" rx="260" ry="140" fill="#fff" fillOpacity="0.78" transform="rotate(4 640 230)"/>
-                <ellipse cx="900"  cy="250" rx="230" ry="130" fill="#fff" fillOpacity="0.78" transform="rotate(-3 900 250)"/>
-                <ellipse cx="1140" cy="290" rx="200" ry="110" fill="#fff" fillOpacity="0.76" transform="rotate(6 1140 290)"/>
-
-                {/* Barriga inferior ondulada (dos elipses bajas) */}
-                <ellipse cx="620"  cy="360" rx="260" ry="110" fill="#fff" fillOpacity="0.74" transform="rotate(-2 620 360)"/>
-                <ellipse cx="980"  cy="370" rx="240" ry="100" fill="#fff" fillOpacity="0.72" transform="rotate(3 980 370)"/>
-
-                {/* Tinte sutil encima (no añade “bloque”, solo matiz) */}
-                <ellipse cx="800" cy="300" rx="560" ry="240" fill="url(#cloudTint)" />
+              {/* UNA SOLA FORMA con relleno suave + tinte sutil y filtro orgánico */}
+              <g filter="url(#fluffyCloud)">
+                <path
+                  fill="url(#softWhite)"
+                  d="
+                    M 220 360
+                    C 260 280, 380 220, 500 250
+                    C 540 190, 680 180, 760 230
+                    C 820 170, 980 170, 1040 240
+                    C 1120 230, 1220 270, 1235 330
+                    C 1320 350, 1360 400, 1330 440
+                    C 1210 470, 1080 480, 920 460
+                    C 800 490, 640 490, 540 460
+                    C 440 480, 330 460, 270 430
+                    C 235 405, 200 385, 220 360 Z
+                  "
+                />
+                {/* capa de tinte sutil para profundidad (muy tenue) */}
+                <path
+                  fill="url(#tint)"
+                  d="
+                    M 220 360
+                    C 260 280, 380 220, 500 250
+                    C 540 190, 680 180, 760 230
+                    C 820 170, 980 170, 1040 240
+                    C 1120 230, 1220 270, 1235 330
+                    C 1320 350, 1360 400, 1330 440
+                    C 1210 470, 1080 480, 920 460
+                    C 800 490, 640 490, 540 460
+                    C 440 480, 330 460, 270 430
+                    C 235 405, 200 385, 220 360 Z
+                  "
+                  opacity="0.35"
+                />
               </g>
             </svg>
           </div>
@@ -74,33 +96,32 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 /* Apaga cualquier fondo viejo si quedó en el proyecto */
 #bg-root, .stars, .belt, .bank, .puffs, .cloud, .nebula, .grain, .vignette { display: none !important; }
 
-/* Contenedor del cielo */
+/* Cielo */
 #sky {
   position: fixed; inset: 0;
   z-index: 0; pointer-events: none; overflow: visible;
 }
 
-/* La nube se mueve de derecha a izquierda y flota suavemente (solo transform: sin flicker) */
-.cloud-drift {
+/* Movimiento: SOLO transform (GPU), sin filtros animados → sin flicker */
+.cloud-track {
   position: absolute; top: 26vh; left: 0; width: 100%;
   transform: translate3d(110vw,0,0);
-  animation: cloud-drift 120s linear infinite;
+  animation: cloud-drift 115s linear infinite;
 }
-.cloud-svg {
-  width: min(90vw, 1400px);
-  height: auto;
-  /* pequeño blur adicional para fundir aún más (estático) */
-  filter: drop-shadow(0 20px 40px rgba(0,0,0,0.25));
+.cloud {
+  width: min(88vw, 1380px); height: auto;
+  filter: drop-shadow(0 24px 48px rgba(0,0,0,.22)); /* profundidad suave */
 }
+
+/* Flotación vertical muy sutil */
+.cloud-track::after {
+  content:""; position:absolute; inset:0;
+  animation: cloud-float 18s ease-in-out infinite alternate;
+}
+
 @keyframes cloud-drift {
   0%   { transform: translate3d(110vw,0,0); }
   100% { transform: translate3d(-95vw,0,0); }
-}
-
-/* Flotación vertical sutil */
-.cloud-drift::after { /* pseudo para animación vertical sin tocar el SVG */
-  content:""; position:absolute; inset:0;
-  animation: cloud-float 18s ease-in-out infinite alternate;
 }
 @keyframes cloud-float {
   0%   { transform: translateY(0); }
@@ -109,8 +130,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
 /* Responsivo */
 @media (max-width: 640px){
-  .cloud-drift { top: 24vh; }
-  .cloud-svg   { width: 96vw; }
+  .cloud-track { top: 24vh; }
+  .cloud { width: 96vw; }
 }
         `}</style>
       </body>
