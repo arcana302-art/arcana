@@ -19,7 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${inter.variable} ${playfair.variable} min-h-screen antialiased relative`}
         style={{ background: "linear-gradient(180deg,#0a1120,#0b1530)", color: "#e5e7eb" }}
       >
-        {/* ===== CIELO (dos nubes, más grandes, parallax lento y deriva hacia arriba) ===== */}
+        {/* ===== CIELO (dos nubes, más grandes, parallax lento y deriva vertical +50%) ===== */}
         <div id="sky" aria-hidden>
           {/* Nube superior */}
           <div className="cloud-track track-a">
@@ -42,29 +42,28 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         {/* ===== ESTILOS ===== */}
         <style>{`
-/* Apaga restos viejos si existieran (NO toques los canvas .cloud) */
+/* Limpieza de fondos antiguos (no tocar .cloud) */
 #bg-root, .stars, .belt, .bank, .puffs, .cloud-svg, .nebula, .grain, .vignette { display: none !important; }
 
 #sky { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: visible; }
 
-/* ----- Pistas (deriva principal) ----- */
+/* Deriva principal (solo transform) */
 .cloud-track {
   position: absolute; left: 0; width: 100%;
   transform: translate3d(110vw,0,0);
   will-change: transform;
 }
 
-/* Más separación y PARALLAX MÁS LENTO
-   + deriva vertical ascendente integrada en la animación */
+/* Más separación + parallax más lento (inferior aún más lenta) */
 .track-a { top: 12vh; animation: cloud-drift-a 150s linear infinite; }
-.track-b { top: 62vh; animation: cloud-drift-b 200s linear infinite; animation-delay: 8s; }
+.track-b { top: 62vh; animation: cloud-drift-b 220s linear infinite; animation-delay: 8s; }
 
-/* ----- Wrap interno (flotación suave independiente) ----- */
+/* Flotación suave independiente */
 .cloud-wrap { position: relative; will-change: transform; }
 .wrap-a { animation: cloud-float-a 17s ease-in-out infinite alternate; }
 .wrap-b { animation: cloud-float-b 22s ease-in-out infinite alternate; }
 
-/* Canvas base + fallback visible */
+/* Canvas + fallback visible (radial vaporosa) */
 .cloud {
   display:block;
   width: min(42vw, 700px);
@@ -76,7 +75,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   border-radius: 9999px/60%;
 }
 
-/* >>> Ambas más grandes <<< */
+/* Ambas más grandes */
 .cloud-a {
   width: min(52vw, 860px);
   height: calc(min(52vw, 860px) * 0.40625);
@@ -89,7 +88,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   transform: scale(1.02);
 }
 
-/* Velo exterior sutil */
+/* Velo exterior */
 .veil {
   position:absolute; inset: -14% -8%;
   background: radial-gradient(80% 70% at 50% 52%, rgba(255,255,255,.10), transparent 80%);
@@ -97,18 +96,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   pointer-events:none;
 }
 
-/* ----- Animaciones ----- */
-/* Deriva con subida vertical ligera */
+/* ===== Animaciones ===== */
+/* Deriva con subida vertical (+50% respecto a la anterior) */
 @keyframes cloud-drift-a {
-  0%   { transform: translate3d(110vw,  1.0vh, 0); }
-  100% { transform: translate3d(-100vw, -1.6vh, 0); }
+  0%   { transform: translate3d(110vw,  1.5vh, 0); }
+  100% { transform: translate3d(-100vw, -2.4vh, 0); }
 }
 @keyframes cloud-drift-b {
-  0%   { transform: translate3d(115vw,  2.2vh, 0); }
-  100% { transform: translate3d(-105vw, -3.2vh, 0); }
+  0%   { transform: translate3d(115vw,  3.2vh, 0); }
+  100% { transform: translate3d(-105vw, -4.8vh, 0); }
 }
 
-/* Flotación independiente (pequeña oscilación) */
+/* Flotación (pequeña oscilación) */
 @keyframes cloud-float-a {
   0%   { transform: translateY(0); }
   100% { transform: translateY(0.9vh); }
@@ -126,14 +125,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 /* Responsivo */
 @media (max-width: 768px){
   .track-a { top: 10vh; }
-  .track-b { top: 70vh; } /* más separadas en móvil */
+  .track-b { top: 70vh; }
   .cloud-a { width: 84vw; height: calc(84vw * 0.40625); opacity: .68; }
   .cloud-b { width: 96vw; height: calc(96vw * 0.40625); opacity: .72; }
   .cloud  { filter: blur(22px) drop-shadow(0 8px 18px rgba(0,0,0,.10)); }
 }
         `}</style>
 
-        {/* ===== SCRIPT (cliente) — pinta AMBAS nubes ===== */}
+        {/* ===== SCRIPT: pinta ambas nubes (cliente) ===== */}
         <Script id="paint-clouds" strategy="afterInteractive">{`
 (function(){
   function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
