@@ -19,17 +19,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${inter.variable} ${playfair.variable} min-h-screen antialiased relative`}
         style={{ background: "linear-gradient(180deg,#0a1120,#0b1530)", color: "#e5e7eb" }}
       >
-        {/* ===== CIELO (dos nubes, más grandes y más separadas) ===== */}
+        {/* ===== CIELO (dos nubes, más grandes, parallax lento y deriva hacia arriba) ===== */}
         <div id="sky" aria-hidden>
           {/* Nube superior */}
           <div className="cloud-track track-a">
-            <canvas id="cloudA" className="cloud cloud-a" />
-            <div className="veil veil-a" />
+            <div className="cloud-wrap wrap-a">
+              <canvas id="cloudA" className="cloud cloud-a" />
+              <div className="veil veil-a" />
+            </div>
           </div>
           {/* Nube inferior */}
           <div className="cloud-track track-b">
-            <canvas id="cloudB" className="cloud cloud-b" />
-            <div className="veil veil-b" />
+            <div className="cloud-wrap wrap-b">
+              <canvas id="cloudB" className="cloud cloud-b" />
+              <div className="veil veil-b" />
+            </div>
           </div>
         </div>
 
@@ -43,15 +47,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
 #sky { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: visible; }
 
-/* Pistas (solo transform → sin flicker) */
+/* ----- Pistas (deriva principal) ----- */
 .cloud-track {
   position: absolute; left: 0; width: 100%;
   transform: translate3d(110vw,0,0);
+  will-change: transform;
 }
 
-/* Más separación vertical (antes 14vh/56vh) */
-.track-a { top: 12vh; animation: cloud-drift-a 135s linear infinite; }
-.track-b { top: 62vh; animation: cloud-drift-b 178s linear infinite; animation-delay: 8s; }
+/* Más separación y PARALLAX MÁS LENTO
+   + deriva vertical ascendente integrada en la animación */
+.track-a { top: 12vh; animation: cloud-drift-a 150s linear infinite; }
+.track-b { top: 62vh; animation: cloud-drift-b 200s linear infinite; animation-delay: 8s; }
+
+/* ----- Wrap interno (flotación suave independiente) ----- */
+.cloud-wrap { position: relative; will-change: transform; }
+.wrap-a { animation: cloud-float-a 17s ease-in-out infinite alternate; }
+.wrap-b { animation: cloud-float-b 22s ease-in-out infinite alternate; }
 
 /* Canvas base + fallback visible */
 .cloud {
@@ -86,22 +97,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   pointer-events:none;
 }
 
-/* Flotaciones (parallax vertical) */
-.cloud-track::after { content:""; position:absolute; inset:0; }
-.track-a::after { animation: cloud-float-a 17s ease-in-out infinite alternate; }
-.track-b::after { animation: cloud-float-b 21s ease-in-out infinite alternate; }
-
-/* Animaciones horizontales */
+/* ----- Animaciones ----- */
+/* Deriva con subida vertical ligera */
 @keyframes cloud-drift-a {
-  0%   { transform: translate3d(110vw,0,0); }
-  100% { transform: translate3d(-100vw,0,0); }
+  0%   { transform: translate3d(110vw,  1.0vh, 0); }
+  100% { transform: translate3d(-100vw, -1.6vh, 0); }
 }
 @keyframes cloud-drift-b {
-  0%   { transform: translate3d(115vw,0,0); }
-  100% { transform: translate3d(-105vw,0,0); }
+  0%   { transform: translate3d(115vw,  2.2vh, 0); }
+  100% { transform: translate3d(-105vw, -3.2vh, 0); }
 }
 
-/* Flotación vertical */
+/* Flotación independiente (pequeña oscilación) */
 @keyframes cloud-float-a {
   0%   { transform: translateY(0); }
   100% { transform: translateY(0.9vh); }
@@ -113,17 +120,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
 /* Reduce motion */
 @media (prefers-reduced-motion: reduce){
-  .cloud-track { animation: none !important; transform: translate3d(0,0,0) !important; }
-  .cloud-track::after { animation: none !important; }
+  .cloud-track, .cloud-wrap { animation: none !important; transform: translate3d(0,0,0) !important; }
 }
 
 /* Responsivo */
 @media (max-width: 768px){
   .track-a { top: 10vh; }
-  .track-b { top: 70vh; } /* aún más separadas en móvil */
+  .track-b { top: 70vh; } /* más separadas en móvil */
   .cloud-a { width: 84vw; height: calc(84vw * 0.40625); opacity: .68; }
   .cloud-b { width: 96vw; height: calc(96vw * 0.40625); opacity: .72; }
-  .cloud { filter: blur(22px) drop-shadow(0 8px 18px rgba(0,0,0,.10)); }
+  .cloud  { filter: blur(22px) drop-shadow(0 8px 18px rgba(0,0,0,.10)); }
 }
         `}</style>
 
@@ -174,7 +180,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       // offsets distintos por variante para que no sean iguales
       var off = variant === 1 ? 5000 : 0;
 
-      // domain warp (rompe alineaciones), más marcado en la inferior
+      // domain warp (rompe alineaciones), distinta por nube
       var warpFreq= variant===0 ? 0.0039 : 0.0043;
       var warpAmp = variant===0 ? 2.0    : 2.2;
 
