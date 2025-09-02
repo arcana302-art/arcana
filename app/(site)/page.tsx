@@ -2,6 +2,20 @@
 "use client";
 import { useState, type FormEvent } from "react";
 
+/* Fondo animado: inserta capas CSS de estrellas y nubes */
+function BackgroundAnimated() {
+  return (
+    <div className="bg-cosmos">
+      <div className="stars" />
+      <div className="stars stars-2" />
+      <div className="stars stars-3" />
+      <div className="cloud cloud-1" />
+      <div className="cloud cloud-2" />
+      <div className="cloud cloud-3" />
+    </div>
+  );
+}
+
 export default function Page() {
   const categorias = [
     "Tarot","Astrología","Numerología","Sinastría","Runas",
@@ -17,17 +31,14 @@ export default function Page() {
   const [sentAgenda, setSentAgenda] = useState(false);
   const [sentUnete, setSentUnete] = useState(false);
 
-  const onSubmitAgenda = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setSentAgenda(true);
-  };
-  const onSubmitUnete = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setSentUnete(true);
-  };
+  const onSubmitAgenda = (e: FormEvent<HTMLFormElement>) => { e.preventDefault(); setSentAgenda(true); };
+  const onSubmitUnete  = (e: FormEvent<HTMLFormElement>) => { e.preventDefault(); setSentUnete(true);  };
 
   return (
     <>
+      {/* Capa de animaciones global */}
+      <BackgroundAnimated />
+
       {/* HERO */}
       <section className="relative">
         <div className="mx-auto max-w-6xl px-4 pb-20 pt-16 text-center">
@@ -39,25 +50,16 @@ export default function Page() {
             Tarot, Astrología, Numerología y más. Agenda en minutos y conéctate por videollamada en un entorno cuidado.
           </p>
           <div className="mt-6 flex items-center justify-center gap-3">
-            <a
-              href="#agenda"
-              className="btn-arcana btn-arcana--primary rounded-xl px-4 py-2 font-medium"
-            >
+            <a href="#agenda" className="btn-arcana btn-arcana--primary rounded-xl px-4 py-2 font-medium">
               Agendar una consulta
             </a>
-            <a
-              href="#unete"
-              className="btn-arcana btn-arcana--outline rounded-xl px-4 py-2 font-medium text-white"
-            >
+            <a href="#unete" className="btn-arcana btn-arcana--outline rounded-xl px-4 py-2 font-medium text-white">
               Únete como especialista
             </a>
           </div>
           <div className="mt-6 flex flex-col items-center gap-3 md:flex-row md:justify-center">
             {["Talentos verificados","Pagos protegidos","Videollamada integrada"].map((t) => (
-              <div
-                key={t}
-                className="rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs text-zinc-200"
-              >
+              <div key={t} className="rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs text-zinc-200">
                 {t}
               </div>
             ))}
