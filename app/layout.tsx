@@ -23,7 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div id="oc-drift">
             <div id="oc-float">
               <div className="oc-cloud">
-                {/* puffs elípticos (algodón) */}
+                {/* puffs elípticos (algodón) — más blur y menos opacidad */}
                 <span className="oc-puff p1" />
                 <span className="oc-puff p2" />
                 <span className="oc-puff p3" />
@@ -37,6 +37,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <span className="oc-puff p11" />
                 <span className="oc-puff p12" />
                 <span className="oc-puff p13" />
+                <span className="oc-puff p14" />
+                <span className="oc-puff p15" />
 
                 {/* capa de suavizado global (fusiona puffs) */}
                 <span className="oc-soften" />
@@ -58,11 +60,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 /* Escenario único */
 #oc-stage{ position: fixed; inset: 0; z-index:0; pointer-events:none; overflow: visible; }
 
-/* Trayectoria: derecha -> izquierda (solo transform) */
+/* Trayectoria: derecha -> izquierda (solo transform; sin filtros animados) */
 #oc-drift{
   position:absolute; top: 28vh; left: 0; width:100%;
   transform: translate3d(110vw,0,0);
-  animation: oc-drift 110s linear infinite;
+  animation: oc-drift 120s linear infinite;
 }
 
 /* Flotación vertical leve */
@@ -74,23 +76,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 /* Contenedor de la nube (forma orgánica) */
 .oc-cloud{
   position: relative;
-  width: clamp(520px, 56vw, 1000px);
-  height: clamp(180px, 22vw, 360px);
-  margin-left: -30vw;  /* entra desde la derecha */
+  width: clamp(540px, 58vw, 1040px);
+  height: clamp(190px, 24vw, 380px);
+  margin-left: -32vw;  /* entra desde la derecha */
   will-change: transform;
   transform: translateZ(0);
+  isolation: isolate;       /* ayuda a fusionar capas sin artefactos */
 }
 
 /* Un puff = elipse suave con núcleo menos brillante + halo tibio */
 .oc-puff{
   position:absolute; border-radius:50%;
-  /* 👉 ya no usamos aspect-ratio 1:1; cada puff tendrá width/height propias (elipse) */
   background:
-    radial-gradient(closest-side, rgba(255,255,255,.88) 0%, rgba(255,255,255,.58) 58%, rgba(255,255,255,0) 82%),
+    radial-gradient(closest-side, rgba(255,255,255,.82) 0%, rgba(255,255,255,.50) 55%, rgba(255,255,255,0) 82%),
     radial-gradient(70% 60% at 60% 40%, rgba(212,175,55,.10) 0 70%, transparent 80%),
     radial-gradient(70% 60% at 40% 60%, rgba(59,130,246,.08) 0 70%, transparent 80%);
-  filter: blur(12px);   /* blur estático (no animado) */
-  opacity:.92;          /* menos blanco sólido */
+  filter: blur(16px);  /* MÁS blur = bordes más suaves */
+  opacity:.86;         /* MENOS blanco sólido */
   will-change: transform;
   transform: translateZ(0);
 }
@@ -99,67 +101,72 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 .oc-soften{
   position:absolute; inset:-6%;
   background:
-    radial-gradient(60% 60% at 50% 45%, rgba(255,255,255,.16), transparent 70%),
-    radial-gradient(70% 70% at 50% 55%, rgba(255,255,255,.12), transparent 72%);
-  filter: blur(14px);
-  border-radius: 20px;
-  opacity:.85;
+    radial-gradient(60% 60% at 50% 45%, rgba(255,255,255,.14), transparent 70%),
+    radial-gradient(70% 70% at 50% 55%, rgba(255,255,255,.10), transparent 72%);
+  filter: blur(20px);
+  border-radius: 24px;
+  opacity:.75;
 }
 
 /* Textura sutil para evitar discos perfectos */
 .oc-texture{
-  position:absolute; inset:-4%;
+  position:absolute; inset:-5%;
   background:
-    radial-gradient(8px 6px at 20% 40%, rgba(255,255,255,.06), transparent 60%),
+    radial-gradient(8px 6px at 20% 40%, rgba(255,255,255,.05), transparent 60%),
     radial-gradient(10px 7px at 60% 55%, rgba(255,255,255,.05), transparent 62%),
-    radial-gradient(7px 5px  at 40% 70%, rgba(255,255,255,.05), transparent 64%);
-  filter: blur(6px);
-  opacity:.5;
-  border-radius: 20px;
+    radial-gradient(7px 5px  at 40% 70%, rgba(255,255,255,.04), transparent 64%),
+    radial-gradient(9px 7px  at 70% 35%, rgba(255,255,255,.04), transparent 62%);
+  filter: blur(7px);
+  opacity:.45;
+  border-radius: 24px;
 }
 
-/* --- Disposición de puffs (elipses) --- */
-/* fila superior (crestas) */
-.p1 { width: 18%; height: 12%; left: 16%; top: 6%; }
-.p2 { width: 22%; height: 14%; left: 30%; top: 4%; }
-.p3 { width: 20%; height: 13%; left: 48%; top: 6%; }
-.p4 { width: 16%; height: 12%; left: 64%; top: 9%; }
+/* --- Disposición de puffs (ELIPSES con tamaños y posiciones variadas) --- */
+/* fila superior (crestas irregulares) */
+.p1  { width: 17%; height: 11%; left: 14%; top: 8%; }
+.p2  { width: 23%; height: 13%; left: 29%; top: 5%; }
+.p3  { width: 19%; height: 12%; left: 47%; top: 7%; }
+.p4  { width: 15%; height: 11%; left: 64%; top: 10%; }
 
-/* fila media (volumen) */
-.p5  { width: 28%; height: 20%; left: 18%; top: 20%; }
-.p6  { width: 34%; height: 22%; left: 38%; top: 18%; }
-.p7  { width: 30%; height: 20%; left: 58%; top: 22%; }
+/* fila media (volumen principal, algo “quebrada”) */
+.p5  { width: 26%; height: 18%; left: 16%; top: 22%; }
+.p6  { width: 33%; height: 21%; left: 36%; top: 19%; }
+.p7  { width: 28%; height: 19%; left: 58%; top: 24%; }
 
-/* relleno medio */
-.p8  { width: 16%; height: 12%; left: 10%; top: 28%; }
-.p9  { width: 14%; height: 11%; left: 76%; top: 26%; }
-.p10 { width: 13%; height: 10%; left: 86%; top: 30%; }
+/* rellenos intermedios (rompen la geometría) */
+.p8  { width: 14%; height: 10%; left: 8%;  top: 29%; }
+.p9  { width: 12%; height: 10%; left: 77%; top: 27%; }
+.p10 { width: 11%; height: 9%;  left: 87%; top: 31%; }
 
-/* barriga inferior (suave, más ancha) */
-.p11 { width: 28%; height: 18%; left: 22%; top: 46%; }
-.p12 { width: 30%; height: 20%; left: 44%; top: 48%; }
-.p13 { width: 24%; height: 16%; left: 66%; top: 50%; }
+/* barriga inferior (ondulada, sin línea recta) */
+.p11 { width: 22%; height: 16%; left: 20%; top: 48%; }
+.p12 { width: 26%; height: 18%; left: 41%; top: 50%; }
+.p13 { width: 20%; height: 15%; left: 63%; top: 51%; }
 
-/* Animaciones */
+/* puffs extra pequeños para romper el patrón circular */
+.p14 { width: 10%; height: 8%;  left: 33%; top: 33%; }
+.p15 { width: 9%;  height: 7%;  left: 55%; top: 36%; }
+
+/* Animaciones (solo transform) */
 @keyframes oc-drift {
   0%   { transform: translate3d(110vw,0,0); }
-  100% { transform: translate3d(-80vw,0,0); }
+  100% { transform: translate3d(-85vw,0,0); }
 }
 @keyframes oc-float {
   0%   { transform: translate3d(0,0,0); }
-  100% { transform: translate3d(0,1.6vh,0); }
+  100% { transform: translate3d(0,1.4vh,0); }
 }
 
 /* Responsivo */
 @media (max-width: 640px){
   #oc-drift{ top: 24vh; }
   .oc-cloud{
-    width: clamp(330px, 90vw, 560px);
-    height: clamp(140px, 34vw, 240px);
+    width: clamp(330px, 92vw, 560px);
+    height: clamp(140px, 36vw, 240px);
     margin-left: -46vw;
   }
-  .oc-puff{ filter: blur(10px); opacity:.9; }
-  .oc-soften{ filter: blur(12px); }
+  .oc-puff{ filter: blur(14px); opacity:.84; }
+  .oc-soften{ filter: blur(18px); }
 }
         `}</style>
       </body>
