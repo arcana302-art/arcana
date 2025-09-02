@@ -19,7 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${inter.variable} ${playfair.variable} min-h-screen antialiased relative`}
         style={{ background: "linear-gradient(180deg,#0a1120,#0b1530)", color: "#e5e7eb" }}
       >
-        {/* ===== CIELO (nubes + contenedor de estrellas) ===== */}
+        {/* ===== CIELO (nubes + contenedor de nuestras 10 estrellas) ===== */}
         <div id="sky" aria-hidden>
           <div id="stars"></div>
 
@@ -60,14 +60,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         {/* ===== ESTILOS ===== */}
         <style>{`
-/* Limpieza de overlays previos */
+/* 0) Limpieza de overlays que puedan interferir */
 #bg-root, .belt, .bank, .puffs, .cloud-svg, .nebula, .grain, .vignette { display: none !important; }
 
-/* --- SKY --- */
+/* 1) ANTI-STARFIELD GLOBAL (CSS) */
+/* Oculta pseudos comunes donde suelen dibujar puntitos */
+html::before, html::after, body::before, body::after { content: none !important; display: none !important; }
+/* Oculta cualquier cosa que huela a "stars"/"starfield"/twinkle/particles, salvo nuestras featured */
+:where(.starfield, .bg-stars, .twinkle, .twinkling, .particles, .particle, .dots){ display:none !important; }
+:where([id^="stars"], [class^="stars"], [class*=" stars"]){ display:none !important; }
+:where(.star){ display:none !important; }
+/* Rehabilita nuestro contenedor y nuestras estrellas */
+#sky #stars { display:block !important; }
+#sky .featured-star{ display:block !important; }
+
+/* 2) SKY y NUBES */
 #sky { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: visible; visibility: hidden; }
 #sky.ready { visibility: visible; }
 
-/* --- NUBES: desplazamiento + ascenso --- */
 .cloud-track { position: absolute; left: 0; width: 100%; will-change: transform; }
 .track-a { top: 12vh; animation: cloud-drift-a 150s linear infinite; animation-delay: -24s; }
 .track-c { top: 42vh; animation: cloud-drift-c 165s linear infinite; animation-delay: -36s; }
@@ -92,7 +102,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 @keyframes cloud-float-c { 0% { transform: translateY(0); } 100% { transform: translateY(1.1vh); } }
 @keyframes cloud-float-b { 0% { transform: translateY(0); } 100% { transform: translateY(1.5vh); } }
 
-/* Canvas de nube: sólido con halo leve */
+/* Canvas de nube (sólidas, halo leve) */
 .cloud, .veil, .glow { visibility: hidden; }
 .cloud {
   display:block;
@@ -131,14 +141,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 @keyframes glowPulse{ 0% { opacity:.38; transform: scale(1); } 100% { opacity:.52; transform: scale(1.03); } }
 
-/* ====== ESTRELLAS ====== */
-/* 1) Ocultar/neutralizar cualquier starfield externo (por si lo inyecta otra lib) */
-:where(.stars, #stars-bg, #starfield, #star-field, .starfield, .bg-stars){ display:none !important; }
-:where(.star, .twinkle, .particle){ display:none !important; }
-/* 2) Asegurar que nuestras 10 featured sí se vean */
-#sky .featured-star{ display:block !important; }
-
-/* Estilo de las 10 featured */
+/* 3) Estilo de nuestras 10 estrellas */
 .featured-star{
   position:absolute;
   width: var(--sz, 4.5px); height: var(--sz, 4.5px);
@@ -168,14 +171,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
         `}</style>
 
-        {/* ===== SCRIPT: Pinta nubes y muestra #sky (sin flash inicial) ===== */}
+        {/* ===== SCRIPT: Pinta nubes ===== */}
         <Script id="paint-clouds" strategy="afterInteractive">{`
 (function(){
   function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
   function smoothstep(e0,e1,x){ var t=clamp((x-e0)/(e1-e0),0,1); return t*t*(3-2*t); }
   function mix(a,b,t){ return a + (b - a) * t; }
-
-  // Perlin 2D
   var p=new Uint8Array(512);
   (function(){
     var perm=new Uint8Array(256); for(var i=0;i<256;i++) perm[i]=i;
@@ -193,7 +194,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     return lerp( lerp(grad(aa,xf,yf),   grad(ba,xf-1,yf),   u),
                  lerp(grad(ab,xf,yf-1), grad(bb,xf-1,yf-1), u), v );
   }
-
   function paintCloud(canvas, variant){
     try{
       var wCSS = canvas.offsetWidth || 600;
@@ -203,54 +203,38 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       var H = Math.max(170, Math.floor(hCSS));
       canvas.width  = Math.floor(W * dpi);
       canvas.height = Math.floor(H * dpi);
-
       var ctx = canvas.getContext("2d"); if(!ctx) return;
       var img = ctx.createImageData(canvas.width, canvas.height);
       var data = img.data;
 
       var s1=0.010, s2=0.020, s3=0.040;
       var w1=0.60, w2=0.28, w3=0.12, inv=1/(w1+w2+w3);
-
       var off = (variant===1) ? 5000 : (variant===2 ? 9000 : 0);
-
       var warpFreq = (variant===0) ? 0.0039 : (variant===1 ? 0.0043 : 0.0041);
       var warpAmp  = (variant===0) ? 2.0    : (variant===1 ? 2.2    : 2.1);
-
       var cx = canvas.width  * (variant===0?0.52 : variant===1?0.50 : 0.51);
       var cy = canvas.height * (variant===0?0.50 : variant===1?0.54 : 0.52);
       var rx = canvas.width  * (variant===0?0.60 : variant===1?0.58 : 0.59);
       var ry = canvas.height * (variant===0?0.46 : variant===1?0.44 : 0.45);
-      var featherIn  = (variant===0?0.90 : variant===1?0.90 : 0.90);
-      var featherOut = (variant===0?1.02 : variant===1?1.02 : 1.02);
-
+      var featherIn  = 0.90, featherOut = 1.02;
       var baseAlpha = (variant===0?0.82 : variant===1?0.84 : 0.83);
-
       var tiltX = (variant===0?0.06 : variant===1?0.07 : 0.065);
       var tiltY = (variant===0?-0.03: variant===1?-0.028 : -0.029);
-
-      var PURPLE = [210,175,255];
-      var PINK   = [255,125,205];
+      var PURPLE = [210,175,255], PINK = [255,125,205];
 
       for (var y=0; y<canvas.height; y++){
         for (var x=0; x<canvas.width; x++){
           var wx = perlin2((x+off)*warpFreq, (y+off)*warpFreq) * warpAmp;
           var wy = perlin2((x+1000+off)*warpFreq, (y-777+off)*warpFreq) * warpAmp;
-
           var nx = (x + y*tiltX + wx) * s1;
           var ny = (y + x*tiltY + wy) * s1;
-
-          var n1 = perlin2(nx, ny);
-          var n2 = perlin2(nx * (s2/s1), ny * (s2/s1));
-          var n3 = perlin2(nx * (s3/s1), ny * (s3/s1));
-          var n  = (w1*n1 + w2*n2 + w3*n3) * inv;
-          n = (n + 1) * 0.5;
+          var n1 = perlin2(nx, ny), n2 = perlin2(nx*(s2/s1), ny*(s2/s1)), n3 = perlin2(nx*(s3/s1), ny*(s3/s1));
+          var n  = (w1*n1 + w2*n2 + w3*n3) * inv; n = (n + 1) * 0.5;
 
           var dx=(x-cx)/rx, dy=(y-cy)/ry, r=Math.sqrt(dx*dx+dy*dy);
-          var mask = 1 - smoothstep(featherIn, featherOut, r);
-
-          var center = Math.max(0, 1 - r);
-          var centerBoost = 0.18 * center * center;
-          var a = smoothstep(0.38, 0.72, n) * mask * baseAlpha;
+          var mask = 1 - (function(e0,e1,x){var t=Math.max(0,Math.min(1,(x-e0)/(e1-e0))); return t*t*(3-2*t);})(featherIn,featherOut,r);
+          var center = Math.max(0, 1 - r), centerBoost = 0.18 * center * center;
+          var a = (function(e0,e1,x){var t=Math.max(0,Math.min(1,(x-e0)/(e1-e0))); return t*t*(3-2*t);})(0.38, 0.72, n) * mask * baseAlpha;
           a *= (0.90 + centerBoost);
 
           var u = x / canvas.width, v = y / canvas.height;
@@ -259,24 +243,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           var t1 = Math.min(0.50, wPurple * 0.50) * a;
           var t2 = Math.min(0.42, wPink   * 0.42) * a;
 
-          var rC = mix(255, PURPLE[0], t1);
-          var gC = mix(255, PURPLE[1], t1);
-          var bC = mix(255, PURPLE[2], t1);
-          rC = mix(rC, PINK[0], t2);
-          gC = mix(gC, PINK[1], t2);
-          bC = mix(bC, PINK[2], t2);
+          var rC = 255 + (PURPLE[0]-255)*t1; rC = rC + (PINK[0]-rC)*t2;
+          var gC = 255 + (PURPLE[1]-255)*t1; gC = gC + (PINK[1]-gC)*t2;
+          var bC = 255 + (PURPLE[2]-255)*t1; bC = bC + (PINK[2]-bC)*t2;
 
           var i=(y*canvas.width + x)*4;
-          data[i  ] = rC|0;
-          data[i+1] = gC|0;
-          data[i+2] = bC|0;
+          data[i  ] = rC|0; data[i+1] = gC|0; data[i+2] = bC|0;
           data[i+3] = Math.max(0, Math.min(255, Math.floor(a*255)));
         }
       }
       ctx.putImageData(img,0,0);
     }catch(e){}
   }
-
   function paintAll(){
     var a = document.getElementById('cloudA');
     var c = document.getElementById('cloudC');
@@ -284,29 +262,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     if (a) paintCloud(a, 0);
     if (c) paintCloud(c, 2);
     if (b) paintCloud(b, 1);
-
     var sky = document.getElementById('sky');
     if (sky){
       sky.classList.add('ready');
       sky.querySelectorAll('.cloud, .veil, .glow').forEach(function(el){ el.style.visibility = 'visible'; });
     }
   }
-
   function init(){
     paintAll();
     var to=null;
     window.addEventListener('resize', function(){ clearTimeout(to); to=setTimeout(paintAll, 120); }, {passive:true});
   }
-
-  if (document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', init, {once:true});
-  } else {
-    init();
-  }
+  if (document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', init, {once:true}); } else { init(); }
 })();
         `}</Script>
 
-        {/* ===== SCRIPT: Estrellas — borrar todo lo externo y dejar exactamente 10 ===== */}
+        {/* ===== SCRIPT: Mata-starfields externos + EXACTAMENTE 10 estrellas propias ===== */}
         <Script id="tune-stars" strategy="afterInteractive">{`
 (function () {
   function createStar(parent){
@@ -327,46 +298,59 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     s.style.left = left.toFixed(2)+'vw';
     s.style.animationDelay = delay.toFixed(2)+'s';
   }
-  function isTiny(el){
+  function isFullScreen(el){
+    const st = getComputedStyle(el);
     const w = el.offsetWidth, h = el.offsetHeight;
-    return w && h && w <= 14 && h <= 14;
+    const fixed = st.position === 'fixed' || st.position === 'absolute';
+    return fixed && w > window.innerWidth * 0.8 && h > window.innerHeight * 0.8;
   }
   function nukeForeignStars(){
-    // Elimina cualquier campo de estrellas común fuera/dentro de #sky
-    const selectors = [
-      '.star', '.stars', '.twinkle', '.particle',
-      '#starfield', '#star-field', '.starfield', '.bg-stars'
-    ];
-    document.querySelectorAll(selectors.join(',')).forEach(n => {
-      // no borres nuestras featured nuevas (aún no existen), y evita borrar íconos grandes
+    const killSel = [
+      // ids/clases típicos de starfields
+      '#stars2', '#stars3', '.stars2', '.stars3',
+      '.starfield', '.bg-stars', '.twinkle', '.twinkling',
+      '.particles', '.particle', '.dots'
+    ].join(',');
+    document.querySelectorAll(killSel).forEach(n => { try { n.remove(); } catch(e){} });
+
+    // Elimina nodos con nombres que contienen "star" (excepto nuestro #sky subtree)
+    document.querySelectorAll('[id*="star"], [class*="star"]').forEach(n => {
+      if (n.closest('#sky')) return;
       if (n.classList.contains('featured-star')) return;
-      if (isTiny(n) || n.matches('.stars, #starfield, #star-field, .starfield, .bg-stars')) {
-        try { n.remove(); } catch(e){}
+      try { n.remove(); } catch(e){}
+    });
+
+    // Cualquier lienzo/capa fullscreen decorativa que no sea #sky
+    document.querySelectorAll('canvas, div, span').forEach(n => {
+      if (n.closest('#sky')) return;
+      if (isFullScreen(n)) {
+        const name = (n.id + ' ' + n.className).toLowerCase();
+        if (name.includes('star') || name.includes('twink') || name.includes('particle') || name.includes('dots')) {
+          try { n.remove(); } catch(e){}
+        }
       }
     });
   }
-  function apply(){
-    const sky = document.getElementById('sky');
-    if (!sky) return;
+  function ensureTenStars(){
+    const sky = document.getElementById('sky'); if (!sky) return;
     const holder = document.getElementById('stars') || sky;
 
-    nukeForeignStars(); // limpia todo lo existente
+    // Limpia cualquier resto en nuestro cielo (menos nuestras featured nuevas)
+    sky.querySelectorAll('.featured-star').forEach(n => n.remove());
 
-    // Por si quedaron puntos dentro del cielo con otras clases
-    sky.querySelectorAll('.star, .twinkle, .particle, .featured-star').forEach(n => {
-      if (!n.classList.contains('featured-star') || isTiny(n)) { try { n.remove(); } catch(e){} }
-    });
-
-    // Crea EXACTAMENTE 10
     const N = 10;
-    for (let i=0; i<N; i++) randomizeStar(createStar(holder));
+    for (let i=0;i<N;i++) randomizeStar(createStar(holder));
+  }
+  function apply(){
+    nukeForeignStars();
+    ensureTenStars();
   }
   function init(){
     apply();
-    const target = document.body; // observa todo el documento por si reinjectan
+    // Observa TODO el documento por si algún script re-inyecta estrellas
     let t;
-    new MutationObserver(() => { clearTimeout(t); t = setTimeout(apply, 250); })
-      .observe(target, { childList: true, subtree: true });
+    new MutationObserver(() => { clearTimeout(t); t = setTimeout(apply, 200); })
+      .observe(document.documentElement, { childList: true, subtree: true });
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init, { once:true });
