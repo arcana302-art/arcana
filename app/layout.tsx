@@ -19,9 +19,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${inter.variable} ${playfair.variable} min-h-screen antialiased relative`}
         style={{ background: "linear-gradient(180deg,#0a1120,#0b1530)", color: "#e5e7eb" }}
       >
-        {/* ===== CIELO ===== */}
+        {/* ===== CIELO (nubes + estrellas) ===== */}
         <div id="sky" aria-hidden>
-          {/* contenedor opcional para nuestras 10 estrellas si hicieran falta */}
+          {/* Contenedor para las 10 estrellas */}
           <div id="stars"></div>
 
           {/* Nube superior */}
@@ -34,6 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </div>
             </div>
           </div>
+
           {/* Nube central */}
           <div className="cloud-track track-c">
             <div className="rise rise-c">
@@ -44,6 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </div>
             </div>
           </div>
+
           {/* Nube inferior */}
           <div className="cloud-track track-b">
             <div className="rise rise-b">
@@ -61,14 +63,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         {/* ===== ESTILOS ===== */}
         <style>{`
-/* Limpieza de restos previos molestos */
+/* Limpieza de restos que puedan interferir */
 #bg-root, .belt, .bank, .puffs, .cloud-svg, .nebula, .grain, .vignette { display: none !important; }
 
 /* --- SKY --- */
 #sky { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: visible; visibility: hidden; }
 #sky.ready { visibility: visible; }
 
-/* --- NUBES: loop continuo, visibles al instante con delays negativos --- */
+/* --- NUBES: desplazamiento + ascenso --- */
 .cloud-track { position: absolute; left: 0; width: 100%; will-change: transform; }
 .track-a { top: 12vh; animation: cloud-drift-a 150s linear infinite; animation-delay: -24s; }
 .track-c { top: 42vh; animation: cloud-drift-c 165s linear infinite; animation-delay: -36s; }
@@ -78,16 +80,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 @keyframes cloud-drift-c { 0% { transform: translateX(112vw); } 100% { transform: translateX(-102vw); } }
 @keyframes cloud-drift-b { 0% { transform: translateX(115vw); } 100% { transform: translateX(-105vw); } }
 
-/* Ascenso (la inferior recorre más) */
 .rise-a { animation: cloud-rise-a 150s linear infinite; }
 .rise-c { animation: cloud-rise-c 165s linear infinite; }
 .rise-b { animation: cloud-rise-b 180s linear infinite; }
-
 @keyframes cloud-rise-a { 0% { transform: translateY(1.5vh); } 100% { transform: translateY(-2.4vh); } }
 @keyframes cloud-rise-c { 0% { transform: translateY(10vh); } 100% { transform: translateY(-22vh); } }
 @keyframes cloud-rise-b { 0% { transform: translateY(24vh); } 100% { transform: translateY(-80vh); } }
 
-/* Flotación sutil */
 .cloud-wrap { position: relative; will-change: transform; }
 .wrap-a { animation: cloud-float-a 17s ease-in-out infinite alternate; }
 .wrap-c { animation: cloud-float-c 19s ease-in-out infinite alternate; }
@@ -96,8 +95,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 @keyframes cloud-float-c { 0% { transform: translateY(0); } 100% { transform: translateY(1.1vh); } }
 @keyframes cloud-float-b { 0% { transform: translateY(0); } 100% { transform: translateY(1.5vh); } }
 
-/* Canvas de nube: base nítida (sin niebla), halo leve morado/rosa */
-.cloud, .veil, .glow { visibility: hidden; } /* se muestran cuando #sky está listo */
+/* Canvas de nube: sólido (sin niebla), halo leve */
+.cloud, .veil, .glow { visibility: hidden; }
 .cloud {
   display:block;
   width: min(42vw, 700px);
@@ -112,7 +111,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 .cloud-c { width: min(56vw, 920px); height: calc(min(56vw, 920px) * 0.40625); opacity: .80; transform: scale(1.01); }
 .cloud-b { width: min(62vw, 980px); height: calc(min(62vw, 980px) * 0.40625); opacity: .82; transform: scale(1.02); }
 
-/* Velo de luz (contorno morado/rosa, NO niebla) */
 .veil {
   position:absolute; inset:-10% -6%;
   mix-blend-mode: screen;
@@ -123,8 +121,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   filter: blur(8px);
   pointer-events:none;
 }
-
-/* Glow suave */
 .glow{
   position:absolute; inset:-22% -14%;
   mix-blend-mode: screen;
@@ -138,7 +134,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 @keyframes glowPulse{ 0% { opacity:.38; transform: scale(1); } 100% { opacity:.52; transform: scale(1.03); } }
 
-/* ====== ESTRELLAS (solo las "featured") ====== */
+/* ====== ESTRELLAS ====== */
+/* Forzar que cualquier .star no-featured no se muestre (backup) */
+#sky .star:not(.featured-star) { display: none !important; }
+/* Estética de las 10 estrellas featured */
 .featured-star{
   position:absolute;
   width: var(--sz, 4.5px); height: var(--sz, 4.5px);
@@ -148,7 +147,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     radial-gradient(circle at 50% 50%, rgba(168,85,247,.55) 0%, rgba(168,85,247,0) 70%),
     radial-gradient(circle at 50% 50%, rgba(244,114,182,.45) 0%, rgba(244,114,182,0) 78%);
   filter: drop-shadow(0 0 12px rgba(255,255,255,.85)) drop-shadow(0 0 22px rgba(168,85,247,.55));
-  animation: featuredTwinkle var(--ftDur, 16s) ease-in-out infinite !important;
+  animation: featuredTwinkle var(--ftDur, 16s) ease-in-out infinite;
 }
 @keyframes featuredTwinkle {
   0%, 10%  { opacity: 0; }
@@ -168,7 +167,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
         `}</style>
 
-        {/* ===== SCRIPT: Pinta nubes y muestra #sky (sin flash) ===== */}
+        {/* ===== SCRIPT: Pinta nubes y muestra #sky (sin flash inicial) ===== */}
         <Script id="paint-clouds" strategy="afterInteractive">{`
 (function(){
   function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
@@ -306,96 +305,56 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 })();
         `}</Script>
 
-        {/* ===== SCRIPT: Estrellas → conservar ~10% (mínimo 10), todas "featured" ===== */}
+        {/* ===== SCRIPT: Estrellas — EXACTAMENTE 10 (dim lento) ===== */}
         <Script id="tune-stars" strategy="afterInteractive">{`
-(function(){
-  function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=(Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]];} return a; }
-  function createFeatured(parent){
-    const s=document.createElement('span');
-    s.className='featured-star';
+(function () {
+  function createStar(parent){
+    const s = document.createElement('span');
+    s.className = 'featured-star';
     parent.appendChild(s);
     return s;
   }
   function randomizeStar(s){
-    const size = 3.8 + Math.random()*2.0;       // 3.8 - 5.8 px
-    const top  = Math.random()*100;             // vh
-    const left = Math.random()*100;             // vw
-    const dur  = 12 + Math.random()*10;         // 12 - 22s
-    const delay= -Math.random()*dur;            // desincroniza
+    const size  = 4 + Math.random()*1.8;   // 4–5.8px
+    const dur   = 12 + Math.random()*10;   // 12–22s
+    const delay = -Math.random()*dur;      // desincroniza
+    const top   = Math.random()*100;       // vh
+    const left  = Math.random()*100;       // vw
     s.style.setProperty('--sz', size.toFixed(2)+'px');
     s.style.setProperty('--ftDur', dur.toFixed(2)+'s');
     s.style.top  = top.toFixed(2)+'vh';
     s.style.left = left.toFixed(2)+'vw';
     s.style.animationDelay = delay.toFixed(2)+'s';
   }
-
-  function adjustStars(){
-    const sky = document.getElementById('sky');
-    if(!sky) return;
-
-    // Buscar SOLO dentro del cielo (para no tocar íconos del contenido)
-    let list = sky.querySelectorAll('.star, .featured-star');
-    let stars = Array.prototype.slice.call(list);
-
-    // Si tu proyecto genera otras .star en el DOM del cielo, se incluyen aquí
-    // Mantener ~10% del total actual, con mínimo 10
-    const total = stars.length;
-    const minFeatured = 10;
-    const target = Math.max(minFeatured, Math.ceil(total * 0.10));
-
-    // 1) Si hay más de target, recortar
-    if (total > target){
-      // prioriza conservar las .featured-star y recorta las demás primero
-      const featured = stars.filter(el => el.classList.contains('featured-star'));
-      const nonFeatured = stars.filter(el => !el.classList.contains('featured-star'));
-      const survivors = [];
-
-      // toma la cantidad que quepa de featured primero
-      const keepFeatured = Math.min(featured.length, target);
-      survivors.push(...featured.slice(0, keepFeatured));
-
-      // rellena con no-featured hasta target
-      const need = target - survivors.length;
-      if (need > 0) survivors.push(...nonFeatured.slice(0, need));
-
-      // elimina el resto
-      const survivorSet = new Set(survivors);
-      stars.forEach(el => { if (!survivorSet.has(el)) { try{ el.remove(); }catch(e){} } });
-
-      stars = survivors;
-    }
-
-    // 2) Si hay menos de target, crear las que falten dentro de #stars
-    if (stars.length < target){
-      const holder = document.getElementById('stars') || sky;
-      const missing = target - stars.length;
-      for (let i=0;i<missing;i++){
-        const s = createFeatured(holder);
-        stars.push(s);
-      }
-    }
-
-    // 3) Marcar TODAS las sobrevivientes/creadas como "featured" (las 10 ó el target)
-    stars.forEach(el => el.classList.add('featured-star'));
-
-    // 4) Parametrizar y desincronizar
-    stars.forEach(randomizeStar);
+  function isStarLike(el){
+    const w = el.offsetWidth, h = el.offsetHeight;
+    return w && h && w <= 14 && h <= 14;
   }
+  function apply(){
+    const sky = document.getElementById('sky');
+    if (!sky) return;
+    const holder = document.getElementById('stars') || sky;
 
+    // Eliminar TODAS las estrellas actuales dentro del cielo
+    const nodes = sky.querySelectorAll('.star, .featured-star');
+    [...nodes].forEach(n => { if (isStarLike(n)) { try { n.remove(); } catch(e){} } });
+
+    // Crear EXACTAMENTE 10 nuevas "featured"
+    const N = 10;
+    for (let i=0; i<N; i++) randomizeStar(createStar(holder));
+  }
   function init(){
-    adjustStars();
-    // Si otro script vuelve a inyectar estrellas, reaplicar
+    apply();
     const sky = document.getElementById('sky');
     if (!sky) return;
     let t;
-    new MutationObserver(function(){
+    new MutationObserver(() => {
       clearTimeout(t);
-      t = setTimeout(adjustStars, 250);
-    }).observe(sky, {childList: true, subtree: true});
+      t = setTimeout(apply, 200);
+    }).observe(sky, { childList: true, subtree: true });
   }
-
-  if (document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', init, {once:true});
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once:true });
   } else {
     init();
   }
@@ -405,4 +364,3 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
-
