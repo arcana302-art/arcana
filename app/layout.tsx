@@ -15,6 +15,47 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" className="h-full">
+      {/* ===== HEAD: ESCUDO ANTI-FLASH DE STARFIELDS ===== */}
+      <head>
+        <style id="arcana-star-shield">{`
+/* Oculta cualquier starfield ajeno desde el primer milisegundo */
+#stars2,#stars3,.stars2,.stars3,.starfield,.bg-stars,.twinkle,.twinkling,.particles,.particle,.dots,
+[id^="star"],[id$="star"],[id*="star-"],[id*="-star"],[class^="star"],[class$="star"],[class*=" star "],
+[class*="star-"],[class*="-star"]{
+  display: none !important;
+  animation: none !important;
+  transition: none !important;
+}
+/* Permitimos explícitamente nuestras estrellas propias si ya existen */
+#sky .featured-star{ display:block !important; }
+        `}</style>
+
+        {/* Pre-nuke ultra temprano para borrar inyecciones antes de pintar */}
+        <Script id="pre-nuke-stars" strategy="beforeInteractive">{`
+(function(){
+  function nuke(){
+    var sky = document.getElementById('sky');
+    var killSel = '#stars2,#stars3,.stars2,.stars3,.starfield,.bg-stars,.twinkle,.twinkling,.particles,.particle,.dots';
+    document.querySelectorAll(killSel).forEach(function(n){
+      if (!sky || !sky.contains(n)) { try{ n.remove(); }catch(e){} }
+    });
+    // Quita elementos con "star" en id/clase fuera de #sky (sin tocar nuestras featured)
+    document.querySelectorAll('[id*="star"],[class*="star"]').forEach(function(n){
+      if (sky && sky.contains(n)) return;
+      if (n.classList && n.classList.contains('featured-star')) return;
+      try{ n.remove(); }catch(e){}
+    });
+  }
+  nuke();
+  // Observa durante el arranque para evitar FOUC
+  var mo = new MutationObserver(nuke);
+  mo.observe(document.documentElement,{childList:true,subtree:true});
+  // Desconecta tras la carga inicial
+  window.addEventListener('load', function(){ setTimeout(function(){ mo.disconnect(); }, 2000); });
+})();
+        `}</Script>
+      </head>
+
       <body
         className={`${inter.variable} ${playfair.variable} min-h-screen antialiased relative`}
         style={{ background: "linear-gradient(180deg,#0a1120,#0b1530)", color: "#e5e7eb" }}
@@ -63,7 +104,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 /* Limpieza de overlays que puedan interferir */
 #bg-root, .belt, .bank, .puffs, .cloud-svg, .nebula, .grain, .vignette { display: none !important; }
 
-/* BLOQUEO AGRESIVO DE STARFIELDS EXTERNOS */
+/* BLOQUEO AGRESIVO DE STARFIELDS EXTERNOS (refuerzo en runtime) */
 html::before, html::after, body::before, body::after { content: none !important; display: none !important; }
 :where(.starfield, .bg-stars, .twinkle, .twinkling, .particles, .particle, .dots){ display:none !important; }
 :where([id^="stars"], [class^="stars"], [class*=" stars"], [id*="starfield"], [class*="starfield"]){ display:none !important; }
@@ -142,7 +183,7 @@ html::before, html::after, body::before, body::after { content: none !important;
 }
 @keyframes glowPulse{ 0% { opacity:.38; transform: scale(1); } 100% { opacity:.52; transform: scale(1.03); } }
 
-/* ===== Estrellas — DIM LENTO (45–90s) + GLOW (un poco más intenso) ===== */
+/* ===== Estrellas — DIM LENTO (45–90s) + GLOW ===== */
 .featured-star{
   position:absolute;
   width: var(--sz, 4.5px); height: var(--sz, 4.5px);
@@ -152,7 +193,6 @@ html::before, html::after, body::before, body::after { content: none !important;
     radial-gradient(circle at 50% 50%, rgba(255,255,255,1) 0%, rgba(255,255,255,.95) 28%, rgba(255,255,255,0) 62%),
     radial-gradient(circle at 50% 50%, rgba(168,85,247,.58) 0%, rgba(168,85,247,0) 70%),
     radial-gradient(circle at 50% 50%, rgba(244,114,182,.48) 0%, rgba(244,114,182,0) 78%);
-  /* Glow base ligeramente más fuerte */
   filter:
     drop-shadow(0 0 12px rgba(255,255,255,.75))
     drop-shadow(0 0 22px rgba(168,85,247,.55))
@@ -166,12 +206,12 @@ html::before, html::after, body::before, body::after { content: none !important;
   animation-fill-mode: both;
   animation-delay: var(--twDelay, 0s);
 }
-/* ★ Halos (más amplios y con más blur/opacidad) */
+/* Halos más amplios e intensos */
 #sky .featured-star::before,
 #sky .featured-star::after{
   content: "" !important;
   position: absolute;
-  inset: -14px;                 /* antes -10px → halo más grande */
+  inset: -14px;
   border-radius: 999px;
   pointer-events: none;
   background:
@@ -181,19 +221,18 @@ html::before, html::after, body::before, body::after { content: none !important;
       rgba(168,85,247,.36) 44%,
       rgba(244,114,182,.28) 60%,
       rgba(255,255,255,0) 80%);
-  filter: blur(14px);           /* antes 10px */
-  opacity: .92;                 /* antes .85 */
+  filter: blur(14px);
+  opacity: .92;
   animation: starHalo var(--ftDur, 80s) cubic-bezier(.42,0,.58,1) infinite;
   animation-delay: var(--twDelay, 0s);
 }
-/* halo exterior aún más suave/amplio */
 #sky .featured-star::after{
-  inset: -24px;                 /* antes -18px */
-  filter: blur(24px);           /* antes 16px */
-  opacity: .72;                 /* antes .55 */
+  inset: -24px;
+  filter: blur(24px);
+  opacity: .72;
 }
 
-/* Curva lenta del titileo */
+/* Curvas de animación */
 @keyframes featuredTwinkle {
   0%   { opacity: 0;   }
   30%  { opacity: .18; }
@@ -201,11 +240,10 @@ html::before, html::after, body::before, body::after { content: none !important;
   75%  { opacity: .92; }
   100% { opacity: 0;   }
 }
-/* El halo acompaña con leve respiración (un pelín más brillante) */
 @keyframes starHalo {
   0%   { opacity: .25; transform: scale(0.96); }
   35%  { opacity: .60; transform: scale(1.00); }
-  60%  { opacity: .96; transform: scale(1.06); } /* antes .90 */
+  60%  { opacity: .96; transform: scale(1.06); }
   80%  { opacity: .70; transform: scale(1.02); }
   100% { opacity: .30; transform: scale(0.96); }
 }
@@ -224,14 +262,9 @@ html::before, html::after, body::before, body::after { content: none !important;
         {/* ===== SCRIPT: Pinta nubes ===== */}
         <Script id="paint-clouds" strategy="afterInteractive">{`
 (function(){
-  function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
   function smoothstep(e0,e1,x){ var t=Math.max(0,Math.min(1,(x-e0)/(e1-e0))); return t*t*(3-2*t); }
-  function mix(a,b,t){ return a + (b - a) * t; }
-
-  // Perlin 2D
   var p=new Uint8Array(512);
-  (function(){
-    var perm=new Uint8Array(256); for(var i=0;i<256;i++) perm[i]=i;
+  (function(){ var perm=new Uint8Array(256); for(var i=0;i<256;i++) perm[i]=i;
     var seed=1337; function rnd(){ seed=(seed*1664525+1013904223)>>>0; return seed/4294967296; }
     for(var i=255;i>0;i--){ var r=Math.floor(rnd()*(i+1)); var t=perm[i]; perm[i]=perm[r]; perm[r]=t; }
     for(var j=0;j<512;j++) p[j]=perm[j&255];
@@ -239,14 +272,12 @@ html::before, html::after, body::before, body::after { content: none !important;
   function fade(t){ return t*t*t*(t*(t*6-15)+10); }
   function lerp(a,b,t){ return a+t*(b-a); }
   function grad(h,x,y){ var g=h&3, u=g<2?x:y, v=g<2?y:x; return ((g&1)?-u:u)+((g&2)?-v:v); }
-  function perlin2(x,y){
-    var X=Math.floor(x)&255, Y=Math.floor(y)&255, xf=x-Math.floor(x), yf=y-Math.floor(y);
+  function perlin2(x,y){ var X=Math.floor(x)&255, Y=Math.floor(y)&255, xf=x-Math.floor(x), yf=y-Math.floor(y);
     var u=fade(xf), v=fade(yf);
     var aa=p[X+p[Y]], ab=p[X+p[Y+1]], ba=p[X+1+p[Y]], bb=p[X+1+p[Y+1]];
     return lerp( lerp(grad(aa,xf,yf),   grad(ba,xf-1,yf),   u),
                  lerp(grad(ab,xf,yf-1), grad(bb,xf-1,yf-1), u), v );
   }
-
   function paintCloud(canvas, variant){
     try{
       var wCSS = canvas.offsetWidth || 600;
@@ -256,27 +287,21 @@ html::before, html::after, body::before, body::after { content: none !important;
       var H = Math.max(170, Math.floor(hCSS));
       canvas.width  = Math.floor(W * dpi);
       canvas.height = Math.floor(H * dpi);
-
       var ctx = canvas.getContext("2d"); if(!ctx) return;
       var img = ctx.createImageData(canvas.width, canvas.height);
       var data = img.data;
 
       var s1=0.010, s2=0.020, s3=0.040;
       var w1=0.60, w2=0.28, w3=0.12, inv=1/(w1+w2+w3);
-
       var off = (variant===1) ? 5000 : (variant===2 ? 9000 : 0);
       var warpFreq = (variant===0) ? 0.0039 : (variant===1 ? 0.0043 : 0.0041);
       var warpAmp  = (variant===0) ? 2.0    : (variant===1 ? 2.2    : 2.1);
-
       var cx = canvas.width  * (variant===0?0.52 : variant===1?0.50 : 0.51);
       var cy = canvas.height * (variant===0?0.50 : variant===1?0.54 : 0.52);
       var rx = canvas.width  * (variant===0?0.60 : variant===1?0.58 : 0.59);
       var ry = canvas.height * (variant===0?0.46 : variant===1?0.44 : 0.45);
-
       var baseAlpha = (variant===0?0.82 : variant===1?0.84 : 0.83);
-
-      var PURPLE = [210,175,255];
-      var PINK   = [255,125,205];
+      var PURPLE=[210,175,255], PINK=[255,125,205];
 
       for (var y=0; y<canvas.height; y++){
         for (var x=0; x<canvas.width; x++){
@@ -291,18 +316,18 @@ html::before, html::after, body::before, body::after { content: none !important;
 
           var dx=(x-cx)/rx, dy=(y-cy)/ry, r=Math.sqrt(dx*dx+dy*dy);
           var mask = 1 - smoothstep(0.90, 1.02, r);
+          var center = Math.max(0, 1 - r), centerBoost = 0.18 * center * center;
 
-          var center = Math.max(0, 1 - r);
-          var centerBoost = 0.18 * center * center;
-
-          var a = smoothstep(0.38, 0.72, n) * mask * baseAlpha;
-          a *= (0.90 + centerBoost);
+          var a = (function(v){
+            v = (v + 1) * 0.5;
+            v = v*v*(3-2*v);
+            return v;
+          })(n);
+          a = a * mask * baseAlpha * (0.90 + centerBoost);
 
           var u = x / canvas.width, v = y / canvas.height;
-
           var wPurple = Math.exp(-(Math.pow((u-0.26)/0.24, 2) + Math.pow((v-0.38)/0.30, 2)));
           var wPink   = Math.exp(-(Math.pow((u-0.74)/0.26, 2) + Math.pow((v-0.60)/0.32, 2)));
-
           var t1 = Math.min(0.50, wPurple * 0.50) * a;
           var t2 = Math.min(0.42, wPink   * 0.42) * a;
 
@@ -311,16 +336,13 @@ html::before, html::after, body::before, body::after { content: none !important;
           var bC = 255 + (PURPLE[2]-255)*t1; bC = bC + (PINK[2]-bC)*t2;
 
           var i=(y*canvas.width + x)*4;
-          data[i  ] = rC|0;
-          data[i+1] = gC|0;
-          data[i+2] = bC|0;
+          data[i  ] = rC|0; data[i+1] = gC|0; data[i+2] = bC|0;
           data[i+3] = Math.max(0, Math.min(255, Math.floor(a*255)));
         }
       }
       ctx.putImageData(img,0,0);
     }catch(e){}
   }
-
   function paintAll(){
     var a = document.getElementById('cloudA');
     var c = document.getElementById('cloudC');
@@ -328,93 +350,69 @@ html::before, html::after, body::before, body::after { content: none !important;
     if (a) paintCloud(a, 0);
     if (c) paintCloud(c, 2);
     if (b) paintCloud(b, 1);
-
     var sky = document.getElementById('sky');
     if (sky){
       sky.classList.add('ready');
       sky.querySelectorAll('.cloud, .veil, .glow').forEach(function(el){ el.style.visibility = 'visible'; });
     }
   }
-
   function init(){
     paintAll();
     var to=null;
     window.addEventListener('resize', function(){ clearTimeout(to); to=setTimeout(paintAll, 120); }, {passive:true});
   }
-
-  if (document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', init, {once:true});
-  } else {
-    init();
-  }
+  if (document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', init, {once:true}); } else { init(); }
 })();
         `}</Script>
 
         {/* ===== SCRIPT: Limpiar starfields externos y crear 10 estrellas UNA SOLA VEZ ===== */}
         <Script id="tune-stars" strategy="afterInteractive">{`
 (function () {
-  // Elimina campos de puntitos ajenos (sin tocar nuestras featured)
   function nukeForeign(){
     const sky = document.getElementById('sky');
     const killSel = '#stars2,#stars3,.stars2,.stars3,.starfield,.bg-stars,.twinkle,.twinkling,.particles,.particle,.dots';
     document.querySelectorAll(killSel).forEach(n => { if (!sky || !sky.contains(n)) try{ n.remove(); }catch(e){} });
     document.querySelectorAll('[id*="star"], [class*="star"]').forEach(n => {
       if (sky && sky.contains(n)) return;
-      if (n.classList.contains('featured-star')) return;
+      if (n.classList && n.classList.contains('featured-star')) return;
       try { n.remove(); } catch(e){}
     });
   }
-
-  // Crea exactamente N estrellas si faltan, sin borrar las existentes (evita "blink")
   function ensureStars(N){
     const sky = document.getElementById('sky'); if (!sky) return;
     const holder = document.getElementById('stars') || sky;
     const curr = holder.querySelectorAll('.featured-star');
     const need = N - curr.length;
     if (need <= 0) return;
-
     for (let i=0; i<need; i++){
       const s = document.createElement('span');
       s.className = 'featured-star';
-      // ★ Duración aleatoria lenta: 45–90s
-      const dur   = 45 + Math.random()*45;
+      const dur   = 45 + Math.random()*45;  // 45–90s
       const size  = 4 + Math.random()*1.8;
       const top   = Math.random()*100;
       const left  = Math.random()*100;
       const delay = -Math.random()*dur;
-
-      // tamaño/posicion
       s.style.setProperty('--sz', size.toFixed(2)+'px');
       s.style.top  = top.toFixed(2)+'vh';
       s.style.left = left.toFixed(2)+'vw';
-
-      // tiempo
       s.style.setProperty('--ftDur', dur.toFixed(2)+'s');
-      s.style.setProperty('--twDelay', delay.toFixed(2)+'s'); // para halo y estrella
+      s.style.setProperty('--twDelay', delay.toFixed(2)+'s');
       s.style.animationDelay = delay.toFixed(2)+'s';
-
       holder.appendChild(s);
     }
   }
-
   function init(){
-    // 1) Crear nuestras estrellas UNA sola vez (sin recrearlas)
     ensureStars(10);
-    // 2) Limpiar starfields externos ahora y cuando se inserten nuevos nodos
     nukeForeign();
     const mo = new MutationObserver(() => { nukeForeign(); });
     mo.observe(document.documentElement, { childList: true, subtree: true });
-
-    // Reintentos por cargas diferidas (no recrea estrellas)
     setTimeout(nukeForeign, 800);
     setTimeout(nukeForeign, 2500);
+    // quitamos el escudo CSS una vez estable (opcional)
+    const shield = document.getElementById('arcana-star-shield');
+    if (shield) { setTimeout(() => { try{ shield.remove(); }catch(e){} }, 1200); }
   }
-
-  if (document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', init, { once:true });
-  } else {
-    init();
-  }
+  if (document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', init, { once:true }); } else { init(); }
 })();
         `}</Script>
       </body>
