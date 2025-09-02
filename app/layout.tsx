@@ -19,7 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${inter.variable} ${playfair.variable} min-h-screen antialiased relative`}
         style={{ background: "linear-gradient(180deg,#0a1120,#0b1530)", color: "#e5e7eb" }}
       >
-        {/* ===== CIELO (dos nubes; inferior con ASCENSO ÉPICO; color intenso) ===== */}
+        {/* ===== CIELO (dos nubes; inferior con ascenso épico; color intenso + glow) ===== */}
         <div id="sky" aria-hidden>
           {/* Nube superior */}
           <div className="cloud-track track-a">
@@ -27,6 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <div className="cloud-wrap wrap-a">
                 <canvas id="cloudA" className="cloud cloud-a" />
                 <div className="veil veil-a" />
+                <div className="glow glow-a" />
               </div>
             </div>
           </div>
@@ -36,6 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <div className="cloud-wrap wrap-b">
                 <canvas id="cloudB" className="cloud cloud-b" />
                 <div className="veil veil-b" />
+                <div className="glow glow-b" />
               </div>
             </div>
           </div>
@@ -69,7 +71,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 
 /* ------ Ascenso vertical (solo Y) ------ */
-/* Superior: discreto. Inferior: ÉPICO y sincronizado (misma duración que drift-b) */
 .rise { will-change: transform; }
 .rise-a { animation: cloud-rise-a 150s linear infinite; }
 .rise-b { animation: cloud-rise-b 180s linear infinite; animation-delay: 4s; }
@@ -79,7 +80,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   100% { transform: translateY(-2.4vh); }
 }
 @keyframes cloud-rise-b {
-  /* Recorre ~104vh (de +24vh a -80vh) para que se note SIEMPRE */
+  /* ~104vh de ascenso real */
   0%   { transform: translateY(24vh); }
   100% { transform: translateY(-80vh); }
 }
@@ -106,8 +107,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   aspect-ratio: 16 / 6.5;
   background:
     radial-gradient(60% 50% at 50% 52%, rgba(255,255,255,.26) 0%, rgba(255,255,255,.13) 45%, rgba(255,255,255,0) 72%),
-    radial-gradient(40% 50% at 28% 40%, rgba(205,170,255,0.12), transparent 70%),
-    radial-gradient(42% 52% at 72% 62%, rgba(255,135,205,0.10), transparent 72%);
+    radial-gradient(40% 50% at 28% 40%, rgba(210,175,255,0.12), transparent 70%),
+    radial-gradient(42% 52% at 72% 62%, rgba(255,125,205,0.10), transparent 72%);
   filter: blur(24px) drop-shadow(0 10px 22px rgba(0,0,0,.12));
   border-radius: 9999px/60%;
 }
@@ -129,17 +130,36 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 .veil {
   position:absolute; inset: -14% -8%;
   background:
-    radial-gradient(48% 60% at 24% 42%, rgba(168,85,247,0.34), transparent 64%),   /* morado ++ */
-    radial-gradient(52% 62% at 74% 62%, rgba(244,114,182,0.30), transparent 66%),  /* rosa ++  */
-    radial-gradient(86% 74% at 50% 52%, rgba(255,255,255,.12), transparent 82%);   /* halo blanco */
+    radial-gradient(50% 62% at 24% 42%, rgba(168,85,247,0.44), transparent 66%),   /* morado +++ */
+    radial-gradient(54% 64% at 74% 62%, rgba(244,114,182,0.36), transparent 68%),  /* rosa +++  */
+    radial-gradient(88% 76% at 50% 52%, rgba(255,255,255,.14), transparent 84%);   /* halo blanco */
   mix-blend-mode: screen;
   filter: blur(12px);
   pointer-events:none;
 }
 
+/* Glow extra (pulso suave) */
+.glow{
+  position:absolute; inset:-26% -18%;
+  mix-blend-mode: screen;
+  background:
+    radial-gradient(45% 55% at 30% 40%, rgba(168,85,247,0.40), transparent 70%),
+    radial-gradient(48% 58% at 70% 64%, rgba(244,114,182,0.34), transparent 72%);
+  filter: blur(26px);
+  animation: glowPulse 5.8s ease-in-out infinite alternate;
+  pointer-events:none;
+}
+.glow-a{ opacity:.55; }
+.glow-b{ opacity:.62; }
+
+@keyframes glowPulse{
+  0% { opacity:.45; transform: scale(1); }
+  100% { opacity:.75; transform: scale(1.04); }
+}
+
 /* Reduce motion */
 @media (prefers-reduced-motion: reduce){
-  .cloud-track, .rise, .cloud-wrap { animation: none !important; transform: translate3d(0,0,0) !important; }
+  .cloud-track, .rise, .cloud-wrap, .glow { animation: none !important; transform: translate3d(0,0,0) !important; }
 }
 
 /* Responsivo */
@@ -152,7 +172,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
         `}</style>
 
-        {/* ===== SCRIPT: pinta ambas nubes con color morado/rosa INTENSO ===== */}
+        {/* ===== SCRIPT: pinta ambas nubes con color morado/rosa MUY INTENSO ===== */}
         <Script id="paint-clouds" strategy="afterInteractive">{`
 (function(){
   function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
@@ -180,7 +200,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   function paintCloud(canvas, variant){
     try{
-      // medidas robustas
       var wCSS = canvas.offsetWidth || 600;
       var hCSS = canvas.offsetHeight || Math.round(wCSS * 0.40625);
       var dpi  = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
@@ -197,10 +216,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       var s1=0.010, s2=0.020, s3=0.040;
       var w1=0.60, w2=0.28, w3=0.12, inv=1/(w1+w2+w3);
 
-      // offsets por variante para que no sean iguales
-      var off = variant === 1 ? 5000 : 0;
+      var off = variant === 1 ? 5000 : 0; // distintas por nube
 
-      // domain warp (rompe alineaciones), distinta por nube
       var warpFreq= variant===0 ? 0.0039 : 0.0043;
       var warpAmp = variant===0 ? 2.0    : 2.2;
 
@@ -212,20 +229,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       var featherIn = variant===0 ? 0.84 : 0.82;
       var featherOut= variant===0 ? 1.06 : 1.04;
 
-      // opacidad base
       var baseAlpha = variant===0 ? 0.72 : 0.75;
 
-      // leve inclinación del dominio
       var tiltX = variant===0 ? 0.06 : 0.07;
       var tiltY = variant===0 ? -0.03 : -0.028;
 
-      // Colores de luz (INTENSOS)
+      // Colores muy intensos
       var PURPLE = [210,175,255];  // #D2AFFF
       var PINK   = [255,125,205];  // #FF7DCD
 
       for (var y=0; y<canvas.height; y++){
         for (var x=0; x<canvas.width; x++){
-          // domain warp con offset por variante
           var wx = perlin2((x+off)*warpFreq, (y+off)*warpFreq) * warpAmp;
           var wy = perlin2((x+1000+off)*warpFreq, (y-777+off)*warpFreq) * warpAmp;
 
@@ -235,17 +249,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           var n1 = perlin2(nx, ny);
           var n2 = perlin2(nx * (s2/s1), ny * (s2/s1));
           var n3 = perlin2(nx * (s3/s1), ny * (s3/s1));
-          var n  = (w1*n1 + w2*n2 + w3*n3) * inv; // [-1,1] -> [0,1]
+          var n  = (w1*n1 + w2*n2 + w3*n3) * inv;
           n = (n + 1) * 0.5;
 
-          // feather elíptico
           var dx=(x-cx)/rx, dy=(y-cy)/ry, r=Math.sqrt(dx*dx+dy*dy);
           var mask = 1 - smoothstep(featherIn, featherOut, r);
 
-          // alpha vaporosa
           var a = smoothstep(0.40, 0.75, n) * mask * baseAlpha;
 
-          // Toques de color MUY intensos (escala por 'a' para que sea luz en la nube)
+          // Toques de color (subidos de tono) y ligados a la densidad 'a'
           var u = x / canvas.width, v = y / canvas.height;
           var wPurple = Math.exp(-(
             Math.pow((u-0.26)/0.24, 2) + Math.pow((v-0.38)/0.30, 2)
@@ -254,10 +266,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             Math.pow((u-0.74)/0.26, 2) + Math.pow((v-0.60)/0.32, 2)
           ));
 
-          var t1 = Math.min(0.55, wPurple * 0.55) * a; // (↑ de 0.42 → 0.55)
-          var t2 = Math.min(0.48, wPink   * 0.48) * a; // (↑ de 0.36 → 0.48)
+          var t1 = Math.min(0.65, wPurple * 0.65) * a; // ↑ más neón
+          var t2 = Math.min(0.56, wPink   * 0.56) * a; // ↑ más neón
 
-          // Blanco → morado → rosa
           var rC = mix(255, PURPLE[0], t1);
           var gC = mix(255, PURPLE[1], t1);
           var bC = mix(255, PURPLE[2], t1);
