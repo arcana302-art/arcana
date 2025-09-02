@@ -33,25 +33,31 @@ export default function Page() {
         <div className="mx-auto max-w-6xl px-4 pb-20 pt-16 text-center">
           <h1 className="font-display text-4xl font-semibold tracking-tight md:text-6xl">
             Lecturas en vivo con{" "}
-            <span className="rounded bg-white/10 px-2 text-white">expertos certificados</span>
+            <span className="rounded px-2 text-accent">expertos certificados</span>
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-zinc-300">
             Tarot, Astrología, Numerología y más. Agenda en minutos y conéctate por videollamada en un entorno cuidado.
           </p>
           <div className="mt-6 flex items-center justify-center gap-3">
-            <a href="#agenda" className="rounded-xl bg-white px-4 py-2 font-medium text-zinc-900 hover:bg-zinc-100">
+            <a
+              href="#agenda"
+              className="btn-arcana btn-arcana--primary rounded-xl px-4 py-2 font-medium"
+            >
               Agendar una consulta
             </a>
             <a
               href="#unete"
-              className="rounded-xl border border-white/30 px-4 py-2 font-medium text-white hover:bg-white/10"
+              className="btn-arcana btn-arcana--outline rounded-xl px-4 py-2 font-medium text-white"
             >
               Únete como especialista
             </a>
           </div>
           <div className="mt-6 flex flex-col items-center gap-3 md:flex-row md:justify-center">
             {["Talentos verificados","Pagos protegidos","Videollamada integrada"].map((t) => (
-              <div key={t} className="rounded-full border border-white/20 px-3 py-1 text-xs text-zinc-200">
+              <div
+                key={t}
+                className="rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs text-zinc-200"
+              >
                 {t}
               </div>
             ))}
@@ -66,7 +72,7 @@ export default function Page() {
             <a
               key={c}
               href="#especialistas"
-              className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-sm text-zinc-200 hover:bg-white/10"
+              className="chip rounded-full px-3 py-1 text-sm text-zinc-200 transition-colors hover:border-accent hover:text-accent"
             >
               {c}
             </a>
@@ -83,8 +89,11 @@ export default function Page() {
             { n: "2", t: "Agenda y paga", d: "Reservas seguras con confirmación inmediata." },
             { n: "3", t: "Conéctate online", d: "Videollamada integrada, sin complicaciones." },
           ].map((s) => (
-            <div key={s.t} className="glass rounded-2xl p-5">
-              <div className="mb-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-sm">
+            <div
+              key={s.t}
+              className="glass rounded-2xl p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(212,175,55,.15)]"
+            >
+              <div className="mb-2 inline-flex h-7 w-7 items-center justify-center rounded-full border border-accent bg-white/5 text-sm text-accent">
                 {s.n}
               </div>
               <p className="text-lg font-medium text-white">{s.t}</p>
@@ -98,13 +107,16 @@ export default function Page() {
       <section id="especialistas" className="mx-auto mt-12 max-w-6xl px-4">
         <div className="flex items-end justify-between">
           <h2 className="font-display text-2xl font-semibold tracking-tight">Especialistas disponibles</h2>
-          <a href="#agenda" className="text-sm text-zinc-300 hover:underline">Ver agenda</a>
+          <a href="#agenda" className="text-sm text-zinc-300 transition-colors hover:text-accent">Ver agenda</a>
         </div>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 md:grid-cols-3">
           {especialistas.map((e) => (
-            <article key={e.nombre} className="glass group rounded-2xl p-4 hover:bg-white/10">
+            <article
+              key={e.nombre}
+              className="glass group rounded-2xl p-4 transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/10 hover:shadow-[0_10px_30px_rgba(212,175,55,.12)]"
+            >
               <div className="flex items-center gap-3">
-                <div className="h-12 w-12 shrink-0 rounded-full bg-gradient-to-br from-fuchsia-400/70 to-blue-400/70" />
+                <div className="h-12 w-12 shrink-0 rounded-full bg-gradient-to-br from-yellow-300/70 to-fuchsia-400/70 ring-2 ring-yellow-300/30" />
                 <div>
                   <h3 className="font-medium text-white">{e.nombre}</h3>
                   <p className="text-sm text-zinc-300">{e.desc}</p>
@@ -112,7 +124,7 @@ export default function Page() {
               </div>
               <div className="mt-3 flex justify-between">
                 <span className="text-sm font-medium text-zinc-200">desde $399</span>
-                <a href="#agenda" className="text-sm text-zinc-200 hover:underline">Agendar</a>
+                <a href="#agenda" className="text-sm text-zinc-200 transition-colors hover:text-accent">Agendar</a>
               </div>
             </article>
           ))}
@@ -150,7 +162,7 @@ export default function Page() {
                 <label className="text-sm text-zinc-300">Categoría</label>
                 <select className="rounded border border-white/15 bg-white/5 px-3 py-2 text-white" name="categoria">
                   {categorias.map(c => (
-                    <option key={c} className="bg-[#0b0b12] text-white">{c}</option>
+                    <option key={c} className="bg-[var(--arcana-bg)] text-white">{c}</option>
                   ))}
                 </select>
               </div>
@@ -159,7 +171,7 @@ export default function Page() {
                 <input type="date" className="rounded border border-white/15 bg-white/5 px-3 py-2 text-white" name="fecha" />
               </div>
               <div className="md:col-span-2">
-                <button className="rounded-xl bg-white px-4 py-2 font-medium text-zinc-900 hover:bg-zinc-100">
+                <button className="btn-arcana btn-arcana--primary rounded-xl px-4 py-2 font-medium">
                   Enviar solicitud
                 </button>
               </div>
@@ -208,7 +220,7 @@ export default function Page() {
                 <input type="number" className="rounded border border-white/15 bg-white/5 px-3 py-2 text-white" name="precio" />
               </div>
               <div className="md:col-span-2">
-                <button className="rounded-xl bg-white px-4 py-2 font-medium text-zinc-900 hover:bg-zinc-100">
+                <button className="btn-arcana btn-arcana--outline rounded-xl px-4 py-2 font-medium text-white">
                   Enviar aplicación
                 </button>
               </div>
