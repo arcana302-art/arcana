@@ -2,17 +2,80 @@
 "use client";
 import { useState, type FormEvent } from "react";
 
-/* Fondo animado: inserta capas CSS de estrellas y nubes */
-function BackgroundAnimated() {
+/* Fondo animado: estrellas parallax + nubes nebulosas (solo CSS) */
+function AnimatedBackground() {
   return (
-    <div className="bg-cosmos">
-      <div className="stars" />
-      <div className="stars stars-2" />
-      <div className="stars stars-3" />
-      <div className="cloud cloud-1" />
-      <div className="cloud cloud-2" />
-      <div className="cloud cloud-3" />
-    </div>
+    <>
+      <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
+        <div className="star-layer layer-1" />
+        <div className="star-layer layer-2" />
+        <div className="star-layer layer-3" />
+        <div className="cloud cloud-1" />
+        <div className="cloud cloud-2" />
+        <div className="cloud cloud-3" />
+      </div>
+
+      {/* CSS global de las animaciones */}
+      <style jsx global>{`
+        /* Estrellas: 3 capas con distintas velocidades/escala */
+        .star-layer {
+          position: absolute;
+          inset: 0;
+          background-image:
+            radial-gradient(1px 1px at 10px 10px, rgba(255,255,255,.9), transparent 60%),
+            radial-gradient(1px 1px at 25px 35px, rgba(255,255,255,.8), transparent 60%),
+            radial-gradient(1px 1px at 50px 15px, rgba(255,255,255,.75), transparent 60%),
+            radial-gradient(1px 1px at 15px 60px, rgba(255,255,255,.9), transparent 60%);
+          opacity: .22;
+          animation: stars-move 180s linear infinite;
+          background-size: 64px 64px;
+        }
+        .star-layer.layer-2 { opacity: .18; background-size: 96px 96px; animation-duration: 220s; }
+        .star-layer.layer-3 { opacity: .14; background-size: 128px 128px; animation-duration: 260s; }
+        @keyframes stars-move {
+          0%   { background-position: 0 0, 0 0, 0 0, 0 0; }
+          100% { background-position: 2000px 0, -2000px 0, 1500px 0, -1500px 0; }
+        }
+
+        /* Nubes nebulosas dorado/azul (parallax lento) */
+        .cloud {
+          position: absolute;
+          filter: blur(40px);
+          opacity: .35;
+          will-change: transform;
+          mix-blend-mode: screen;
+        }
+        .cloud-1 {
+          width: 45vw; height: 45vw; left: -10vw; top: -6vw;
+          background:
+            radial-gradient(circle at 30% 30%, rgba(212,175,55,.18), transparent 60%),
+            radial-gradient(circle at 70% 70%, rgba(59,130,246,.18), transparent 60%);
+          animation: drift1 60s ease-in-out infinite alternate;
+        }
+        .cloud-2 {
+          width: 35vw; height: 35vw; right: -12vw; top: 10vw;
+          background:
+            radial-gradient(circle at 60% 40%, rgba(139,92,246,.16), transparent 60%),
+            radial-gradient(circle at 40% 60%, rgba(212,175,55,.10), transparent 60%);
+          animation: drift2 80s ease-in-out infinite alternate;
+        }
+        .cloud-3 {
+          width: 50vw; height: 50vw; left: 20vw; bottom: -15vw;
+          background:
+            radial-gradient(circle at 50% 50%, rgba(59,130,246,.14), transparent 60%),
+            radial-gradient(circle at 30% 70%, rgba(212,175,55,.12), transparent 60%);
+          animation: drift3 90s ease-in-out infinite alternate;
+        }
+        @keyframes drift1 { from { transform: translateX(0) translateY(0); } to { transform: translateX(8vw)  translateY(2vw); } }
+        @keyframes drift2 { from { transform: translateX(0) translateY(0); } to { transform: translateX(-6vw) translateY(-1vw); } }
+        @keyframes drift3 { from { transform: translateX(0) translateY(0); } to { transform: translateX(5vw)  translateY(-3vw); } }
+
+        /* Respeto accesibilidad: si el usuario reduce movimiento, apagamos animaciones */
+        @media (prefers-reduced-motion: reduce) {
+          .star-layer, .cloud { animation: none !important; }
+        }
+      `}</style>
+    </>
   );
 }
 
@@ -36,8 +99,8 @@ export default function Page() {
 
   return (
     <>
-      {/* Capa de animaciones global */}
-      <BackgroundAnimated />
+      {/* Fondo animado fijo detrás de todo */}
+      <AnimatedBackground />
 
       {/* HERO */}
       <section className="relative">
@@ -95,7 +158,7 @@ export default function Page() {
               key={s.t}
               className="glass rounded-2xl p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(212,175,55,.15)]"
             >
-              <div className="mb-2 inline-flex h-7 w-7 items-center justify-center rounded-full border border-accent bg-white/5 text-sm text-accent">
+              <div className="mb-2 inline-flex h-7 w-7 items-center justify-center rounded-full border border-[var(--arcana-accent)] bg-white/5 text-sm text-[var(--arcana-accent)]">
                 {s.n}
               </div>
               <p className="text-lg font-medium text-white">{s.t}</p>
@@ -109,127 +172,10 @@ export default function Page() {
       <section id="especialistas" className="mx-auto mt-12 max-w-6xl px-4">
         <div className="flex items-end justify-between">
           <h2 className="font-display text-2xl font-semibold tracking-tight">Especialistas disponibles</h2>
-          <a href="#agenda" className="text-sm text-zinc-300 transition-colors hover:text-accent">Ver agenda</a>
+          <a href="#agenda" className="text-sm text-zinc-300 transition-colors hover:text-[var(--arcana-accent)]">Ver agenda</a>
         </div>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 md:grid-cols-3">
           {especialistas.map((e) => (
             <article
               key={e.nombre}
-              className="glass group rounded-2xl p-4 transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/10 hover:shadow-[0_10px_30px_rgba(212,175,55,.12)]"
-            >
-              <div className="flex items-center gap-3">
-                <div className="h-12 w-12 shrink-0 rounded-full bg-gradient-to-br from-yellow-300/70 to-fuchsia-400/70 ring-2 ring-yellow-300/30" />
-                <div>
-                  <h3 className="font-medium text-white">{e.nombre}</h3>
-                  <p className="text-sm text-zinc-300">{e.desc}</p>
-                </div>
-              </div>
-              <div className="mt-3 flex justify-between">
-                <span className="text-sm font-medium text-zinc-200">desde $399</span>
-                <a href="#agenda" className="text-sm text-zinc-200 transition-colors hover:text-accent">Agendar</a>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      {/* AGENDA (demo) */}
-      <section id="agenda" className="mx-auto mt-16 max-w-6xl px-4">
-        <div className="glass rounded-2xl p-6">
-          <h2 className="font-display text-xl font-semibold text-white">Agendar una consulta</h2>
-          {sentAgenda ? (
-            <p className="mt-2 text-sm text-emerald-300">Solicitud enviada ✅. Te contactamos por correo.</p>
-          ) : (
-            <form className="mt-4 grid gap-4 md:grid-cols-2" onSubmit={onSubmitAgenda}>
-              <div className="grid gap-1">
-                <label className="text-sm text-zinc-300">Nombre</label>
-                <input
-                  className="rounded border border-white/15 bg-white/5 px-3 py-2 text-white placeholder-zinc-400"
-                  placeholder="Tu nombre"
-                  required
-                  name="nombre"
-                />
-              </div>
-              <div className="grid gap-1">
-                <label className="text-sm text-zinc-300">Correo</label>
-                <input
-                  type="email"
-                  className="rounded border border-white/15 bg-white/5 px-3 py-2 text-white placeholder-zinc-400"
-                  placeholder="tucorreo@ejemplo.com"
-                  required
-                  name="correo"
-                />
-              </div>
-              <div className="grid gap-1">
-                <label className="text-sm text-zinc-300">Categoría</label>
-                <select className="rounded border border-white/15 bg-white/5 px-3 py-2 text-white" name="categoria">
-                  {categorias.map(c => (
-                    <option key={c} className="bg-[var(--arcana-bg)] text-white">{c}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="grid gap-1">
-                <label className="text-sm text-zinc-300">Fecha deseada</label>
-                <input type="date" className="rounded border border-white/15 bg-white/5 px-3 py-2 text-white" name="fecha" />
-              </div>
-              <div className="md:col-span-2">
-                <button className="btn-arcana btn-arcana--primary rounded-xl px-4 py-2 font-medium">
-                  Enviar solicitud
-                </button>
-              </div>
-            </form>
-          )}
-        </div>
-      </section>
-
-      {/* ÚNETE (demo) */}
-      <section id="unete" className="mx-auto mt-10 max-w-6xl px-4">
-        <div className="glass rounded-2xl p-6">
-          <h2 className="font-display text-xl font-semibold text-white">Únete como especialista</h2>
-          {sentUnete ? (
-            <p className="mt-2 text-sm text-emerald-300">Aplicación enviada ✅. Te escribimos para el proceso.</p>
-          ) : (
-            <form className="mt-4 grid gap-4 md:grid-cols-2" onSubmit={onSubmitUnete}>
-              <div className="grid gap-1">
-                <label className="text-sm text-zinc-300">Nombre artístico</label>
-                <input
-                  className="rounded border border-white/15 bg-white/5 px-3 py-2 text-white placeholder-zinc-400"
-                  placeholder="Ej. Luna Arcana"
-                  required
-                  name="nombreArtistico"
-                />
-              </div>
-              <div className="grid gap-1">
-                <label className="text-sm text-zinc-300">Correo</label>
-                <input
-                  type="email"
-                  className="rounded border border-white/15 bg-white/5 px-3 py-2 text-white placeholder-zinc-400"
-                  placeholder="tucorreo@ejemplo.com"
-                  required
-                  name="correo"
-                />
-              </div>
-              <div className="grid gap-1">
-                <label className="text-sm text-zinc-300">Categorías</label>
-                <input
-                  placeholder="Tarot, Astrología..."
-                  className="rounded border border-white/15 bg-white/5 px-3 py-2 text-white placeholder-zinc-400"
-                  name="categorias"
-                />
-              </div>
-              <div className="grid gap-1">
-                <label className="text-sm text-zinc-300">Precio desde ($)</label>
-                <input type="number" className="rounded border border-white/15 bg-white/5 px-3 py-2 text-white" name="precio" />
-              </div>
-              <div className="md:col-span-2">
-                <button className="btn-arcana btn-arcana--outline rounded-xl px-4 py-2 font-medium text-white">
-                  Enviar aplicación
-                </button>
-              </div>
-            </form>
-          )}
-        </div>
-      </section>
-    </>
-  );
-}
+              className
