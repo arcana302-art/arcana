@@ -19,11 +19,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${inter.variable} ${playfair.variable} min-h-screen antialiased relative`}
         style={{ background: "linear-gradient(180deg,#0a1120,#0b1530)", color: "#e5e7eb" }}
       >
-        {/* ===== CIELO (canvas con nube vaporosa + fallback) ===== */}
+        {/* ===== CIELO (dos nubes, medio tamaño, con desfase) ===== */}
         <div id="sky" aria-hidden>
-          <div className="cloud-track">
-            <canvas id="cloudCanvas" className="cloud" />
-            <div className="veil" />
+          {/* Nube superior */}
+          <div className="cloud-track track-a">
+            <canvas id="cloudA" className="cloud cloud-a" />
+            <div className="veil veil-a" />
+          </div>
+          {/* Nube inferior (parallax + delay) */}
+          <div className="cloud-track track-b">
+            <canvas id="cloudB" className="cloud cloud-b" />
+            <div className="veil veil-b" />
           </div>
         </div>
 
@@ -32,74 +38,87 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         {/* ===== ESTILOS ===== */}
         <style>{`
-/* Apaga restos viejos si existieran (no toques el canvas .cloud) */
+/* Apaga restos viejos si existieran (NO toques los canvas .cloud) */
 #bg-root, .stars, .belt, .bank, .puffs, .cloud-svg, .nebula, .grain, .vignette { display: none !important; }
 
 #sky { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: visible; }
 
-/* pista que mueve la nube (solo transform → sin flicker) */
+/* Pistas que mueven las nubes (solo transform → sin flicker) */
 .cloud-track {
-  position: absolute; top: 23vh; left: 0; width: 100%;
+  position: absolute; left: 0; width: 100%;
   transform: translate3d(110vw,0,0);
-  animation: cloud-drift 140s linear infinite;
 }
+.track-a { top: 18vh; animation: cloud-drift-a 140s linear infinite; }
+.track-b { top: 38vh; animation: cloud-drift-b 165s linear infinite; animation-delay: 6s; }
 
-/* Fallback visible por si el script aún no corrió */
+/* Canvas de cada nube (≈ mitad de la anterior) + fallback visible */
 .cloud {
   display:block;
-  width: min(84vw, 1400px);
-  height: calc(min(84vw, 1400px) * 0.40625); /* 6.5/16 */
+  width: min(42vw, 700px);
+  height: calc(min(42vw, 700px) * 0.40625); /* 6.5/16 */
   aspect-ratio: 16 / 6.5;
   background:
-    radial-gradient(60% 50% at 50% 52%, rgba(255,255,255,.34) 0%, rgba(255,255,255,.18) 45%, rgba(255,255,255,0) 72%);
-  /* >>> Opción A: MÁS VAPOR <<< */
+    radial-gradient(60% 50% at 50% 52%, rgba(255,255,255,.32) 0%, rgba(255,255,255,.16) 45%, rgba(255,255,255,0) 72%);
   filter: blur(24px) drop-shadow(0 10px 22px rgba(0,0,0,.12));
-  opacity: 0.72;
   border-radius: 9999px/60%;
 }
+.cloud-a { opacity: 0.72; }
+.cloud-b { opacity: 0.74; transform: scale(0.98); } /* leve diferencia, más natural */
 
 /* Velo exterior sutil */
 .veil {
-  position:absolute; inset: -10% -6%;
+  position:absolute; inset: -14% -8%;
   background: radial-gradient(80% 70% at 50% 52%, rgba(255,255,255,.10), transparent 80%);
   filter: blur(12px);
   pointer-events:none;
 }
 
-/* Flotación vertical sutil (no re-pinta el canvas) */
-.cloud-track::after {
-  content:""; position:absolute; inset:0;
-  animation: cloud-float 18s ease-in-out infinite alternate;
-}
+/* Flotación vertical sutil, distinta para cada track */
+.cloud-track::after { content:""; position:absolute; inset:0; }
+.track-a::after { animation: cloud-float-a 18s ease-in-out infinite alternate; }
+.track-b::after { animation: cloud-float-b 22s ease-in-out infinite alternate; }
 
-@keyframes cloud-drift {
-  0%   { transform: translate3d(110vw,0,0); }
+/* Animaciones */
+@keyframes cloud-drift-a {
+  0% { transform: translate3d(110vw,0,0); }
   100% { transform: translate3d(-100vw,0,0); }
 }
-@keyframes cloud-float {
-  0%   { transform: translateY(0); }
-  100% { transform: translateY(0.9vh); }
+@keyframes cloud-drift-b {
+  0% { transform: translate3d(115vw,0,0); }
+  100% { transform: translate3d(-105vw,0,0); }
+}
+@keyframes cloud-float-a {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(1.0vh); }
+}
+@keyframes cloud-float-b {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(1.3vh); }
+}
+
+/* Reduce motion */
+@media (prefers-reduced-motion: reduce){
+  .cloud-track { animation: none !important; transform: translate3d(0,0,0) !important; }
+  .cloud-track::after { animation: none !important; }
 }
 
 /* Responsivo */
-@media (max-width: 640px){
-  .cloud-track { top: 21vh; }
-  .cloud {
-    width: 96vw;
-    height: calc(96vw * 0.40625);
-    filter: blur(22px) drop-shadow(0 8px 18px rgba(0,0,0,.10));
-    opacity:.70;
-  }
+@media (max-width: 768px){
+  .track-a { top: 16vh; }
+  .track-b { top: 52vh; }
+  .cloud { width: 78vw; height: calc(78vw * 0.40625); filter: blur(22px) drop-shadow(0 8px 18px rgba(0,0,0,.10)); }
+  .cloud-a { opacity: .70; }
+  .cloud-b { opacity: .72; }
 }
         `}</style>
 
-        {/* ===== SCRIPT (cliente) — Opción A aplicada ===== */}
-        <Script id="paint-cloud" strategy="afterInteractive">{`
+        {/* ===== SCRIPT (cliente) — pinta AMBAS nubes ===== */}
+        <Script id="paint-clouds" strategy="afterInteractive">{`
 (function(){
   function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
   function smoothstep(e0,e1,x){ var t=clamp((x-e0)/(e1-e0),0,1); return t*t*(3-2*t); }
 
-  // Perlin 2D con domain-warp suave
+  // Perlin 2D (perm común) + "domain warp" con offset por variante para que no sean idénticas
   var p=new Uint8Array(512);
   (function(){
     var perm=new Uint8Array(256); for(var i=0;i<256;i++) perm[i]=i;
@@ -118,14 +137,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                  lerp(grad(ab,xf,yf-1), grad(bb,xf-1,yf-1), u), v );
   }
 
-  function paintCloud(canvas){
+  function paintCloud(canvas, variant){
     try{
       // medidas robustas
-      var wCSS = canvas.offsetWidth || 800;
+      var wCSS = canvas.offsetWidth || 600;
       var hCSS = canvas.offsetHeight || Math.round(wCSS * 0.40625);
       var dpi  = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-      var W = Math.max(480, Math.floor(wCSS));
-      var H = Math.max(200, Math.floor(hCSS));
+      var W = Math.max(420, Math.floor(wCSS));
+      var H = Math.max(170, Math.floor(hCSS));
       canvas.width  = Math.floor(W * dpi);
       canvas.height = Math.floor(H * dpi);
 
@@ -133,29 +152,37 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       var img = ctx.createImageData(canvas.width, canvas.height);
       var data = img.data;
 
-      // >>> Opción A (Más vapor): parámetros
       // escalas → estructura grande y vaporosa
       var s1=0.010, s2=0.020, s3=0.040;
       var w1=0.60, w2=0.28, w3=0.12, inv=1/(w1+w2+w3);
 
-      // domain warp (más orgánico, rompe cualquier alineación)
-      var warpFreq=0.0038, warpAmp=2.2;
+      // offsets distintos por variante para que no sean iguales
+      var off = variant === 1 ? 5000 : 0;
 
-      // feather elíptico (contorno menos “caja”)
-      var cx=canvas.width*0.52, cy=canvas.height*0.52, rx=canvas.width*0.60, ry=canvas.height*0.48;
-      var featherIn=0.84, featherOut=1.06;
+      // domain warp (rompe alineaciones), variado por variante
+      var warpFreq= variant===0 ? 0.0038 : 0.0041;
+      var warpAmp = variant===0 ? 2.1    : 1.9;
 
-      // opacidad base (más bajo = más vapor)
-      var baseAlpha=0.72;
+      // feather elíptico (contorno no "cuadrado"), sutilmente distinto
+      var cx=canvas.width*(variant===0?0.52:0.50);
+      var cy=canvas.height*(variant===0?0.50:0.54);
+      var rx=canvas.width*(variant===0?0.60:0.58);
+      var ry=canvas.height*(variant===0?0.46:0.44);
+      var featherIn = variant===0 ? 0.84 : 0.82;
+      var featherOut= variant===0 ? 1.06 : 1.04;
 
-      // inclinación leve del dominio
-      var tiltX=0.06, tiltY=-0.03;
+      // opacidad base: casi igual pero no idéntica
+      var baseAlpha = variant===0 ? 0.72 : 0.74;
+
+      // leve inclinación del dominio (distinta en cada nube)
+      var tiltX = variant===0 ? 0.06 : 0.07;
+      var tiltY = variant===0 ? -0.03 : -0.028;
 
       for (var y=0; y<canvas.height; y++){
         for (var x=0; x<canvas.width; x++){
-          // domain warp
-          var wx = perlin2(x*warpFreq, y*warpFreq) * warpAmp;
-          var wy = perlin2((x+1000)*warpFreq, (y-777)*warpFreq) * warpAmp;
+          // domain warp con offset por variante
+          var wx = perlin2((x+off)*warpFreq, (y+off)*warpFreq) * warpAmp;
+          var wy = perlin2((x+1000+off)*warpFreq, (y-777+off)*warpFreq) * warpAmp;
 
           var nx = (x + y*tiltX + wx) * s1;
           var ny = (y + x*tiltY + wy) * s1;
@@ -181,17 +208,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         }
       }
       ctx.putImageData(img,0,0);
-    }catch(e){ /* fallback CSS mantiene una nube visible si fallara */ }
+    }catch(e){ /* fallback CSS mantiene la nube visible si fallara */ }
+  }
+
+  function paintAll(){
+    var a = document.getElementById('cloudA');
+    var b = document.getElementById('cloudB');
+    if (a) paintCloud(a, 0);
+    if (b) paintCloud(b, 1);
   }
 
   function init(){
-    var c = document.getElementById('cloudCanvas');
-    if(!c) return;
-    requestAnimationFrame(function(){ paintCloud(c); });
+    paintAll();
     var to=null;
-    window.addEventListener('resize', function(){ clearTimeout(to); to=setTimeout(function(){ paintCloud(c); }, 120); }, {passive:true});
-    window.addEventListener('pageshow', function(){ paintCloud(c); }, {passive:true});
-    window.addEventListener('load', function(){ paintCloud(c); }, {passive:true});
+    window.addEventListener('resize', function(){ clearTimeout(to); to=setTimeout(paintAll, 120); }, {passive:true});
+    window.addEventListener('pageshow', paintAll, {passive:true});
+    window.addEventListener('load', paintAll, {passive:true});
   }
 
   if (document.readyState === 'loading'){
