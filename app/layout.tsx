@@ -19,34 +19,53 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${inter.variable} ${playfair.variable} min-h-screen antialiased relative`}
         style={{ background: "linear-gradient(180deg,#0a1120,#0b1530)", color: "#e5e7eb" }}
       >
-        {/* ===== CIELO (tres nubes; inferior con ascenso épico; color intenso + glow) ===== */}
-        {/* Importante: #sky inicia oculto; se muestra solo cuando los 3 canvas están pintados */}
+        {/* ===== CIELO (3 nubes + estrellas) ===== */}
+        {/* #sky arranca oculto; se muestra cuando todo está pintado para evitar “flash” */}
         <div id="sky" aria-hidden>
+          {/* Estrellas intensas con titileo lento */}
+          <div id="stars">
+            <span className="star" />
+            <span className="star" />
+            <span className="star" />
+            <span className="star" />
+            <span className="star" />
+            <span className="star" />
+            <span className="star" />
+            <span className="star" />
+            <span className="star" />
+            <span className="star" />
+          </div>
+
           {/* Nube superior */}
           <div className="cloud-track track-a">
             <div className="rise rise-a">
               <div className="cloud-wrap wrap-a">
                 <canvas id="cloudA" className="cloud cloud-a" />
+                <div className="core core-a" />
                 <div className="veil veil-a" />
                 <div className="glow glow-a" />
               </div>
             </div>
           </div>
-          {/* Nube central (tamaño intermedio y separada de la inferior) */}
+
+          {/* Nube central (tamaño intermedio, bien separada) */}
           <div className="cloud-track track-c">
             <div className="rise rise-c">
               <div className="cloud-wrap wrap-c">
                 <canvas id="cloudC" className="cloud cloud-c" />
+                <div className="core core-c" />
                 <div className="veil veil-c" />
                 <div className="glow glow-c" />
               </div>
             </div>
           </div>
-          {/* Nube inferior */}
+
+          {/* Nube inferior (ascenso épico) */}
           <div className="cloud-track track-b">
             <div className="rise rise-b">
               <div className="cloud-wrap wrap-b">
                 <canvas id="cloudB" className="cloud cloud-b" />
+                <div className="core core-b" />
                 <div className="veil veil-b" />
                 <div className="glow glow-b" />
               </div>
@@ -62,66 +81,70 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 /* Limpia restos antiguos */
 #bg-root, .stars, .belt, .bank, .puffs, .cloud-svg, .nebula, .grain, .vignette { display: none !important; }
 
-/* #sky arranca oculto para evitar CUALQUIER flash */
+/* #sky oculto hasta que todo esté listo (sin transiciones ⇒ cero “flash”) */
 #sky { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: visible; visibility: hidden; }
-#sky.ready { visibility: visible; } /* sin transiciones, aparece cuando ya está pintado */
+#sky.ready { visibility: visible; }
 
-/* ------ Deriva horizontal (solo X); inician fuera de pantalla ------ */
+/* ---------- ESTRELLAS ---------- */
+#stars {
+  position: absolute; inset: 0; pointer-events: none;
+}
+.star {
+  position: absolute;
+  width: var(--sz, 3px); height: var(--sz, 3px);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,1) 0%, rgba(255,255,255,.9) 25%, rgba(255,255,255,0) 60%),
+    radial-gradient(circle at 50% 50%, rgba(168,85,247,.65) 0%, rgba(168,85,247,0) 70%),
+    radial-gradient(circle at 50% 50%, rgba(244,114,182,.55) 0%, rgba(244,114,182,0) 80%);
+  filter: drop-shadow(0 0 8px rgba(255,255,255,.55)) drop-shadow(0 0 16px rgba(168,85,247,.35));
+  animation: twinkle var(--twDur, 8s) ease-in-out infinite;
+  opacity: 0;
+}
+@keyframes twinkle {
+  0%   { opacity: 0; transform: scale(0.6); }
+  12%  { opacity: 1; transform: scale(1); }   /* subida */
+  55%  { opacity: 0.85; }                     /* sostén brillante */
+  80%  { opacity: 0; transform: scale(0.75); }/* se apaga */
+  100% { opacity: 0; }                        /* queda apagada un rato */
+}
+
+/* ---------- NUBES ---------- */
+/* Deriva horizontal: más rápida y visible de inmediato.
+   Usamos DELAYS NEGATIVOS para que al cargar ya estén en pantalla (loop continuo). */
 .cloud-track {
-  position: absolute; left: 0; width: 100%;
-  will-change: transform;
-  transform: translateX(120vw); /* offscreen de inicio */
+  position: absolute; left: 0; width: 100%; will-change: transform;
 }
-.track-a { top: 12vh; animation: cloud-drift-a 150s linear infinite; }
-.track-c { top: 42vh; animation: cloud-drift-c 165s linear infinite; animation-delay: 2s; }
-.track-b { top: 72vh; animation: cloud-drift-b 180s linear infinite; animation-delay: 4s; }
+.track-a { top: 8vh;  animation: cloud-drift-a 110s linear infinite; animation-delay: -18s; }
+.track-c { top: 44vh; animation: cloud-drift-c 120s linear infinite; animation-delay: -42s; }
+.track-b { top: 80vh; animation: cloud-drift-b 130s linear infinite; animation-delay: -70s; }
 
-@keyframes cloud-drift-a {
-  0%   { transform: translateX(110vw); }
-  100% { transform: translateX(-100vw); }
-}
-@keyframes cloud-drift-c {
-  0%   { transform: translateX(112vw); }
-  100% { transform: translateX(-102vw); }
-}
-@keyframes cloud-drift-b {
-  0%   { transform: translateX(115vw); }
-  100% { transform: translateX(-105vw); }
-}
+@keyframes cloud-drift-a { 0% { transform: translateX(85vw); } 100% { transform: translateX(-100vw); } }
+@keyframes cloud-drift-c { 0% { transform: translateX(90vw); } 100% { transform: translateX(-102vw); } }
+@keyframes cloud-drift-b { 0% { transform: translateX(95vw); } 100% { transform: translateX(-105vw); } }
 
-/* ------ Ascenso vertical (solo Y) ------ */
+/* Ascenso vertical (sin cambiar trayectorias; inferior épica) */
 .rise { will-change: transform; }
-.rise-a { animation: cloud-rise-a 150s linear infinite; }
-.rise-c { animation: cloud-rise-c 165s linear infinite; animation-delay: 2s; }
-.rise-b { animation: cloud-rise-b 180s linear infinite; animation-delay: 4s; }
+.rise-a { animation: cloud-rise-a 110s linear infinite; animation-delay: -18s; }
+.rise-c { animation: cloud-rise-c 120s linear infinite; animation-delay: -42s; }
+.rise-b { animation: cloud-rise-b 130s linear infinite; animation-delay: -70s; }
 
-@keyframes cloud-rise-a {
-  0%   { transform: translateY(1.5vh); }
-  100% { transform: translateY(-2.4vh); }
-}
-/* Central: ascenso moderado y separada de la inferior */
-@keyframes cloud-rise-c {
-  0%   { transform: translateY(10vh); }
-  100% { transform: translateY(-22vh); }
-}
-/* Inferior: ascenso épico (~104vh) */
-@keyframes cloud-rise-b {
-  0%   { transform: translateY(24vh); }
-  100% { transform: translateY(-80vh); }
-}
+@keyframes cloud-rise-a { 0% { transform: translateY(1.5vh); } 100% { transform: translateY(-2.4vh); } }
+@keyframes cloud-rise-c { 0% { transform: translateY(8vh); } 100% { transform: translateY(-20vh); } }
+@keyframes cloud-rise-b { 0% { transform: translateY(24vh); } 100% { transform: translateY(-80vh); } }
 
 /* Flotación sutil (independiente) */
 .cloud-wrap { position: relative; will-change: transform; }
-.wrap-a { animation: cloud-float-a 17s ease-in-out infinite alternate; }
-.wrap-c { animation: cloud-float-c 19s ease-in-out infinite alternate; }
-.wrap-b { animation: cloud-float-b 22s ease-in-out infinite alternate; }
+.wrap-a { animation: cloud-float-a 14s ease-in-out infinite alternate; }
+.wrap-c { animation: cloud-float-c 16s ease-in-out infinite alternate; }
+.wrap-b { animation: cloud-float-b 18s ease-in-out infinite alternate; }
 
 @keyframes cloud-float-a { 0% { transform: translateY(0); } 100% { transform: translateY(0.9vh); } }
 @keyframes cloud-float-c { 0% { transform: translateY(0); } 100% { transform: translateY(1.1vh); } }
 @keyframes cloud-float-b { 0% { transform: translateY(0); } 100% { transform: translateY(1.5vh); } }
 
-/* Los canvas y velos también empiezan ocultos hasta que el script declara ready */
-.cloud, .veil, .glow { visibility: hidden; }
+/* Los layers de nubes permanecen ocultos hasta que el script termina y activa #sky.ready */
+.cloud, .veil, .glow, .core { visibility: hidden; }
 
 .cloud {
   display:block;
@@ -129,40 +152,39 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   height: calc(min(42vw, 700px) * 0.40625);
   aspect-ratio: 16 / 6.5;
   background:
-    radial-gradient(60% 50% at 50% 52%, rgba(255,255,255,.26) 0%, rgba(255,255,255,.13) 45%, rgba(255,255,255,0) 72%),
-    radial-gradient(40% 50% at 28% 40%, rgba(210,175,255,0.12), transparent 70%),
-    radial-gradient(42% 52% at 72% 62%, rgba(255,125,205,0.10), transparent 72%);
+    radial-gradient(60% 50% at 50% 52%, rgba(255,255,255,.24) 0%, rgba(255,255,255,.12) 45%, rgba(255,255,255,0) 72%),
+    radial-gradient(40% 50% at 28% 40%, rgba(210,175,255,0.10), transparent 70%),
+    radial-gradient(42% 52% at 72% 62%, rgba(255,125,205,0.08), transparent 72%);
   filter: blur(24px) drop-shadow(0 10px 22px rgba(0,0,0,.12));
   border-radius: 9999px/60%;
 }
 
-/* Tamaños */
-.cloud-a {
-  width: min(52vw, 860px);
-  height: calc(min(52vw, 860px) * 0.40625);
-  opacity: 0.70;
-}
-.cloud-c { /* intermedia entre A y B */
-  width: min(56vw, 920px);
-  height: calc(min(56vw, 920px) * 0.40625);
-  opacity: 0.74;
-  transform: scale(1.01);
-}
-.cloud-b {
-  width: min(62vw, 980px);
-  height: calc(min(62vw, 980px) * 0.40625);
-  opacity: 0.76;
-  transform: scale(1.02);
+/* Tamaños y opacidades */
+.cloud-a { width: min(52vw, 860px); height: calc(min(52vw, 860px) * 0.40625); opacity: .70; }
+.cloud-c { width: min(56vw, 920px); height: calc(min(56vw, 920px) * 0.40625); opacity: .74; transform: scale(1.01); }
+.cloud-b { width: min(62vw, 980px); height: calc(min(62vw, 980px) * 0.40625); opacity: .76; transform: scale(1.02); }
+
+/* Núcleo luminoso (centro brillante) */
+.core{
+  position:absolute; inset: 18% 20%;
+  mix-blend-mode: screen;
+  background:
+    radial-gradient(50% 50% at 50% 50%, rgba(255,255,255,.28), rgba(255,255,255,0) 70%),
+    radial-gradient(40% 40% at 40% 45%, rgba(168,85,247,.22), transparent 70%),
+    radial-gradient(44% 44% at 60% 55%, rgba(244,114,182,.18), transparent 74%);
+  filter: blur(14px);
+  opacity: .9;
+  pointer-events:none;
 }
 
-/* Velo de luz intenso (blend SCREEN) */
+/* Velo perimetral (contornos más luminosos morado/rosa) */
 .veil {
   position:absolute; inset: -14% -8%;
-  background:
-    radial-gradient(50% 62% at 24% 42%, rgba(168,85,247,0.44), transparent 66%),
-    radial-gradient(54% 64% at 74% 62%, rgba(244,114,182,0.36), transparent 68%),
-    radial-gradient(88% 76% at 50% 52%, rgba(255,255,255,.14), transparent 84%);
   mix-blend-mode: screen;
+  background:
+    radial-gradient(58% 70% at 22% 44%, rgba(168,85,247,0.44), transparent 66%),
+    radial-gradient(60% 72% at 78% 58%, rgba(244,114,182,0.36), transparent 68%),
+    radial-gradient(90% 78% at 50% 52%, rgba(255,255,255,.12), transparent 86%);
   filter: blur(12px);
   pointer-events:none;
 }
@@ -175,24 +197,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     radial-gradient(45% 55% at 30% 40%, rgba(168,85,247,0.40), transparent 70%),
     radial-gradient(48% 58% at 70% 64%, rgba(244,114,182,0.34), transparent 72%);
   filter: blur(26px);
-  animation: glowPulse 5.8s ease-in-out infinite alternate;
+  animation: glowPulse 5.6s ease-in-out infinite alternate;
   pointer-events:none;
 }
-.glow-a{ opacity:.55; }
-.glow-c{ opacity:.60; }
-.glow-b{ opacity:.62; }
-@keyframes glowPulse{ 0% { opacity:.45; transform: scale(1); } 100% { opacity:.75; transform: scale(1.04); } }
+.glow-a{ opacity:.55; } .glow-c{ opacity:.60; } .glow-b{ opacity:.62; }
+@keyframes glowPulse{ 0% { opacity:.45; transform: scale(1); } 100% { opacity:.78; transform: scale(1.04); } }
 
 /* Reduce motion */
 @media (prefers-reduced-motion: reduce){
-  .cloud-track, .rise, .cloud-wrap, .glow { animation: none !important; transform: translate3d(0,0,0) !important; }
+  .cloud-track, .rise, .cloud-wrap, .glow, .star { animation: none !important; transform: translate3d(0,0,0) !important; }
 }
 
 /* Responsivo */
 @media (max-width: 768px){
-  .track-a { top: 10vh; }
-  .track-c { top: 48vh; }
-  .track-b { top: 78vh; }
+  .track-a { top: 8vh; }
+  .track-c { top: 50vh; } /* más separación en móvil */
+  .track-b { top: 84vh; }
   .cloud-a { width: 84vw; height: calc(84vw * 0.40625); opacity: .68; }
   .cloud-c { width: 90vw; height: calc(90vw * 0.40625); opacity: .70; }
   .cloud-b { width: 98vw; height: calc(98vw * 0.40625); opacity: .72; }
@@ -200,14 +220,33 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
         `}</style>
 
-        {/* ===== SCRIPT: pinta 3 nubes y muestra #sky SOLO cuando todo está listo ===== */}
-        <Script id="paint-clouds" strategy="afterInteractive">{`
+        {/* ===== SCRIPT ===== */}
+        <Script id="paint-sky" strategy="afterInteractive">{`
 (function(){
+  // utils
   function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
   function smoothstep(e0,e1,x){ var t=clamp((x-e0)/(e1-e0),0,1); return t*t*(3-2*t); }
   function mix(a,b,t){ return a + (b - a) * t; }
 
-  // Perlin 2D
+  // ---------- estrellas: posiciones y timings aleatorios ----------
+  function setupStars(){
+    var stars = document.querySelectorAll('#stars .star');
+    for(var i=0;i<stars.length;i++){
+      var s = stars[i];
+      var size = Math.random()*2.5 + 2.5; // 2.5px - 5px
+      var top = Math.random()*100;
+      var left = Math.random()*100;
+      var dur = 8 + Math.random()*7;      // 8s - 15s
+      var delay = -Math.random()*dur;     // arranque desfasado
+      s.style.setProperty('--sz', size.toFixed(2) + 'px');
+      s.style.setProperty('--twDur', dur.toFixed(2) + 's');
+      s.style.top = top.toFixed(2) + 'vh';
+      s.style.left = left.toFixed(2) + 'vw';
+      s.style.animationDelay = delay.toFixed(2) + 's';
+    }
+  }
+
+  // ---------- Perlin 2D ----------
   var p=new Uint8Array(512);
   (function(){
     var perm=new Uint8Array(256); for(var i=0;i<256;i++) perm[i]=i;
@@ -226,8 +265,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                  lerp(grad(ab,xf,yf-1), grad(bb,xf-1,yf-1), u), v );
   }
 
+  // ---------- Pintar nubes ----------
   function paintCloud(canvas, variant){
-    // Dibuja una nube en su canvas (sin mostrar aún)
     var wCSS = canvas.offsetWidth || 600;
     var hCSS = canvas.offsetHeight || Math.round(wCSS * 0.40625);
     var dpi  = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
@@ -240,33 +279,35 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     var img = ctx.createImageData(canvas.width, canvas.height);
     var data = img.data;
 
-    // escalas → estructura grande y vaporosa
+    // estructura grande y vaporosa
     var s1=0.010, s2=0.020, s3=0.040;
     var w1=0.60, w2=0.28, w3=0.12, inv=1/(w1+w2+w3);
 
-    // offsets por variante para que no sean iguales
+    // offsets para que sean distintas
     var off = (variant===1) ? 5000 : (variant===2 ? 9000 : 0);
 
-    // domain warp (rompe alineaciones)
+    // domain warp
     var warpFreq = (variant===0) ? 0.0039 : (variant===1 ? 0.0043 : 0.0041);
     var warpAmp  = (variant===0) ? 2.0    : (variant===1 ? 2.2    : 2.1);
 
-    // feather elíptico
+    // feathering (bordes más etéreos)
     var cx = canvas.width  * (variant===0?0.52 : variant===1?0.50 : 0.51);
     var cy = canvas.height * (variant===0?0.50 : variant===1?0.54 : 0.52);
     var rx = canvas.width  * (variant===0?0.60 : variant===1?0.58 : 0.59);
     var ry = canvas.height * (variant===0?0.46 : variant===1?0.44 : 0.45);
-    var featherIn  = (variant===0?0.84 : variant===1?0.82 : 0.83);
-    var featherOut = (variant===0?1.06 : variant===1?1.04 : 1.05);
+    var featherIn  = (variant===0?0.80 : variant===1?0.80 : 0.80); // ↓ bordes más suaves
+    var featherOut = (variant===0?1.10 : variant===1?1.10 : 1.10);
 
+    // densidad base (ajustada)
     var baseAlpha = (variant===0?0.72 : variant===1?0.75 : 0.735);
 
+    // inclinación leve
     var tiltX = (variant===0?0.06 : variant===1?0.07 : 0.065);
     var tiltY = (variant===0?-0.03: variant===1?-0.028 : -0.029);
 
-    // Colores intensos
-    var PURPLE = [210,175,255];  // #D2AFFF
-    var PINK   = [255,125,205];  // #FF7DCD
+    // colores intensos
+    var PURPLE = [210,175,255]; // #D2AFFF
+    var PINK   = [255,125,205]; // #FF7DCD
 
     for (var y=0; y<canvas.height; y++){
       for (var x=0; x<canvas.width; x++){
@@ -279,15 +320,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         var n1 = perlin2(nx, ny);
         var n2 = perlin2(nx * (s2/s1), ny * (s2/s1));
         var n3 = perlin2(nx * (s3/s1), ny * (s3/s1));
-        var n  = (w1*n1 + w2*n2 + w3*n3) * inv; // [-1,1] → [0,1]
-        n = (n + 1) * 0.5;
+        var n  = (w1*n1 + w2*n2 + w3*n3) * inv;
+        n = (n + 1) * 0.5; // [0,1]
 
         var dx=(x-cx)/rx, dy=(y-cy)/ry, r=Math.sqrt(dx*dx+dy*dy);
-        var mask = 1 - smoothstep(featherIn, featherOut, r);
+        var mask = 1 - smoothstep(featherIn, featherOut, r); // bordes etéreos
 
+        // curva de densidad: centro más denso, bordes más ligeros
+        var center = clamp(1 - r, 0, 1);
+        var centerBoost = 0.35 * center * center; // refuerzo en el núcleo
         var a = smoothstep(0.40, 0.75, n) * mask * baseAlpha;
+        a *= (0.85 + centerBoost); // más densidad en el centro, menos en bordes
 
-        // Toques de color ligados a densidad
+        // toques de color, ligados a densidad
         var u = x / canvas.width, v = y / canvas.height;
         var wPurple = Math.exp(-(
           Math.pow((u-0.26)/0.24, 2) + Math.pow((v-0.38)/0.30, 2)
@@ -319,7 +364,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   function paintAll(){
     var a = document.getElementById('cloudA');
-    var c = document.getElementById('cloudC'); // central
+    var c = document.getElementById('cloudC');
     var b = document.getElementById('cloudB');
     if (a) paintCloud(a, 0);
     if (c) paintCloud(c, 2);
@@ -327,44 +372,33 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   }
 
   function showSky(){
-    // Cuando todo está pintado, mostramos #sky y los elementos internos
     var sky = document.getElementById('sky');
-    if (sky){ 
+    if (sky){
       sky.classList.add('ready');
-      // Mostrar hijos visibles
-      sky.querySelectorAll('.cloud, .veil, .glow').forEach(function(el){ el.style.visibility = 'visible'; });
+      sky.querySelectorAll('.cloud, .veil, .glow, .core').forEach(function(el){ el.style.visibility = 'visible'; });
     }
   }
 
   function init(){
-    // Asegura que #sky esté oculto hasta terminar
-    var sky = document.getElementById('sky');
-    if (sky) sky.classList.remove('ready');
+    setupStars();      // posiciones y timings de estrellas
+    paintAll();        // pinto las 3 nubes
+    showSky();         // muestro todo sin flash
 
-    paintAll(); // pinta sin mostrar
-
-    // Mostrar inmediatamente tras pintar (sin transición)
-    showSky();
-
-    // Re-pintado tras resize
+    // Re-pintado en resize (sin parpadeo)
     var to=null;
-    window.addEventListener('resize', function(){ clearTimeout(to); to=setTimeout(function(){ 
-      // ocultar, repintar, mostrar
-      if (sky) sky.classList.remove('ready');
-      paintAll();
-      showSky();
-    }, 120); }, {passive:true});
+    window.addEventListener('resize', function(){
+      clearTimeout(to);
+      to=setTimeout(function(){ paintAll(); }, 120);
+    }, {passive:true});
 
-    window.addEventListener('pageshow', function(){ paintAll(); showSky(); }, {passive:true});
-    window.addEventListener('load', function(){ paintAll(); showSky(); }, {passive:true});
+    window.addEventListener('pageshow', function(){ paintAll(); }, {passive:true});
+    window.addEventListener('load', function(){ paintAll(); }, {passive:true});
   }
 
-  if (typeof document !== 'undefined'){
-    if (document.readyState === 'loading'){
-      document.addEventListener('DOMContentLoaded', init, {once:true});
-    } else {
-      init();
-    }
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', init, {once:true});
+  } else {
+    init();
   }
 })();
         `}</Script>
