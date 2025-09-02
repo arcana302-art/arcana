@@ -19,14 +19,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${inter.variable} ${playfair.variable} min-h-screen antialiased relative`}
         style={{ background: "linear-gradient(180deg,#0a1120,#0b1530)", color: "#e5e7eb" }}
       >
-        {/* ===== CIELO (dos nubes separadas, parallax y desfase) ===== */}
+        {/* ===== CIELO (dos nubes, más grandes y más separadas) ===== */}
         <div id="sky" aria-hidden>
           {/* Nube superior */}
           <div className="cloud-track track-a">
             <canvas id="cloudA" className="cloud cloud-a" />
             <div className="veil veil-a" />
           </div>
-          {/* Nube inferior (más grande) */}
+          {/* Nube inferior */}
           <div className="cloud-track track-b">
             <canvas id="cloudB" className="cloud cloud-b" />
             <div className="veil veil-b" />
@@ -43,15 +43,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
 #sky { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: visible; }
 
-/* Pistas que mueven las nubes (solo transform → sin flicker) */
+/* Pistas (solo transform → sin flicker) */
 .cloud-track {
   position: absolute; left: 0; width: 100%;
   transform: translate3d(110vw,0,0);
 }
 
-/* Separación vertical + parallax */
-.track-a { top: 14vh; animation: cloud-drift-a 135s linear infinite; }
-.track-b { top: 56vh; animation: cloud-drift-b 178s linear infinite; animation-delay: 8s; }
+/* Más separación vertical (antes 14vh/56vh) */
+.track-a { top: 12vh; animation: cloud-drift-a 135s linear infinite; }
+.track-b { top: 62vh; animation: cloud-drift-b 178s linear infinite; animation-delay: 8s; }
 
 /* Canvas base + fallback visible */
 .cloud {
@@ -65,17 +65,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   border-radius: 9999px/60%;
 }
 
-/* >>> Ajustes individuales (superior e inferior) */
+/* >>> Ambas más grandes <<< */
 .cloud-a {
-  width: min(40vw, 660px);
-  height: calc(min(40vw, 660px) * 0.40625);
+  width: min(52vw, 860px);
+  height: calc(min(52vw, 860px) * 0.40625);
   opacity: 0.70;
 }
-
-/* *** SOLO MÁS GRANDE: nube inferior *** */
 .cloud-b {
-  width: min(56vw, 900px);
-  height: calc(min(56vw, 900px) * 0.40625);
+  width: min(62vw, 980px);
+  height: calc(min(62vw, 980px) * 0.40625);
   opacity: 0.76;
   transform: scale(1.02);
 }
@@ -88,7 +86,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   pointer-events:none;
 }
 
-/* Flotaciones distintas para cada nube (parallax vertical) */
+/* Flotaciones (parallax vertical) */
 .cloud-track::after { content:""; position:absolute; inset:0; }
 .track-a::after { animation: cloud-float-a 17s ease-in-out infinite alternate; }
 .track-b::after { animation: cloud-float-b 21s ease-in-out infinite alternate; }
@@ -121,10 +119,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
 /* Responsivo */
 @media (max-width: 768px){
-  .track-a { top: 12vh; }
-  .track-b { top: 62vh; }
-  .cloud-a { width: 72vw; height: calc(72vw * 0.40625); opacity: .68; }
-  .cloud-b { width: 92vw; height: calc(92vw * 0.40625); opacity: .72; } /* un poco más grande también en móvil */
+  .track-a { top: 10vh; }
+  .track-b { top: 70vh; } /* aún más separadas en móvil */
+  .cloud-a { width: 84vw; height: calc(84vw * 0.40625); opacity: .68; }
+  .cloud-b { width: 96vw; height: calc(96vw * 0.40625); opacity: .72; }
   .cloud { filter: blur(22px) drop-shadow(0 8px 18px rgba(0,0,0,.10)); }
 }
         `}</style>
