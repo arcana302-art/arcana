@@ -19,7 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${inter.variable} ${playfair.variable} min-h-screen antialiased relative`}
         style={{ background: "linear-gradient(180deg,#0a1120,#0b1530)", color: "#e5e7eb" }}
       >
-        {/* ===== CIELO (dos nubes; la inferior asciende mucho) ===== */}
+        {/* ===== CIELO (dos nubes; inferior asciende más; toques morado/rosa) ===== */}
         <div id="sky" aria-hidden>
           {/* Nube superior */}
           <div className="cloud-track track-a">
@@ -28,7 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <div className="veil veil-a" />
             </div>
           </div>
-          {/* Nube inferior */}
+          {/* Nube inferior (sube más) */}
           <div className="cloud-track track-b">
             <div className="cloud-wrap wrap-b">
               <canvas id="cloudB" className="cloud cloud-b" />
@@ -54,9 +54,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   will-change: transform;
 }
 
-/* Más separación; inferior arranca aún más abajo para que el ascenso se note */
+/* Separación + parallax (inferior más lenta) */
 .track-a { top: 12vh; animation: cloud-drift-a 150s linear infinite; }
-.track-b { top: 66vh; animation: cloud-drift-b 200s linear infinite; animation-delay: 8s; }
+.track-b { top: 66vh; animation: cloud-drift-b 210s linear infinite; animation-delay: 8s; }
 
 /* Flotación suave independiente */
 .cloud-wrap { position: relative; will-change: transform; }
@@ -70,7 +70,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   height: calc(min(42vw, 700px) * 0.40625); /* 6.5/16 */
   aspect-ratio: 16 / 6.5;
   background:
-    radial-gradient(60% 50% at 50% 52%, rgba(255,255,255,.32) 0%, rgba(255,255,255,.16) 45%, rgba(255,255,255,0) 72%);
+    radial-gradient(60% 50% at 50% 52%, rgba(255,255,255,.30) 0%, rgba(255,255,255,.15) 45%, rgba(255,255,255,0) 72%);
   filter: blur(24px) drop-shadow(0 10px 22px rgba(0,0,0,.12));
   border-radius: 9999px/60%;
 }
@@ -88,25 +88,28 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   transform: scale(1.02);
 }
 
-/* Velo exterior */
+/* Velo con toques de color (blend "screen" para efecto luz) */
 .veil {
   position:absolute; inset: -14% -8%;
-  background: radial-gradient(80% 70% at 50% 52%, rgba(255,255,255,.10), transparent 80%);
+  background:
+    radial-gradient(42% 60% at 24% 44%, rgba(168,85,247,0.14), transparent 62%),      /* morado suave */
+    radial-gradient(46% 62% at 72% 60%, rgba(244,114,182,0.12), transparent 64%),     /* rosa suave */
+    radial-gradient(80% 70% at 50% 52%, rgba(255,255,255,.08), transparent 80%);      /* halo blanco */
+  mix-blend-mode: screen;
   filter: blur(12px);
   pointer-events:none;
 }
 
 /* ===== Animaciones ===== */
-/* Superior: diagonal suave. Inferior: MUCHA subida visible. */
+/* Superior: diagonal sutil. */
 @keyframes cloud-drift-a {
   0%   { transform: translate3d(110vw,  1.5vh, 0); }
   100% { transform: translate3d(-100vw, -2.4vh, 0); }
 }
+/* Inferior: ascenso MUY marcado (se nota claro) */
 @keyframes cloud-drift-b {
-  /* Arranca bien abajo (+14vh) y termina muy arriba (-30vh) => ascenso total ~44vh
-     Como el track tiene top:66vh, visualmente cruza desde ~80vh hasta ~36vh. */
-  0%   { transform: translate3d(115vw,  14vh, 0); }
-  100% { transform: translate3d(-105vw, -30vh, 0); }
+  0%   { transform: translate3d(115vw,  18vh, 0); }  /* empieza abajo */
+  100% { transform: translate3d(-105vw, -42vh, 0); } /* termina bien arriba */
 }
 
 /* Flotación (pequeña oscilación) */
@@ -127,18 +130,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 /* Responsivo */
 @media (max-width: 768px){
   .track-a { top: 10vh; }
-  .track-b { top: 72vh; } /* un poco más abajo en móvil para que el ascenso siga notándose */
+  .track-b { top: 72vh; }
   .cloud-a { width: 84vw; height: calc(84vw * 0.40625); opacity: .68; }
   .cloud-b { width: 96vw; height: calc(96vw * 0.40625); opacity: .72; }
   .cloud  { filter: blur(22px) drop-shadow(0 8px 18px rgba(0,0,0,.10)); }
 }
         `}</style>
 
-        {/* ===== SCRIPT: pinta ambas nubes (cliente) ===== */}
+        {/* ===== SCRIPT: pinta ambas nubes con tintes morado/rosa (cliente) ===== */}
         <Script id="paint-clouds" strategy="afterInteractive">{`
 (function(){
   function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
   function smoothstep(e0,e1,x){ var t=clamp((x-e0)/(e1-e0),0,1); return t*t*(3-2*t); }
+  function mix(a,b,t){ return a + (b - a) * t; }
 
   // Perlin 2D (perm común)
   var p=new Uint8Array(512);
@@ -200,6 +204,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       var tiltX = variant===0 ? 0.06 : 0.07;
       var tiltY = variant===0 ? -0.03 : -0.028;
 
+      // Colores de luz (morada y rosa)
+      var PURPLE = [195,160,255];  // #C3A0FF aprox
+      var PINK   = [255,150,210];  // #FF96D2 aprox
+
       for (var y=0; y<canvas.height; y++){
         for (var x=0; x<canvas.width; x++){
           // domain warp con offset por variante
@@ -222,10 +230,31 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           // curva suave para alpha vaporosa
           var a = smoothstep(0.40, 0.75, n) * mask * baseAlpha;
 
+          // --- Toques de color: pesos radiales (izq-arriba morado, der-abajo rosa) ---
+          var u = x / canvas.width, v = y / canvas.height;
+          var wPurple = Math.exp(-(
+            Math.pow((u-0.28)/0.28, 2) + Math.pow((v-0.35)/0.34, 2)
+          )); // foco izq-arriba
+          var wPink   = Math.exp(-(
+            Math.pow((u-0.72)/0.30, 2) + Math.pow((v-0.65)/0.36, 2)
+          )); // foco der-abajo
+
+          var t1 = Math.min(0.28, wPurple * 0.28); // intensidad máx morado
+          var t2 = Math.min(0.22, wPink   * 0.22); // intensidad máx rosa
+
+          // Color base blanco → mezcla hacia morado y luego rosa
+          var rC = mix(255, PURPLE[0], t1);
+          var gC = mix(255, PURPLE[1], t1);
+          var bC = mix(255, PURPLE[2], t1);
+
+          rC = mix(rC, PINK[0], t2);
+          gC = mix(gC, PINK[1], t2);
+          bC = mix(bC, PINK[2], t2);
+
           var i=(y*canvas.width + x)*4;
-          data[i  ] = 255;
-          data[i+1] = 255;
-          data[i+2] = 255;
+          data[i  ] = rC | 0;
+          data[i+1] = gC | 0;
+          data[i+2] = bC | 0;
           data[i+3] = Math.floor(clamp(a,0,1)*255);
         }
       }
