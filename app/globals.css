@@ -11,120 +11,22 @@
   --arcana-accent: #d4af37;    /* dorado */
   --arcana-accent-soft: rgba(212, 175, 55, 0.6);
 }
-
 .font-display { font-family: var(--font-display); }
 
 /* =========================
    Scroll suave y offset para anclas (header sticky)
    ========================= */
 html { scroll-behavior: smooth; }
-/* Las secciones con id (anclas) “caen” debajo del header */
 [id] { scroll-margin-top: 84px; }
 
-/* =========================
-   Fondo base (degradé)
-   ========================= */
+/* Fondo base */
 body {
   background: linear-gradient(180deg, var(--arcana-bg) 0%, var(--arcana-bg-2) 100%);
   color: #e5e7eb; /* zinc-200 */
 }
 
 /* =========================
-   Capa de brillos fijos (ligeros)
-   ========================= */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: -3;
-  background:
-    radial-gradient(1200px 600px at 20% 20%, rgba(49, 130, 206, .12), transparent 50%),
-    radial-gradient(900px 500px at 80% 30%, rgba(88, 28, 135, .14), transparent 55%),
-    radial-gradient(800px 500px at 50% 80%, rgba(212, 175, 55, .08), transparent 55%);
-}
-
-/* =========================
-   CONTENEDOR DE ANIMACIONES (insertado en page.tsx)
-   - capas de estrellas (parallax)
-   - nubes nebulosas (flotando)
-   ========================= */
-.bg-cosmos {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  overflow: hidden;
-  z-index: -2;
-}
-
-/* Estrellas: 3 capas con distintas densidades/tamaños */
-.stars {
-  position: absolute;
-  inset: 0;
-  opacity: .22;
-  background-image:
-    radial-gradient(1px 1px at 10px 10px, rgba(255,255,255,.85), transparent 60%),
-    radial-gradient(1px 1px at 25px 35px, rgba(255,255,255,.75), transparent 60%),
-    radial-gradient(1px 1px at 50px 15px, rgba(255,255,255,.7), transparent 60%),
-    radial-gradient(1px 1px at 15px 60px, rgba(255,255,255,.85), transparent 60%);
-  background-size: 64px 64px;
-  animation: scrollStars 180s linear infinite;
-}
-.stars-2 {
-  opacity: .18;
-  background-size: 96px 96px;
-  animation-duration: 220s;
-}
-.stars-3 {
-  opacity: .14;
-  background-size: 128px 128px;
-  animation-duration: 260s;
-}
-@keyframes scrollStars {
-  0%   { background-position: 0 0,  0 0,   0 0,   0 0; }
-  100% { background-position: 2000px 0, -2000px 0, 1500px 0, -1500px 0; }
-}
-
-/* Nubes nebulosas: 3 blobs grandes con mezcla y blur */
-.cloud {
-  position: absolute;
-  filter: blur(40px);
-  opacity: .35;
-  will-change: transform;
-  mix-blend-mode: screen;
-}
-.cloud-1 {
-  width: 45vw; height: 45vw; left: -10vw; top: -6vw;
-  background:
-    radial-gradient(circle at 30% 30%, rgba(212,175,55,.18), transparent 60%),
-    radial-gradient(circle at 70% 70%, rgba(59,130,246,.18), transparent 60%);
-  animation: drift1 60s ease-in-out infinite alternate;
-}
-.cloud-2 {
-  width: 35vw; height: 35vw; right: -12vw; top: 10vw;
-  background:
-    radial-gradient(circle at 60% 40%, rgba(139,92,246,.16), transparent 60%),
-    radial-gradient(circle at 40% 60%, rgba(212,175,55,.10), transparent 60%);
-  animation: drift2 80s ease-in-out infinite alternate;
-}
-.cloud-3 {
-  width: 50vw; height: 50vw; left: 20vw; bottom: -15vw;
-  background:
-    radial-gradient(circle at 50% 50%, rgba(59,130,246,.14), transparent 60%),
-    radial-gradient(circle at 30% 70%, rgba(212,175,55,.12), transparent 60%);
-  animation: drift3 90s ease-in-out infinite alternate;
-}
-@keyframes drift1 { from { transform: translateX(0) translateY(0); } to { transform: translateX(8vw)  translateY(2vw); } }
-@keyframes drift2 { from { transform: translateX(0) translateY(0); } to { transform: translateX(-6vw) translateY(-1vw); } }
-@keyframes drift3 { from { transform: translateX(0) translateY(0); } to { transform: translateX(5vw)  translateY(-3vw); } }
-
-/* Reduce motion: apaga animaciones si el usuario lo prefiere */
-@media (prefers-reduced-motion: reduce) {
-  .stars, .stars-2, .stars-3, .cloud-1, .cloud-2, .cloud-3 { animation: none !important; }
-}
-
-/* =========================
-   “Glassmorphism” y chips
+   Glass & chips
    ========================= */
 .glass {
   background: rgba(255,255,255,0.06);
@@ -138,7 +40,7 @@ body::before {
 }
 
 /* =========================
-   Botón con “chispa” (shimmer)
+   Botones con “shimmer”
    ========================= */
 .btn-arcana {
   position: relative;
@@ -146,8 +48,6 @@ body::before {
   transition: transform .2s ease, box-shadow .2s ease, background-color .2s ease, color .2s ease;
 }
 .btn-arcana:hover { transform: translateY(-1px); }
-
-/* destello */
 .btn-arcana::after {
   content: "";
   position: absolute;
@@ -160,8 +60,6 @@ body::before {
   transition: transform .6s ease;
 }
 .btn-arcana:hover::after { transform: translateX(300%) skewX(-20deg); }
-
-/* variantes */
 .btn-arcana--primary {
   background: var(--arcana-accent);
   color: #0b0b0b;
@@ -174,9 +72,7 @@ body::before {
   border: 1px solid rgba(255,255,255,.25);
 }
 
-/* =========================
-   Detalles
-   ========================= */
+/* Utilidades */
 .text-accent { color: var(--arcana-accent); }
 .border-accent { border-color: var(--arcana-accent); }
 ::selection { background: #0f172a; color: #fff; }
