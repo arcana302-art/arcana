@@ -14,10 +14,10 @@ export default function Stars() {
     feat.innerHTML = "";
 
     // ===== Config =====
-    const FEATURED = 10;    // estrellas brillantes (titilan)
-    const DISTANT  = 25;    // estrellas lejanas (fijas, pequeñas y opacas)
-    const twinkleMin = 110; // s  ← más lento
-    const twinkleMax = 160; // s
+    const FEATURED = 10;     // estrellas brillantes (con dim)
+    const DISTANT  = 25;     // estrellas lejanas (fijas, pequeñas y opacas)
+    const dimMin = 40;       // segundos  ← más rápido para que se note
+    const dimMax = 70;       // segundos
     const rand = (a: number, b: number) => a + Math.random() * (b - a);
 
     // ----- Lejanas (detrás de nubes) -----
@@ -33,19 +33,22 @@ export default function Stars() {
       far.appendChild(s);
     }
 
-    // ----- Brillantes (encima de nubes) -----
+    // ----- Brillantes (encima de nubes): dim lento hasta desaparecer -----
     for (let i = 0; i < FEATURED; i++) {
       const s = document.createElement("span");
       s.className = "arcana-star";
-      const size = rand(3.5, 5.2); // ↓ un poco más pequeñas
-      const dur = rand(twinkleMin, twinkleMax);
+      const size = rand(3.2, 4.6); // un poco más pequeñas
+      const dur = rand(dimMin, dimMax);
       const delay = -rand(0, dur);
       s.style.width = `${size}px`;
       s.style.height = `${size}px`;
       s.style.top = `${rand(5, 95)}vh`;
       s.style.left = `${rand(5, 95)}vw`;
+      // controla el dim perceptible
       s.style.animationDuration = `${dur}s`;
       s.style.animationDelay = `${delay}s`;
+      s.style.animationTimingFunction = "ease-in-out";
+      s.style.animationDirection = "alternate"; // va y regresa
       feat.appendChild(s);
     }
   }, []);
@@ -76,40 +79,34 @@ export default function Stars() {
   display:none!important;animation:none!important;transition:none!important;background:none!important;
 }
 
-/* Dim MUY lento hasta desaparecer y reaparecer (solo brillantes) */
+/* DIM: desaparece a 0 y vuelve (para las 10 brillantes) */
 @keyframes arcanaDim {
   0%   { opacity: 0.95; transform: scale(1);    }
   50%  { opacity: 0.00; transform: scale(0.90); }
   100% { opacity: 0.95; transform: scale(1);    }
 }
 
-/* Estrellas brillantes (encima de nubes) — tamaño/glow moderados */
+/* Brillantes (encima de nubes) — tamaño y glow moderado */
 .arcana-star{
   position:absolute;border-radius:999px;pointer-events:none;will-change:opacity,transform;
   background:
     radial-gradient(circle at 50% 50%, rgba(255,255,255,1) 0%, rgba(255,255,255,.95) 32%, rgba(255,255,255,0) 60%),
-    radial-gradient(circle at 50% 50%, rgba(168,85,247,.28) 0%, rgba(168,85,247,0) 68%),
-    radial-gradient(circle at 50% 50%, rgba(244,114,182,.14) 0%, rgba(244,114,182,0) 76%);
+    radial-gradient(circle at 50% 50%, rgba(168,85,247,.26) 0%, rgba(168,85,247,0) 68%),
+    radial-gradient(circle at 50% 50%, rgba(244,114,182,.12) 0%, rgba(244,114,182,0) 76%);
   filter:
-    drop-shadow(0 0 4px rgba(255,255,255,.35))
-    drop-shadow(0 0 7px rgba(168,85,247,.18))
-    drop-shadow(0 0 9px rgba(244,114,182,.10));
-  animation: arcanaDim var(--dur,120s) linear infinite both;
-}
-.arcana-star::before{
-  content:"";position:absolute;inset:-8px;border-radius:999px;filter:blur(8px);opacity:.38;
-  background: radial-gradient(circle at 50% 50%,
-    rgba(255,255,255,.22) 0%,
-    rgba(168,85,247,.12) 46%,
-    rgba(244,114,182,.06) 66%,
-    rgba(255,255,255,0) 86%);
+    drop-shadow(0 0 4px rgba(255,255,255,.30))
+    drop-shadow(0 0 6px rgba(168,85,247,.16))
+    drop-shadow(0 0 8px rgba(244,114,182,.10));
+  animation-name: arcanaDim;
+  animation-iteration-count: infinite;
+  animation-fill-mode: both;
 }
 
-/* Estrellas lejanas — pequeñas, opacas, sin glow (detrás de nubes) */
+/* Lejanas — pequeñas, opacas, SIN glow (detrás de nubes) */
 .arcana-star-distant{
   position:absolute;border-radius:999px;pointer-events:none;
   background:
-    radial-gradient(circle at 50% 50%, rgba(255,255,255,.80) 0%, rgba(255,255,255,.40) 45%, rgba(255,255,255,0) 70%);
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,.78) 0%, rgba(255,255,255,.40) 45%, rgba(255,255,255,0) 70%);
   filter:none; box-shadow:none; mix-blend-mode:normal;
 }
       `}</style>
