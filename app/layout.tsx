@@ -22,7 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       >
         {/* Estrellas (lejanas detrás, brillantes encima) */}
         <Stars />
-        {/* Nubes entre capas de estrellas */}
+        {/* Nubes entre ambas capas */}
         <CloudBackdrop />
 
         <div className="relative z-10">{children}</div>
