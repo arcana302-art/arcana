@@ -11,30 +11,31 @@ type Cluster = {
   puffs: Puff[];
   wavePhase: number;
 };
-
 type Band = { y: number; spread: number; clusters: number };
 
 const CFG = {
-  // === Apariencia de las nubes ===
-  puffsPerCluster: 28,          // burbujas por cluster (forma algodonosa)
-  rMin: 40,                     // radio mínimo
-  rMax: 120,                    // radio máximo
-  alphaMin: 0.030,              // opacidad mínima de cada puff
-  alphaMax: 0.070,              // opacidad máxima de cada puff
-  tintMagenta: 0.06,            // tinte mágico sutil morado
-  tintPink: 0.04,               // tinte rosa sutil
-  // === Movimiento ===
-  vx: -0.09,                    // velocidad horizontal (px/frame aprox)
-  vy: 0,                        // sin desplazamiento vertical fijo
-  waveAmp: 10,                  // ondulación vertical (px)
-  waveSpeed: 0.0012,            // velocidad de la ondulación
-  // === Cap dpi para rendimiento ===
+  // Apariencia
+  puffsPerCluster: 28,
+  rMin: 40,
+  rMax: 120,
+  alphaMin: 0.03,
+  alphaMax: 0.07,
+  tintMagenta: 0.06,
+  tintPink: 0.04,
+
+  // Movimiento (↓ más lento)
+  vx: -0.035,              // antes: -0.09  → desplazamiento horizontal MUCHO más lento
+  vy: 0,
+  waveAmp: 10,
+  waveSpeed: 0.0012,       // respiración suave; puedes bajar a 0.001 si quieres más calma
+
+  // Rendimiento
   maxDpr: 1.5,
-  // === Bandas (posiciones verticales en viewport 0..1) ===
+
+  // Bandas verticales (0..1 del alto de viewport)
   bands: [
     { y: 0.16, spread: 0.04, clusters: 3 }, // superior
     { y: 0.48, spread: 0.06, clusters: 5 }, // principal
-    // si quieres una tercera: { y: 0.68, spread: 0.06, clusters: 4 }
   ] as Band[],
 };
 
@@ -50,7 +51,6 @@ export default function CloudBackdrop() {
     let t0 = performance.now();
 
     const rand = (a: number, b: number) => a + Math.random() * (b - a);
-    const sign = () => (Math.random() < 0.5 ? -1 : 1);
 
     const fit = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, CFG.maxDpr);
@@ -60,8 +60,7 @@ export default function CloudBackdrop() {
       canvas.width = W;
       canvas.height = H;
       seedClusters();
-      // pintamos un primer frame para evitar “flash”
-      paint(performance.now());
+      paint(performance.now()); // primer frame inmediato (sin “flash”)
     };
 
     const seedClusters = () => {
@@ -69,23 +68,18 @@ export default function CloudBackdrop() {
       for (const band of CFG.bands) {
         for (let i = 0; i < band.clusters; i++) {
           const bandCenter = H * band.y;
-          const cy =
-            bandCenter +
-            rand(-H * band.spread * 0.5, H * band.spread * 0.5);
+          const cy = bandCenter + rand(-H * band.spread * 0.5, H * band.spread * 0.5);
           const cx = rand(-200 * DPR, W + 200 * DPR);
-          const puffs: Puff[] = Array.from({ length: CFG.puffsPerCluster }).map(
-            () => {
-              // offset radial alrededor del centro del cluster
-              const ang = Math.random() * Math.PI * 2;
-              const dist = rand(30 * DPR, 110 * DPR);
-              return {
-                ox: Math.cos(ang) * dist,
-                oy: Math.sin(ang) * dist,
-                r: rand(CFG.rMin * DPR, CFG.rMax * DPR),
-                a: rand(CFG.alphaMin, CFG.alphaMax),
-              };
-            }
-          );
+          const puffs: Puff[] = Array.from({ length: CFG.puffsPerCluster }).map(() => {
+            const ang = Math.random() * Math.PI * 2;
+            const dist = rand(30 * DPR, 110 * DPR);
+            return {
+              ox: Math.cos(ang) * dist,
+              oy: Math.sin(ang) * dist,
+              r: rand(CFG.rMin * DPR, CFG.rMax * DPR),
+              a: rand(CFG.alphaMin, CFG.alphaMax),
+            };
+          });
           clusters.push({
             cx,
             cy,
@@ -106,16 +100,14 @@ export default function CloudBackdrop() {
       ctx.clearRect(0, 0, W, H);
       ctx.globalCompositeOperation = "lighter";
 
-      // nube blanca base + ligerísimo tinte
       for (const c of clustersRef.current) {
-        // ondulación vertical orgánica
         const wave = Math.sin(now * CFG.waveSpeed + c.wavePhase) * CFG.waveAmp * DPR;
 
         for (const p of c.puffs) {
           const x = c.cx + p.ox;
           const y = c.cy + p.oy + wave;
 
-          // gradiente principal (blanco → transparente)
+          // núcleo blanco
           const g = ctx.createRadialGradient(x, y, 0, x, y, p.r);
           g.addColorStop(0, `rgba(240,240,255,${p.a})`);
           g.addColorStop(1, "rgba(255,255,255,0)");
@@ -124,7 +116,7 @@ export default function CloudBackdrop() {
           ctx.arc(x, y, p.r, 0, Math.PI * 2);
           ctx.fill();
 
-          // halo sutil frío (evita “plasta” blanca pura)
+          // halos sutiles
           if (CFG.tintMagenta > 0) {
             const g2 = ctx.createRadialGradient(x, y, 0, x, y, p.r * 1.1);
             g2.addColorStop(0, `rgba(168,85,247,${CFG.tintMagenta * p.a})`);
@@ -145,9 +137,8 @@ export default function CloudBackdrop() {
           }
         }
 
-        // movimiento horizontal constante
+        // desplazamiento y recirculación (más lento por vx reducido)
         c.cx += c.vx * (dt || 16.7);
-        // recirculación
         const off = 240 * DPR;
         if (c.cx < -off) c.cx = W + off * 0.5;
       }
@@ -158,7 +149,6 @@ export default function CloudBackdrop() {
     fit();
     rafRef.current = requestAnimationFrame(paint);
     window.addEventListener("resize", fit);
-
     return () => {
       window.removeEventListener("resize", fit);
       cancelAnimationFrame(rafRef.current);
@@ -176,7 +166,7 @@ export default function CloudBackdrop() {
         height: "100vh",
         display: "block",
         pointerEvents: "none",
-        zIndex: 0, // detrás de todo
+        zIndex: 0,
       }}
     />
   );
