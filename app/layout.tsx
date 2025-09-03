@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
+import Stars from "./components/Stars";
 import CloudBackdrop from "./components/CloudBackdrop";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
@@ -19,13 +20,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${inter.variable} ${playfair.variable} min-h-screen antialiased relative`}
         style={{ background: "linear-gradient(180deg,#0a1120,#0b1530)" }}
       >
-        {/* Fondo animado de nubes (canvas fijo detrás de todo) */}
+        {/* Estrellas detrás */}
+        <Stars />
+        {/* Nubes encima de las estrellas */}
         <CloudBackdrop />
 
-        {/* Contenido del sitio */}
-        <div className="relative z-10">
-          {children}
-        </div>
+        {/* Contenido */}
+        <div className="relative z-10">{children}</div>
       </body>
     </html>
   );
