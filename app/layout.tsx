@@ -16,6 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es" className="h-full">
       <head>
+        {/* Escudo anti-flash y pre-nuke de starfields externos */}
         <style id="arcana-star-shield">{`
 #stars2,#stars3,.stars2,.stars3,.starfield,.bg-stars,.twinkle,.twinkling,.particles,.particle,.dots,
 [id^="star"],[id$="star"],[id*="star-"],[id*="-star"],[class^="star"],[class$="star"],[class*=" star "],
@@ -34,7 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       try{n.remove()}catch(e){}
     });
   }
-  nuke();var mo=new MutationObserver(nuke);
+  nuke(); var mo=new MutationObserver(nuke);
   mo.observe(document.documentElement,{childList:true,subtree:true});
   window.addEventListener('load',()=>setTimeout(()=>mo.disconnect(),2000));
 })();
@@ -45,9 +46,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${inter.variable} ${playfair.variable} min-h-screen antialiased relative`}
         style={{ background: "linear-gradient(180deg,#0a1120,#0b1530)", color: "#e5e7eb" }}
       >
+        {/* CIELO */}
         <div id="sky" aria-hidden>
           <div id="stars"></div>
 
+          {/* Nubes (3 pistas) */}
           <div className="cloud-track track-a">
             <div className="rise rise-a">
               <div className="cloud-wrap wrap-a">
@@ -55,7 +58,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </div>
             </div>
           </div>
-
           <div className="cloud-track track-c">
             <div className="rise rise-c">
               <div className="cloud-wrap wrap-c">
@@ -63,7 +65,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </div>
             </div>
           </div>
-
           <div className="cloud-track track-b">
             <div className="rise rise-b">
               <div className="cloud-wrap wrap-b">
@@ -73,8 +74,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </div>
 
+        {/* CONTENIDO */}
         <div className="relative z-10">{children}</div>
 
+        {/* ===== ESTILOS ===== */}
         <style>{`
 #bg-root,.belt,.bank,.puffs,.cloud-svg,.nebula,.grain,.vignette{display:none!important;}
 html::before,html::after,body::before,body::after{content:none!important;display:none!important;}
@@ -111,7 +114,7 @@ html::before,html::after,body::before,body::after{content:none!important;display
 @keyframes cloud-float-c{0%{transform:translateY(0)}100%{transform:translateY(1.1vh)}}
 @keyframes cloud-float-b{0%{transform:translateY(0)}100%{transform:translateY(1.5vh)}}
 
-/* Canvas de nubes: sin fondos ni overlays rectangulares */
+/* Canvas de nubes: sin overlays rectangulares */
 .cloud{
   display:block;
   width:min(52vw,860px);
@@ -175,65 +178,69 @@ html::before,html::after,body::before,body::after{content:none!important;display
 }
         `}</style>
 
-        {/* ===== NUEVO: nubes sin rectángulos + 3 hileras de puffs y luces recortadas a la silueta ===== */}
+        {/* ===== SCRIPT: Nubes orgánicas (Poisson-ish, ruido, sin alineaciones) ===== */}
         <Script id="paint-clouds" strategy="afterInteractive">{`
 (function(){
-  function rngFactory(seed){ return function(){ seed=(seed*1664525+1013904223)>>>0; return (seed&0xffffffff)/4294967296; } }
+  // RNG determinista
+  function rngFactory(seed){return function(){seed=(seed*1664525+1013904223)>>>0;return (seed&0xffffffff)/4294967296}}
+  // Gauss aproximado (Box-Muller)
+  function gauss(rng){let u=0,v=0;while(u===0)u=rng();while(v===0)v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+  // 1D noise sencillo
+  function makeNoise1(seed){
+    const rng=rngFactory(seed), g=new Float32Array(512);
+    for(let i=0;i<256;i++) g[i]=(rng()*2-1); for(let i=256;i<512;i++) g[i]=g[i-256];
+    function fade(t){return t*t*t*(t*(t*6-15)+10)}
+    return function(x){
+      const X=Math.floor(x)|0, xf=x-X, u=fade(xf);
+      const a=g[(X   )&255], b=g[(X+1)&255];
+      const va=a*xf, vb=b*(xf-1);
+      return va+(vb-va)*u; // [-1,1] aprox
+    }
+  }
+
   function drawPuff(ctx,x,y,r,bright){
     const g=ctx.createRadialGradient(x,y,0,x,y,r);
-    g.addColorStop(0,'rgba(255,255,255,'+(0.34+0.16*bright).toFixed(3)+')');
-    g.addColorStop(0.45,'rgba(255,255,255,'+(0.20+0.10*bright).toFixed(3)+')');
-    g.addColorStop(1,'rgba(255,255,255,0)');
+    g.addColorStop(0.00,'rgba(255,255,255,'+(0.26+0.12*bright).toFixed(3)+')'); // menos sólido
+    g.addColorStop(0.45,'rgba(255,255,255,'+(0.16+0.08*bright).toFixed(3)+')');
+    g.addColorStop(1.00,'rgba(255,255,255,0)');
     ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
   }
-  // luces morado/rosa recortadas a la silueta
+
+  // Luces color recortadas a la silueta
   function addColorLights(fx,mask){
     const W=fx.canvas.width,H=fx.canvas.height,pr=Math.min(W,H);
     const sc=document.createElement('canvas'); sc.width=W; sc.height=H; const cx=sc.getContext('2d');
-    // pintar luces
     cx.globalCompositeOperation='lighter';
-    let p1=cx.createRadialGradient(W*0.30,H*0.48,0,W*0.30,H*0.48,pr*0.42);
-    p1.addColorStop(0,'rgba(168,85,247,0.18)'); p1.addColorStop(1,'rgba(168,85,247,0)');
+    let p1=cx.createRadialGradient(W*0.32,H*0.50,0,W*0.32,H*0.50,pr*0.44);
+    p1.addColorStop(0,'rgba(168,85,247,0.14)'); p1.addColorStop(1,'rgba(168,85,247,0)');
     cx.fillStyle=p1; cx.fillRect(0,0,W,H);
-    let p2=cx.createRadialGradient(W*0.70,H*0.62,0,W*0.70,H*0.62,pr*0.46);
-    p2.addColorStop(0,'rgba(244,114,182,0.16)'); p2.addColorStop(1,'rgba(244,114,182,0)');
+    let p2=cx.createRadialGradient(W*0.68,H*0.60,0,W*0.68,H*0.60,pr*0.46);
+    p2.addColorStop(0,'rgba(244,114,182,0.12)'); p2.addColorStop(1,'rgba(244,114,182,0)');
     cx.fillStyle=p2; cx.fillRect(0,0,W,H);
-    // recortar a la silueta
-    cx.globalCompositeOperation='destination-in';
-    cx.drawImage(mask,0,0);
-    // mezclar sobre fx
-    fx.globalCompositeOperation='lighter';
-    fx.drawImage(sc,0,0);
-    fx.globalCompositeOperation='source-over';
+    cx.globalCompositeOperation='destination-in'; cx.drawImage(mask,0,0);
+    fx.globalCompositeOperation='lighter'; fx.drawImage(sc,0,0); fx.globalCompositeOperation='source-over';
   }
-  // highlight/sombra recortadas a la silueta
+  // Sombras y highlight recortados
   function addShading(fx,mask){
     const W=fx.canvas.width,H=fx.canvas.height;
     const sc=document.createElement('canvas'); sc.width=W; sc.height=H; const cx=sc.getContext('2d');
-    // highlight superior
-    let lg=cx.createLinearGradient(0,H*0.04,0,H*0.55);
-    lg.addColorStop(0,'rgba(255,255,255,0.14)'); lg.addColorStop(1,'rgba(255,255,255,0)');
+    let lg=cx.createLinearGradient(0,H*0.06,0,H*0.52);
+    lg.addColorStop(0,'rgba(255,255,255,0.12)'); lg.addColorStop(1,'rgba(255,255,255,0)');
     cx.fillStyle=lg; cx.fillRect(0,0,W,H);
-    // sombra base
     cx.globalCompositeOperation='multiply';
-    let sg=cx.createLinearGradient(0,H*0.50,0,H*0.96);
+    let sg=cx.createLinearGradient(0,H*0.52,0,H*0.98);
     sg.addColorStop(0,'rgba(10,18,30,0)');
     sg.addColorStop(1,'rgba(10,18,30,0.10)');
     cx.fillStyle=sg; cx.fillRect(0,0,W,H);
-    // recorte
-    cx.globalCompositeOperation='destination-in';
-    cx.drawImage(mask,0,0);
-    // aplicar
-    fx.globalCompositeOperation='source-over';
+    cx.globalCompositeOperation='destination-in'; cx.drawImage(mask,0,0);
     fx.drawImage(sc,0,0);
   }
-  // suaviza alfa y elimina restos fuera de la nube
+  // Limpia alfa para bordes algodonosos
   function cleanupAlpha(ctx){
-    const W=ctx.canvas.width,H=ctx.canvas.height;
-    const img=ctx.getImageData(0,0,W,H),d=img.data;
+    const W=ctx.canvas.width,H=ctx.canvas.height, img=ctx.getImageData(0,0,W,H), d=img.data;
     for(let i=0;i<d.length;i+=4){
-      let a=d[i+3]/255; a=Math.pow(a,1.12);
-      if(a<0.06){ d[i+3]=0; continue; }
+      let a=d[i+3]/255; a=Math.pow(a,1.18);
+      if(a<0.05){ d[i+3]=0; continue; }
       d[i+3]=Math.max(0,Math.min(255,Math.floor(a*255)));
     }
     ctx.putImageData(img,0,0);
@@ -247,57 +254,76 @@ html::before,html::after,body::before,body::after{content:none!important;display
       canvas.width=W; canvas.height=H;
       const ctx=canvas.getContext('2d'); if(!ctx) return; ctx.clearRect(0,0,W,H);
 
-      // pintamos en offscreen
       const off=document.createElement('canvas'); off.width=W; off.height=H; const fx=off.getContext('2d');
+      const mask=document.createElement('canvas'); mask.width=W; mask.height=H; const mx=mask.getContext('2d');
+
       const rng=rngFactory(variant===0?0xA11CE:variant===1?0xBADC0DE:0xC0FFEE);
+      const noise=makeNoise1(variant===0?1337:variant===1?7331:4242);
 
-      const COUNT=(variant===0?26:variant===1?30:28);
-      const spineY=(variant===0?0.56:variant===1?0.58:0.57);
-      const amp=(variant===0?0.11:variant===1?0.12:0.115);
-      const baseR=H*(variant===0?0.085:variant===1?0.090:0.088);
-      const spread=(variant===0?0.82:variant===1?0.86:0.84);
+      // Parámetros de forma
+      const COUNT = (variant===0?120:variant===1?140:130); // muchos puffs pequeños
+      const spineY = (variant===0?0.56:variant===1?0.58:0.57);
+      const ampSin1 = 0.06, ampSin2 = 0.03;
+      const ampNoise = 0.035;
+      const baseR  = H * (variant===0?0.060:variant===1?0.062:0.061); // radios más chicos
+      const spread = (variant===0?0.82:variant===1?0.86:0.84);
+      const margin = (1-spread)/2;
 
-      fx.globalCompositeOperation='lighter';
+      // Colocación tipo Poisson (rechazo con distancia mínima relativa)
+      const pts=[]; const minK=0.55; let tries=0, maxTries=COUNT*30;
 
-      // === tres hileras (arriba/centro/abajo) para romper la "línea" ===
-      const rows=[{dy:-0.06,scale:0.80,prob:0.85},{dy:0,scale:1.0,prob:1.0},{dy:+0.05,scale:0.88,prob:0.90}];
-      rows.forEach(row=>{
-        for(let i=0;i<COUNT;i++){
-          const t=i/(COUNT-1);
-          const x=((0.5-spread/2)+t*spread)*W;
-          const hump=Math.sin(t*Math.PI);
-          const y=(spineY + row.dy - amp*hump + (rng()-0.5)*0.035)*H;
+      while(pts.length<COUNT && tries<maxTries){
+        tries++;
+        const u = Math.min(1, Math.max(0, rng()**0.85)); // más densidad al centro
+        const x = (margin + u*spread) * W + (rng()-0.5)*W*0.01; // jitter x extra
+        const t = (x/W - margin)/spread; // 0..1 aproximado
+        const yBase = spineY
+          - ampSin1*Math.sin((t*2*Math.PI)+rng()*1.0)
+          - ampSin2*Math.sin((t*4*Math.PI)+rng()*2.0)
+          - ampNoise*noise(t*6 + rng()*10);
+        const y = (yBase + gauss(rng)*0.035) * H;
 
-          const r=baseR*row.scale*(0.70+0.65*hump)*(0.90+0.22*rng());
-          const bright=0.60 + 0.20*(1-(y/H));
-          const ox=(rng()-0.5)*(W*0.014);
-          const oy=(rng()-0.5)*(H*0.020);
+        const r = baseR * (0.75 + 0.85*Math.abs(gauss(rng))) * (0.92 + 0.20*rng());
+        const bright = 0.60 + 0.18*(1 - (y/H));
 
-          if(rng()<row.prob) drawPuff(fx,x+ox,y+oy,r,bright);
-
-          if(rng()<0.60){
-            const k=0.40+0.28*rng(), ang=rng()*Math.PI*2;
-            drawPuff(fx,x+ox+Math.cos(ang)*r*0.40,y+oy+Math.sin(ang)*r*0.34,r*k,bright*0.95);
-          }
-          if(rng()<0.28){
-            drawPuff(fx,x+ox+r*(rng()*0.28-0.14),y+oy-r*(0.15+0.22*rng()),r*(0.28+0.24*rng()),bright*1.0);
-          }
+        // Distancia mínima vs. ya colocados
+        let ok=true;
+        for (let j=0;j<pts.length;j++){
+          const p=pts[j]; const dx=p.x-x, dy=p.y-y, dist=Math.hypot(dx,dy);
+          if (dist < minK*(p.r + r)) { ok=false; break; }
         }
-      });
+        if(!ok) continue;
 
-      // guardar máscara (silueta) para recortar capas de luz/sombra
-      const maskCanvas=document.createElement('canvas'); maskCanvas.width=W; maskCanvas.height=H;
-      const maskCtx=maskCanvas.getContext('2d'); maskCtx.drawImage(off,0,0);
+        pts.push({x,y,r,bright});
+      }
 
-      // blur muy ligero para unificar puffs
-      fx.filter='blur(0.4px)'; fx.drawImage(off,0,0); fx.filter='none';
+      // Pintar puffs (mezcla aditiva) + máscara
+      fx.globalCompositeOperation='lighter';
+      for (let i=0;i<pts.length;i++){
+        const p=pts[i];
+        drawPuff(fx,p.x,p.y,p.r,p.bright);
+        // secundarios (wisps) aleatorios
+        if (rng()<0.45){
+          const k=0.35+0.30*rng(), ang=rng()*Math.PI*2;
+          drawPuff(fx, p.x+Math.cos(ang)*p.r*0.45, p.y+Math.sin(ang)*p.r*0.35, p.r*k, p.bright*0.9);
+        }
+        // máscara (borde suave)
+        const g=mx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r);
+        g.addColorStop(0,'rgba(255,255,255,0.9)');
+        g.addColorStop(1,'rgba(255,255,255,0)');
+        mx.fillStyle=g; mx.beginPath(); mx.arc(p.x,p.y,p.r,0,Math.PI*2); mx.fill();
+      }
+      fx.globalCompositeOperation='source-over';
 
-      // añadir luces/sombras recortadas a la silueta (¡nada rectangular fuera!)
-      addShading(fx,maskCanvas);
-      addColorLights(fx,maskCanvas);
-
-      // limpiar alfa y volcar al canvas final
+      // Unificación leve y limpieza de alfa
+      fx.filter='blur(0.35px)'; fx.drawImage(off,0,0); fx.filter='none';
       cleanupAlpha(fx);
+
+      // Luces/sombras y color, recortadas a la silueta
+      addShading(fx,mask);
+      addColorLights(fx,mask);
+
+      // Volcar al canvas final
       ctx.drawImage(off,0,0);
     }catch(e){}
   }
@@ -311,7 +337,6 @@ html::before,html::after,body::before,body::after{content:none!important;display
     if(b) paintCloud(b,1);
     const sky=document.getElementById('sky'); if(sky) sky.classList.add('ready');
   }
-
   function init(){
     paintAll();
     let to=null;
@@ -321,7 +346,7 @@ html::before,html::after,body::before,body::after{content:none!important;display
 })();
         `}</Script>
 
-        {/* Estrellas (igual que la versión previa) */}
+        {/* ===== Estrellas: igual que antes ===== */}
         <Script id="tune-stars" strategy="afterInteractive">{`
 (function () {
   function nukeForeign(){
@@ -337,8 +362,7 @@ html::before,html::after,body::before,body::after{content:none!important;display
   function ensureFeatured(N){
     const sky=document.getElementById('sky'); if(!sky) return;
     const holder=document.getElementById('stars')||sky;
-    const curr=holder.querySelectorAll('.featured-star');
-    const need=N-curr.length; if(need<=0) return;
+    const curr=holder.querySelectorAll('.featured-star'); const need=N-curr.length; if(need<=0) return;
     for(let i=0;i<need;i++){
       const s=document.createElement('span'); s.className='featured-star';
       const dur=45+Math.random()*45, size=4+Math.random()*1.8;
@@ -363,7 +387,8 @@ html::before,html::after,body::before,body::after{content:none!important;display
       const size=1.4+Math.random()*1.4, alpha=0.35+Math.random()*0.25;
       const top=Math.random()*100, left=Math.random()*100;
       s.style.setProperty('--dsz',size.toFixed(2)+'px'); s.style.setProperty('--dalpha',alpha.toFixed(2));
-      s.style.top=top.toFixed(2)+'vh'; s.style.left=left.toFixed(2)+'vw'; holder.appendChild(s);
+      s.style.top=top.toFixed(2)+'vh'; s.style.left=left.toFixed(2)+'vw';
+      holder.appendChild(s);
     }
   }
   function init(){
