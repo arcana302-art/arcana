@@ -77,18 +77,18 @@ html::before,html::after,body::before,body::after{content:none!important;display
 .rise-main{animation:cloud-rise 320s linear infinite;}
 @keyframes cloud-rise{0%{transform:translateY(1vh)}100%{transform:translateY(-8vh)}}
 
-/* ⬇️ Mitad del tamaño actual */
+/* ⬆️ Más grande: 30vw (tope 600px) */
 .cloud{
   display:block;
-  width:min(22.5vw, 400px);
-  height:calc(min(22.5vw, 400px) * 0.36);
+  width:min(30vw, 600px);
+  height:calc(min(30vw, 600px) * 0.36);
   aspect-ratio:16/5.8;
   background:transparent;
   filter: drop-shadow(0 8px 18px rgba(0,0,0,.06));
 }
 @media (max-width:768px){
   .track-main{top:42vh}
-  .cloud{width:48vw;height:calc(48vw*0.36)}
+  .cloud{width:56vw;height:calc(56vw*0.36)}
 }
 
 /* Estrellas — como ya te gustan */
@@ -139,19 +139,18 @@ html::before,html::after,body::before,body::after{content:none!important;display
 
   function paintCloud(canvas){
     const dpr=Math.max(1,Math.min(2,window.devicePixelRatio||1));
-    const wCSS=canvas.offsetWidth||400, hCSS=canvas.offsetHeight||Math.round(wCSS*0.36);
+    const wCSS=canvas.offsetWidth||600, hCSS=canvas.offsetHeight||Math.round(wCSS*0.36);
     const W=Math.floor(wCSS*dpr), H=Math.floor(hCSS*dpr);
     canvas.width=W; canvas.height=H;
     const ctx=canvas.getContext('2d'); if(!ctx) return;
 
     // ---------- Parámetros (más amorfa y densa) ----------
     const seed=4040;
-    const baseS = Math.min(W,H)*0.0140; // features más grandes (menos grano)
-    const detS  = baseS*3.2;           // detalle suave
+    const baseS = Math.min(W,H)*0.0140;
+    const detS  = baseS*3.2;
     const warpS = Math.min(W,H)*0.0060;
-    const warpA = 3.2;                 // MÁS amorfa
+    const warpA = 3.2;
 
-    // Forma general: 4 lóbulos unidos suavemente
     const c1={x:W*0.50,y:H*0.52,a:W*0.28,b:H*0.20};
     const c2={x:W*0.61,y:H*0.56,a:W*0.23,b:H*0.18};
     const c3={x:W*0.39,y:H*0.58,a:W*0.22,b:H*0.17};
@@ -179,37 +178,31 @@ html::before,html::after,body::before,body::after{content:none!important;display
 
     const img=ctx.createImageData(W,H); const d=img.data;
 
-    // --- Capas ---
-    // Núcleo: muy denso y compacto
+    // Núcleo (denso) + Halo (etéreo)
     const thCore=0.47, softCore=0.24, curveCore=0.95, densCore=0.66;
-    // Halo: etéreo y extendido (neblina)
     const thMist=0.56, softMist=0.50, curveMist=1.05, densMist=0.26;
 
     for(let y=0,k=0;y<H;y++){
       for(let x=0;x<W;x++,k+=4){
-        // Suavizado local para evitar “granito”
         const f0=fieldAt(x,y);
         const fN=fieldAt(x,y-2), fS=fieldAt(x,y+2), fE=fieldAt(x+2,y), fW=fieldAt(x-2,y);
         const n = (f0.n*0.64) + ((fN.n+fS.n+fE.n+fW.n)*0.09);
         const e = (f0.e*0.64) + ((fN.e+fS.e+fE.e+fW.e)*0.09);
 
-        // Núcleo
         let aCore = clamp((n - thCore) / softCore, 0, 1);
         aCore = Math.pow(aCore, curveCore) * densCore;
 
-        // Halo (aumenta suavidad si estamos cerca del borde de la forma)
         let aMist = clamp((n - thMist) / (softMist + (1-e)*0.25), 0, 1);
         aMist = Math.pow(aMist, curveMist) * densMist;
 
         const alpha = clamp(aCore + aMist, 0, 1);
         if(alpha<=0){ d[k+3]=0; continue; }
-
         d[k]=255; d[k+1]=255; d[k+2]=255; d[k+3]=Math.floor(alpha*255);
       }
     }
     ctx.putImageData(img,0,0);
 
-    // Color/vida muy sutil
+    // Tono sutil
     ctx.globalCompositeOperation='lighter';
     const pr=Math.min(W,H);
     const mag=ctx.createRadialGradient(W*0.40,H*0.50,0,W*0.40,H*0.50,pr*0.55);
