@@ -77,18 +77,18 @@ html::before,html::after,body::before,body::after{content:none!important;display
 .rise-main{animation:cloud-rise 320s linear infinite;}
 @keyframes cloud-rise{0%{transform:translateY(1vh)}100%{transform:translateY(-8vh)}}
 
-/* ⬆️ Más grande: 30vw (tope 600px) */
+/* ⬆️ Tamaño: 40vw (tope 800px) */
 .cloud{
   display:block;
-  width:min(30vw, 600px);
-  height:calc(min(30vw, 600px) * 0.36);
+  width:min(40vw, 800px);
+  height:calc(min(40vw, 800px) * 0.36);
   aspect-ratio:16/5.8;
   background:transparent;
   filter: drop-shadow(0 8px 18px rgba(0,0,0,.06));
 }
 @media (max-width:768px){
   .track-main{top:42vh}
-  .cloud{width:56vw;height:calc(56vw*0.36)}
+  .cloud{width:72vw;height:calc(72vw*0.36)}
 }
 
 /* Estrellas — como ya te gustan */
@@ -139,12 +139,11 @@ html::before,html::after,body::before,body::after{content:none!important;display
 
   function paintCloud(canvas){
     const dpr=Math.max(1,Math.min(2,window.devicePixelRatio||1));
-    const wCSS=canvas.offsetWidth||600, hCSS=canvas.offsetHeight||Math.round(wCSS*0.36);
+    const wCSS=canvas.offsetWidth||800, hCSS=canvas.offsetHeight||Math.round(wCSS*0.36);
     const W=Math.floor(wCSS*dpr), H=Math.floor(hCSS*dpr);
     canvas.width=W; canvas.height=H;
     const ctx=canvas.getContext('2d'); if(!ctx) return;
 
-    // ---------- Parámetros (más amorfa y densa) ----------
     const seed=4040;
     const baseS = Math.min(W,H)*0.0140;
     const detS  = baseS*3.2;
@@ -178,7 +177,6 @@ html::before,html::after,body::before,body::after{content:none!important;display
 
     const img=ctx.createImageData(W,H); const d=img.data;
 
-    // Núcleo (denso) + Halo (etéreo)
     const thCore=0.47, softCore=0.24, curveCore=0.95, densCore=0.66;
     const thMist=0.56, softMist=0.50, curveMist=1.05, densMist=0.26;
 
@@ -202,7 +200,6 @@ html::before,html::after,body::before,body::after{content:none!important;display
     }
     ctx.putImageData(img,0,0);
 
-    // Tono sutil
     ctx.globalCompositeOperation='lighter';
     const pr=Math.min(W,H);
     const mag=ctx.createRadialGradient(W*0.40,H*0.50,0,W*0.40,H*0.50,pr*0.55);
