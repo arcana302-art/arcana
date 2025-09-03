@@ -16,7 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es" className="h-full">
       <head>
-        {/* Escudo anti-flash y pre-nuke (igual que antes) */}
+        {/* Escudo anti-flash y pre-nuke (evita mar de estrellitas al cargar) */}
         <style id="arcana-star-shield">{`
 #stars2,#stars3,.stars2,.stars3,.starfield,.bg-stars,.twinkle,.twinkling,.particles,.particle,.dots,
 [id^="star"],[id$="star"],[id*="star-"],[id*="-star"],[class^="star"],[class$="star"],[class*=" star "],
@@ -47,17 +47,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${inter.variable} ${playfair.variable} min-h-screen antialiased relative`}
         style={{ background: "linear-gradient(180deg,#0a1120,#0b1530)", color: "#e5e7eb" }}
       >
-        {/* CIELO */}
+        {/* CIELO: nubes + estrellas */}
         <div id="sky" aria-hidden>
           <div id="stars"></div>
 
-          {/* Nubes */}
+          {/* Nubes en tres pistas */}
           <div className="cloud-track track-a">
             <div className="rise rise-a">
               <div className="cloud-wrap wrap-a">
                 <canvas id="cloudA" className="cloud cloud-a" />
-                <div className="veil veil-a" />
-                <div className="glow glow-a" />
               </div>
             </div>
           </div>
@@ -65,8 +63,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <div className="rise rise-c">
               <div className="cloud-wrap wrap-c">
                 <canvas id="cloudC" className="cloud cloud-c" />
-                <div className="veil veil-c" />
-                <div className="glow glow-c" />
               </div>
             </div>
           </div>
@@ -74,8 +70,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <div className="rise rise-b">
               <div className="cloud-wrap wrap-b">
                 <canvas id="cloudB" className="cloud cloud-b" />
-                <div className="veil veil-b" />
-                <div className="glow glow-b" />
               </div>
             </div>
           </div>
@@ -86,6 +80,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         {/* ===== ESTILOS ===== */}
         <style>{`
+/* Limpieza y bloqueo de starfields externos */
 #bg-root,.belt,.bank,.puffs,.cloud-svg,.nebula,.grain,.vignette{display:none!important;}
 html::before,html::after,body::before,body::after{content:none!important;display:none!important;}
 :where(.starfield,.bg-stars,.twinkle,.twinkling,.particles,.particle,.dots){display:none!important;}
@@ -95,9 +90,11 @@ html::before,html::after,body::before,body::after{content:none!important;display
 #sky #stars{display:block!important;}
 #sky .featured-star,#sky .distant-star{display:block!important;}
 
+/* SKY */
 #sky{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:visible;visibility:hidden;}
 #sky.ready{visibility:visible;}
 
+/* Pistas y movimiento de nubes */
 .cloud-track{position:absolute;left:0;width:100%;will-change:transform;}
 .track-a{top:12vh;animation:cloud-drift-a 150s linear infinite;animation-delay:-24s;}
 .track-c{top:42vh;animation:cloud-drift-c 165s linear infinite;animation-delay:-36s;}
@@ -121,40 +118,20 @@ html::before,html::after,body::before,body::after{content:none!important;display
 @keyframes cloud-float-c{0%{transform:translateY(0)}100%{transform:translateY(1.1vh)}}
 @keyframes cloud-float-b{0%{transform:translateY(0)}100%{transform:translateY(1.5vh)}}
 
-/* Canvas: ahora SIN fondo rectangular; todo sale pintado con “puffs” */
-.cloud,.veil,.glow{visibility:hidden;}
+/* Canvas de nube — sin fondo rectangular ni overlays */
 .cloud{
   display:block;
   width:min(52vw,860px);
   height:calc(min(52vw,860px)*0.40625);
   aspect-ratio:16/6.5;
-  background:none;               /* <— quitamos el gradiente base que hacía bloque */
-  filter: blur(8px) drop-shadow(0 10px 22px rgba(0,0,0,.10));
+  background:transparent;
+  /* blur bajito + sombra suave solo de la forma pintada */
+  filter: blur(4px) drop-shadow(0 8px 18px rgba(0,0,0,.10));
 }
 .cloud-c{width:min(56vw,920px)}
 .cloud-b{width:min(62vw,980px)}
 
-.veil{
-  position:absolute;inset:-10% -6%;
-  mix-blend-mode:screen;
-  background:
-    radial-gradient(60% 60% at 50% 52%,transparent 58%,rgba(168,85,247,.26) 68%,transparent 82%),
-    radial-gradient(64% 64% at 50% 52%,transparent 60%,rgba(244,114,182,.22) 74%,transparent 86%),
-    radial-gradient(86% 74% at 50% 52%,rgba(255,255,255,.08),transparent 88%);
-  filter:blur(7px);pointer-events:none;
-}
-.glow{
-  position:absolute;inset:-22% -14%;
-  mix-blend-mode:screen;
-  background:
-    radial-gradient(45% 55% at 30% 40%,rgba(168,85,247,.22),transparent 70%),
-    radial-gradient(48% 58% at 70% 64%,rgba(244,114,182,.18),transparent 72%);
-  filter:blur(18px);animation:glowPulse 6.2s ease-in-out infinite alternate;
-  pointer-events:none;opacity:.42;
-}
-@keyframes glowPulse{0%{opacity:.36;transform:scale(1)}100%{opacity:.50;transform:scale(1.03)}}
-
-/* Estrellas (como ya las tenías, con glow bajito y estela) */
+/* Estrellas (tu versión con glow sutil y estela, sin cambios) */
 .featured-star{
   position:absolute;width:var(--sz,4.5px);height:var(--sz,4.5px);border-radius:999px;pointer-events:none;
   background:
@@ -206,107 +183,117 @@ html::before,html::after,body::before,body::after{content:none!important;display
 }
         `}</style>
 
-        {/* ===== SCRIPT: NUEVO PINTADO DE NUBES "CÚMULO" ===== */}
+        {/* ===== SCRIPT: Nubes cúmulo sin “bloques” ni bandas ===== */}
         <Script id="paint-clouds" strategy="afterInteractive">{`
 (function(){
-  // RNG determinista por variante (para que cada nube tenga “forma propia” estable)
-  function makeRng(seed){ return function(){ seed=(seed*1664525+1013904223)>>>0; return (seed&0xffffffff)/4294967296; } }
+  // RNG determinista por variante
+  function rngFactory(seed){ return function(){ seed=(seed*1664525+1013904223)>>>0; return (seed&0xffffffff)/4294967296; } }
 
   function drawPuff(ctx, x, y, r, bright){
-    // “Puff” con gradiente suave: más brillante arriba
+    // Gradiente radial suave con núcleo levemente más brillante
     const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-    g.addColorStop(0.00, 'rgba(255,255,255,'+(0.35+0.15*bright).toFixed(3)+')');
-    g.addColorStop(0.35,'rgba(255,255,255,'+(0.22+0.10*bright).toFixed(3)+')');
+    g.addColorStop(0.00, 'rgba(255,255,255,'+(0.36+0.14*bright).toFixed(3)+')');
+    g.addColorStop(0.42,'rgba(255,255,255,'+(0.22+0.10*bright).toFixed(3)+')');
     g.addColorStop(1.00,'rgba(255,255,255,0)');
     ctx.fillStyle = g;
     ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fill();
   }
 
-  function drawShading(ctx, W, H){
-    // Highlight en la parte superior + sombra sutil en la base (volumen)
+  // Color-lights internos (morado/rosa) dentro del MISMO canvas
+  function colorLights(ctx, W, H){
     ctx.globalCompositeOperation = 'lighter';
-    let lg = ctx.createLinearGradient(0, H*0.08, 0, H*0.55);
-    lg.addColorStop(0.00,'rgba(255,255,255,0.18)');
-    lg.addColorStop(1.00,'rgba(255,255,255,0)');
-    ctx.fillStyle = lg; ctx.fillRect(0,0,W,H);
-
-    ctx.globalCompositeOperation = 'multiply';
-    let sg = ctx.createLinearGradient(0, H*0.45, 0, H*0.95);
-    sg.addColorStop(0.00,'rgba(10,18,30,0)');
-    sg.addColorStop(1.00,'rgba(10,18,30,0.10)');
-    ctx.fillStyle = sg; ctx.fillRect(0,0,W,H);
+    const pr = Math.min(W,H);
+    const p1 = ctx.createRadialGradient(W*0.32, H*0.48, pr*0.00, W*0.32, H*0.48, pr*0.42);
+    p1.addColorStop(0,'rgba(168,85,247,0.18)'); p1.addColorStop(1,'rgba(168,85,247,0)');
+    ctx.fillStyle = p1; ctx.fillRect(0,0,W,H);
+    const p2 = ctx.createRadialGradient(W*0.70, H*0.60, pr*0.00, W*0.70, H*0.60, pr*0.46);
+    p2.addColorStop(0,'rgba(244,114,182,0.16)'); p2.addColorStop(1,'rgba(244,114,182,0)');
+    ctx.fillStyle = p2; ctx.fillRect(0,0,W,H);
     ctx.globalCompositeOperation = 'source-over';
+  }
+
+  // Suaviza alfa y elimina neblina fuera de la nube (umbral suave)
+  function alphaTidy(img){
+    const d = img.data; const n = d.length;
+    for(let i=0;i<n;i+=4){
+      let a = d[i+3]/255;
+      // realce suave + umbral
+      a = Math.pow(a, 1.16);
+      if (a < 0.06){ d[i+3] = 0; continue; }
+      d[i+3] = Math.max(0, Math.min(255, Math.floor(a*255)));
+    }
   }
 
   function paintCloud(canvas, variant){
     try{
-      // Tamaño canvas (retina)
       const dpi = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
       const wCSS = canvas.offsetWidth  || 600;
       const hCSS = canvas.offsetHeight || Math.round(wCSS * 0.40625);
-      const W = Math.floor(wCSS * dpi);
-      const H = Math.floor(hCSS * dpi);
-      canvas.width = W; canvas.height = H;
+      const W = Math.floor(wCSS * dpi), H = Math.floor(hCSS * dpi);
+      canvas.width=W; canvas.height=H;
       const ctx = canvas.getContext('2d'); if(!ctx) return;
       ctx.clearRect(0,0,W,H);
 
-      // Config por variante
-      const rng = makeRng( (variant===0? 0xA11CE : variant===1? 0xBADC0DE : 0xC0FFEE) );
-      const COUNT = (variant===0? 28 : variant===1? 34 : 30);  // nº de “puffs”
-      const spineY = (variant===0? 0.56 : variant===1? 0.58 : 0.57); // línea base
-      const amp    = (variant===0? 0.10 : variant===1? 0.12 : 0.11); // amplitud vertical
-      const baseR  = H * (variant===0? 0.085 : variant===1? 0.090 : 0.088); // radio medio
-      const spread = (variant===0? 0.78 : variant===1? 0.82 : 0.80);        // longitud relativa
+      // Pintamos en offscreen para poder “limpiar” el alfa
+      const off = document.createElement('canvas'); off.width=W; off.height=H;
+      const fx = off.getContext('2d');
 
-      // Mezclamos puffs con "lighter" para efecto metaball
-      ctx.globalCompositeOperation = 'lighter';
+      const rng = rngFactory( variant===0?0xA11CE : variant===1?0xBADC0DE : 0xC0FFEE );
 
-      // Distribución: más grandes en el centro; arriba más brillantes
+      const COUNT = (variant===0? 32 : variant===1? 38 : 34);
+      const spineY = (variant===0? 0.56 : variant===1? 0.58 : 0.57);
+      const amp    = (variant===0? 0.12 : variant===1? 0.13 : 0.12);
+      const baseR  = H * (variant===0? 0.085 : variant===1? 0.090 : 0.088);
+      const spread = (variant===0? 0.80 : variant===1? 0.84 : 0.82);
+
+      fx.globalCompositeOperation = 'lighter';
+
       for(let i=0;i<COUNT;i++){
-        const t = i/(COUNT-1);                         // 0..1
-        const x = ( (0.5 - spread/2) + t*spread ) * W; // recorre horizontal
-        const hump = Math.sin(t*Math.PI);              // “panza” central
-        const y = (spineY - amp*hump + (rng()-0.5)*0.06) * H;
+        const t = i/(COUNT-1);
+        const x = ((0.5 - spread/2) + t*spread) * W;
+        const hump = Math.sin(t*Math.PI);
+        const y = (spineY - amp*hump + (rng()-0.5)*0.05) * H;
 
-        // Radio: más grande al centro, con jitter
-        const r = baseR * (0.70 + 0.65*hump) * (0.88 + 0.24*rng());
+        const r = baseR * (0.70 + 0.65*hump) * (0.90 + 0.22*rng());
+        const bright = 0.60 + 0.20*(1 - (y/H));
 
-        // Brillo: arriba un poco más
-        const bright = 0.6 + 0.2*(1 - (y/H)); // 0.6–0.8 aprox.
+        const ox = (rng()-0.5) * (W*0.016);
+        const oy = (rng()-0.5) * (H*0.024);
 
-        // Offset aleatorio para romper alineación
-        const ox = (rng()-0.5) * (W*0.018);
-        const oy = (rng()-0.5) * (H*0.028);
+        drawPuff(fx, x+ox, y+oy, r, bright);
 
-        drawPuff(ctx, x+ox, y+oy, r, bright);
-
-        // Algunos puffs secundarios alrededor (bordes “algodonosos”)
-        if (rng() < 0.7){
-          const k = 0.45 + 0.25*rng();
+        if (rng() < 0.75){
+          const k = 0.42 + 0.28*rng();
           const ang = rng()*Math.PI*2;
-          drawPuff(ctx, x+ox + Math.cos(ang)*r*0.45, y+oy + Math.sin(ang)*r*0.35, r*k, bright*0.9);
+          drawPuff(fx, x+ox + Math.cos(ang)*r*0.46, y+oy + Math.sin(ang)*r*0.36, r*k, bright*0.9);
+        }
+        if (rng() < 0.35){
+          drawPuff(fx, x+ox + r*(rng()*0.3-0.15), y+oy - r*(0.18+0.22*rng()), r*(0.30+0.25*rng()), bright*1.0);
         }
       }
 
-      // Suavizar un toque (sin perder forma)
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.filter = 'blur(0.6px)';
-      const tmp = ctx.getImageData(0,0,W,H);
-      ctx.putImageData(tmp,0,0);
-      ctx.filter = 'none';
+      // Luz/sombra global sutil (en el MISMO offscreen)
+      fx.globalCompositeOperation = 'lighter';
+      let lg = fx.createLinearGradient(0, H*0.05, 0, H*0.55);
+      lg.addColorStop(0,'rgba(255,255,255,0.16)');
+      lg.addColorStop(1,'rgba(255,255,255,0)');
+      fx.fillStyle = lg; fx.fillRect(0,0,W,H);
+      fx.globalCompositeOperation = 'source-over';
 
-      // Sombras y luz globales
-      drawShading(ctx, W, H);
+      // Color-lights (morado/rosa)
+      colorLights(fx, W, H);
 
-      // Pequeño recorte curvo arriba/abajo para evitar sensación rectangular
-      ctx.globalCompositeOperation = 'destination-in';
-      const mask = ctx.createLinearGradient(0, 0, 0, H);
-      mask.addColorStop(0.00,'rgba(0,0,0,0)');
-      mask.addColorStop(0.08,'rgba(0,0,0,0.8)');
-      mask.addColorStop(0.85,'rgba(0,0,0,0.95)');
-      mask.addColorStop(1.00,'rgba(0,0,0,0)');
-      ctx.fillStyle = mask; ctx.fillRect(0,0,W,H);
-      ctx.globalCompositeOperation = 'source-over';
+      // Anti-banding: ligero blur y limpieza de alfa
+      fx.filter = 'blur(0.5px)';
+      const snap = fx.getImageData(0,0,W,H);
+      fx.putImageData(snap,0,0);
+      fx.filter = 'none';
+
+      const img = fx.getImageData(0,0,W,H);
+      alphaTidy(img);
+
+      // Volcamos al canvas final
+      ctx.putImageData(img,0,0);
     }catch(e){}
   }
 
@@ -320,7 +307,6 @@ html::before,html::after,body::before,body::after{content:none!important;display
     const sky = document.getElementById('sky');
     if (sky){
       sky.classList.add('ready');
-      sky.querySelectorAll('.cloud,.veil,.glow').forEach(el=>{ el.style.visibility='visible'; });
     }
   }
 
@@ -335,7 +321,7 @@ html::before,html::after,body::before,body::after{content:none!important;display
 })();
         `}</Script>
 
-        {/* ===== SCRIPT: estrellas (idéntico a tu versión anterior) ===== */}
+        {/* ===== SCRIPT: estrellas (igual que antes) ===== */}
         <Script id="tune-stars" strategy="afterInteractive">{`
 (function () {
   function nukeForeign(){
@@ -367,7 +353,6 @@ html::before,html::after,body::before,body::after{content:none!important;display
       const tH = 6  + Math.random()*6;
       const tR = -22 + Math.random()*44;
       const tA = 0.42 + Math.random()*0.22;
-
       s.style.setProperty('--sz', size.toFixed(2)+'px');
       s.style.top  = top.toFixed(2)+'vh';
       s.style.left = left.toFixed(2)+'vw';
@@ -378,7 +363,6 @@ html::before,html::after,body::before,body::after{content:none!important;display
       s.style.setProperty('--trailH', tH.toFixed(2)+'px');
       s.style.setProperty('--trailRot', tR.toFixed(2)+'deg');
       s.style.setProperty('--trailAlpha', tA.toFixed(2));
-
       const tail = document.createElement('span'); tail.className='tail'; s.appendChild(tail);
       holder.appendChild(s);
     }
