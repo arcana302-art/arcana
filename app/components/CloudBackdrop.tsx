@@ -23,11 +23,11 @@ const CFG = {
   tintMagenta: 0.06,
   tintPink: 0.04,
 
-  // Movimiento (↓ más lento)
-  vx: -0.035,              // antes: -0.09  → desplazamiento horizontal MUCHO más lento
+  // Movimiento (más lento)
+  vx: -0.020,            // antes: -0.035 → desplazamiento horizontal aún más lento
   vy: 0,
   waveAmp: 10,
-  waveSpeed: 0.0012,       // respiración suave; puedes bajar a 0.001 si quieres más calma
+  waveSpeed: 0.0012,     // “respiración” suave
 
   // Rendimiento
   maxDpr: 1.5,
