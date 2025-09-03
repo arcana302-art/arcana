@@ -14,30 +14,30 @@ export default function Stars() {
     feat.innerHTML = "";
 
     // ===== Config =====
-    const FEATURED = 10;     // estrellas brillantes (titilan)
-    const DISTANT  = 18;     // estrellas lejanas (sin titilar)
+    const FEATURED = 10;     // brillantes (titilan)
+    const DISTANT  = 6;      // lejanas (SIN titilar)  << reducido
     const twinkleMin = 80;   // s
     const twinkleMax = 120;  // s
     const rand = (a: number, b: number) => a + Math.random() * (b - a);
 
-    // Distant (detrás de las nubes)
+    // Lejanas (detrás de nubes)
     for (let i = 0; i < DISTANT; i++) {
       const s = document.createElement("span");
       s.className = "arcana-star-distant";
-      const size = rand(1, 2.2);
+      const size = rand(1, 1.8);     // más pequeñas
       s.style.width = `${size}px`;
       s.style.height = `${size}px`;
       s.style.top = `${rand(0, 100)}vh`;
       s.style.left = `${rand(0, 100)}vw`;
-      s.style.opacity = `${rand(0.35, 0.58)}`;
+      s.style.opacity = `${rand(0.25, 0.45)}`; // más discretas
       far.appendChild(s);
     }
 
-    // Featured (ENCIMA de las nubes)
+    // Brillantes (encima de nubes)
     for (let i = 0; i < FEATURED; i++) {
       const s = document.createElement("span");
       s.className = "arcana-star";
-      const size = rand(6, 9); // más grandes para que destaquen
+      const size = rand(6, 9);
       const dur = rand(twinkleMin, twinkleMax);
       const delay = -rand(0, dur);
       s.style.width = `${size}px`;
@@ -56,31 +56,26 @@ export default function Stars() {
       <div
         ref={farRef}
         aria-hidden
-        style={{
-          position: "fixed",
-          inset: 0,
-          zIndex: 0,
-          pointerEvents: "none",
-        }}
+        style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none" }}
       />
       {/* Capa de estrellas brillantes (encima de nubes) */}
       <div
         ref={featuredRef}
         aria-hidden
-        style={{
-          position: "fixed",
-          inset: 0,
-          zIndex: 2,
-          pointerEvents: "none",
-        }}
+        style={{ position: "fixed", inset: 0, zIndex: 2, pointerEvents: "none" }}
       />
       <style>{`
-/* Apaga starfields externos del template */
-#stars2,#stars3,.stars2,.stars3,.starfield,.twinkle,.twinkling,.bg-stars,.particles,.dots{
-  display:none!important;animation:none!important;transition:none!important;
+/* Apaga cualquier starfield del template (y capas similares) */
+#stars,#stars2,#stars3,
+.stars,.stars2,.stars3,
+[id*="stars"],[class*="stars"],
+.starfield,.twinkle,.twinkling,
+.bg-stars,.particles,.dots,
+.background-stars,.layer-stars,canvas#stars{
+  display:none!important;animation:none!important;transition:none!important;background:none!important;
 }
 
-/* Titileo MUY lento */
+/* Titileo MUY lento para destacadas */
 @keyframes arcanaTwinkle {
   0%   { opacity: 0.95; transform: scale(1); }
   45%  { opacity: 0.55; transform: scale(0.94); }
@@ -109,14 +104,14 @@ export default function Stars() {
     rgba(255,255,255,0) 86%);
 }
 
-/* Estrellas lejanas (detrás de nubes, sin titilar) */
+/* Estrellas lejanas (discretas, sin titilar, detrás de nubes) */
 .arcana-star-distant{
   position:absolute;border-radius:999px;pointer-events:none;
   background:
-    radial-gradient(circle at 50% 50%, rgba(255,255,255,.86) 0%, rgba(255,255,255,.58) 32%, rgba(255,255,255,0) 66%),
-    radial-gradient(circle at 50% 50%, rgba(168,85,247,.14) 0%, rgba(168,85,247,0) 70%),
-    radial-gradient(circle at 50% 50%, rgba(244,114,182,.08) 0%, rgba(244,114,182,0) 80%);
-  filter: drop-shadow(0 0 6px rgba(255,255,255,.30)) drop-shadow(0 0 9px rgba(168,85,247,.18));
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,.82) 0%, rgba(255,255,255,.55) 32%, rgba(255,255,255,0) 66%),
+    radial-gradient(circle at 50% 50%, rgba(168,85,247,.12) 0%, rgba(168,85,247,0) 70%),
+    radial-gradient(circle at 50% 50%, rgba(244,114,182,.06) 0%, rgba(244,114,182,0) 80%);
+  filter: drop-shadow(0 0 5px rgba(255,255,255,.24)) drop-shadow(0 0 7px rgba(168,85,247,.14));
 }
       `}</style>
     </>
