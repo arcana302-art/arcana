@@ -14,30 +14,30 @@ export default function Stars() {
     feat.innerHTML = "";
 
     // ===== Config =====
-    const FEATURED = 10;     // brillantes (titilan)
-    const DISTANT  = 6;      // lejanas (SIN titilar)  << reducido
+    const FEATURED = 10;     // estrellas brillantes (titilan)
+    const DISTANT  = 25;     // estrellas lejanas (sin titilar)  << aumentado
     const twinkleMin = 80;   // s
     const twinkleMax = 120;  // s
     const rand = (a: number, b: number) => a + Math.random() * (b - a);
 
-    // Lejanas (detrás de nubes)
+    // Lejanas — pequeñas, opacas y SIN glow (detrás de las nubes)
     for (let i = 0; i < DISTANT; i++) {
       const s = document.createElement("span");
       s.className = "arcana-star-distant";
-      const size = rand(1, 1.8);     // más pequeñas
+      const size = rand(0.8, 1.6);    // más pequeñas
       s.style.width = `${size}px`;
       s.style.height = `${size}px`;
       s.style.top = `${rand(0, 100)}vh`;
       s.style.left = `${rand(0, 100)}vw`;
-      s.style.opacity = `${rand(0.25, 0.45)}`; // más discretas
+      s.style.opacity = `${rand(0.18, 0.32)}`; // más opacas
       far.appendChild(s);
     }
 
-    // Brillantes (encima de nubes)
+    // Brillantes — tamaño y glow REDUCIDOS (encima de las nubes)
     for (let i = 0; i < FEATURED; i++) {
       const s = document.createElement("span");
       s.className = "arcana-star";
-      const size = rand(6, 9);
+      const size = rand(4, 6); // antes 6–9
       const dur = rand(twinkleMin, twinkleMax);
       const delay = -rand(0, dur);
       s.style.width = `${size}px`;
@@ -64,8 +64,9 @@ export default function Stars() {
         aria-hidden
         style={{ position: "fixed", inset: 0, zIndex: 2, pointerEvents: "none" }}
       />
+
       <style>{`
-/* Apaga cualquier starfield del template (y capas similares) */
+/* Apaga cualquier starfield del template */
 #stars,#stars2,#stars3,
 .stars,.stars2,.stars3,
 [id*="stars"],[class*="stars"],
@@ -75,43 +76,43 @@ export default function Stars() {
   display:none!important;animation:none!important;transition:none!important;background:none!important;
 }
 
-/* Titileo MUY lento para destacadas */
+/* Titileo MUY lento */
 @keyframes arcanaTwinkle {
-  0%   { opacity: 0.95; transform: scale(1); }
-  45%  { opacity: 0.55; transform: scale(0.94); }
-  100% { opacity: 0.95; transform: scale(1); }
+  0%   { opacity: 0.92; transform: scale(1); }
+  45%  { opacity: 0.56; transform: scale(0.94); }
+  100% { opacity: 0.92; transform: scale(1); }
 }
 
-/* Estrellas brillantes (encima de nubes) */
+/* Estrellas brillantes (encima de nubes) — tamaño y glow reducidos */
 .arcana-star{
   position:absolute;border-radius:999px;pointer-events:none;
   background:
-    radial-gradient(circle at 50% 50%, rgba(255,255,255,1) 0%, rgba(255,255,255,.96) 34%, rgba(255,255,255,0) 64%),
-    radial-gradient(circle at 50% 50%, rgba(168,85,247,.50) 0%, rgba(168,85,247,0) 70%),
-    radial-gradient(circle at 50% 50%, rgba(244,114,182,.32) 0%, rgba(244,114,182,0) 78%);
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,1) 0%, rgba(255,255,255,.95) 32%, rgba(255,255,255,0) 60%),
+    radial-gradient(circle at 50% 50%, rgba(168,85,247,.35) 0%, rgba(168,85,247,0) 68%),
+    radial-gradient(circle at 50% 50%, rgba(244,114,182,.20) 0%, rgba(244,114,182,0) 76%);
+  /* glow más bajo */
   filter:
-    drop-shadow(0 0 12px rgba(255,255,255,.65))
-    drop-shadow(0 0 18px rgba(168,85,247,.40))
-    drop-shadow(0 0 26px rgba(244,114,182,.24));
+    drop-shadow(0 0 6px rgba(255,255,255,.45))
+    drop-shadow(0 0 10px rgba(168,85,247,.25))
+    drop-shadow(0 0 14px rgba(244,114,182,.15));
   animation: arcanaTwinkle 100s linear infinite both;
 }
 .arcana-star::before{
-  content:"";position:absolute;inset:-14px;border-radius:999px;filter:blur(12px);opacity:.7;
+  /* halo interno reducido */
+  content:"";position:absolute;inset:-10px;border-radius:999px;filter:blur(10px);opacity:.5;
   background: radial-gradient(circle at 50% 50%,
-    rgba(255,255,255,.40) 0%,
-    rgba(168,85,247,.26) 46%,
-    rgba(244,114,182,.16) 66%,
+    rgba(255,255,255,.30) 0%,
+    rgba(168,85,247,.18) 46%,
+    rgba(244,114,182,.10) 66%,
     rgba(255,255,255,0) 86%);
 }
 
-/* Estrellas lejanas (discretas, sin titilar, detrás de nubes) */
+/* Estrellas lejanas — sin glow (solo un pequeño fade) */
 .arcana-star-distant{
   position:absolute;border-radius:999px;pointer-events:none;
   background:
-    radial-gradient(circle at 50% 50%, rgba(255,255,255,.82) 0%, rgba(255,255,255,.55) 32%, rgba(255,255,255,0) 66%),
-    radial-gradient(circle at 50% 50%, rgba(168,85,247,.12) 0%, rgba(168,85,247,0) 70%),
-    radial-gradient(circle at 50% 50%, rgba(244,114,182,.06) 0%, rgba(244,114,182,0) 80%);
-  filter: drop-shadow(0 0 5px rgba(255,255,255,.24)) drop-shadow(0 0 7px rgba(168,85,247,.14));
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,.75) 0%, rgba(255,255,255,.42) 40%, rgba(255,255,255,0) 65%);
+  /* sin drop-shadow => sin glow */
 }
       `}</style>
     </>
