@@ -28,6 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 /* Permitimos explícitamente nuestras estrellas propias si ya existen */
 #sky .featured-star{ display:block !important; }
+#sky .distant-star{ display:block !important; }
         `}</style>
 
         {/* Pre-nuke ultra temprano para borrar inyecciones antes de pintar */}
@@ -39,10 +40,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     document.querySelectorAll(killSel).forEach(function(n){
       if (!sky || !sky.contains(n)) { try{ n.remove(); }catch(e){} }
     });
-    // Quita elementos con "star" en id/clase fuera de #sky (sin tocar nuestras featured)
+    // Quita elementos con "star" en id/clase fuera de #sky (sin tocar las nuestras)
     document.querySelectorAll('[id*="star"],[class*="star"]').forEach(function(n){
       if (sky && sky.contains(n)) return;
-      if (n.classList && n.classList.contains('featured-star')) return;
+      if (n.classList && (n.classList.contains('featured-star') || n.classList.contains('distant-star'))) return;
       try{ n.remove(); }catch(e){}
     });
   }
@@ -60,7 +61,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${inter.variable} ${playfair.variable} min-h-screen antialiased relative`}
         style={{ background: "linear-gradient(180deg,#0a1120,#0b1530)", color: "#e5e7eb" }}
       >
-        {/* ===== CIELO (nubes + 10 estrellas) ===== */}
+        {/* ===== CIELO (nubes + estrellas) ===== */}
         <div id="sky" aria-hidden>
           <div id="stars"></div>
 
@@ -112,9 +113,10 @@ html::before, html::after, body::before, body::after { content: none !important;
 :where([id*="star"], [class*="star"])::after { content:none !important; background:none !important; box-shadow:none !important; }
 :where(.star){ display:none !important; }
 
-/* Rehabilitar nuestro contenedor propio */
+/* Rehabilitar nuestras estrellas */
 #sky #stars { display:block !important; }
 #sky .featured-star{ display:block !important; }
+#sky .distant-star{ display:block !important; }
 
 /* SKY y NUBES */
 #sky { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: visible; visibility: hidden; }
@@ -183,7 +185,7 @@ html::before, html::after, body::before, body::after { content: none !important;
 }
 @keyframes glowPulse{ 0% { opacity:.38; transform: scale(1); } 100% { opacity:.52; transform: scale(1.03); } }
 
-/* ===== Estrellas — DIM LENTO (45–90s) + GLOW ===== */
+/* ===== Estrellas cercanas — DIM LENTO (45–90s) + GLOW ===== */
 .featured-star{
   position:absolute;
   width: var(--sz, 4.5px); height: var(--sz, 4.5px);
@@ -206,7 +208,7 @@ html::before, html::after, body::before, body::after { content: none !important;
   animation-fill-mode: both;
   animation-delay: var(--twDelay, 0s);
 }
-/* Halos más amplios e intensos */
+/* Halos de las estrellas cercanas */
 #sky .featured-star::before,
 #sky .featured-star::after{
   content: "" !important;
@@ -232,7 +234,25 @@ html::before, html::after, body::before, body::after { content: none !important;
   opacity: .72;
 }
 
-/* Curvas de animación */
+/* ===== Estrellas lejanas — sin titileo, más pequeñas y menos brillantes ===== */
+.distant-star{
+  position:absolute;
+  width: var(--dsz, 2px); height: var(--dsz, 2px);
+  border-radius: 999px;
+  pointer-events:none;
+  /* brillo sutil y tamaño menor para sensación de profundidad */
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,.75) 0%, rgba(255,255,255,.55) 30%, rgba(255,255,255,0) 65%),
+    radial-gradient(circle at 50% 50%, rgba(168,85,247,.18) 0%, rgba(168,85,247,0) 70%),
+    radial-gradient(circle at 50% 50%, rgba(244,114,182,.12) 0%, rgba(244,114,182,0) 80%);
+  filter:
+    drop-shadow(0 0 6px rgba(255,255,255,.35))
+    drop-shadow(0 0 10px rgba(168,85,247,.20));
+  opacity: var(--dalpha, .52); /* 0.35–0.60 desde JS */
+  /* sin animación: no titilean */
+}
+
+/* Curvas de animación (para las cercanas) */
 @keyframes featuredTwinkle {
   0%   { opacity: 0;   }
   30%  { opacity: .18; }
@@ -318,11 +338,7 @@ html::before, html::after, body::before, body::after { content: none !important;
           var mask = 1 - smoothstep(0.90, 1.02, r);
           var center = Math.max(0, 1 - r), centerBoost = 0.18 * center * center;
 
-          var a = (function(v){
-            v = (v + 1) * 0.5;
-            v = v*v*(3-2*v);
-            return v;
-          })(n);
+          var a = (function(v){ v = (v + 1) * 0.5; v = v*v*(3-2*v); return v; })(n);
           a = a * mask * baseAlpha * (0.90 + centerBoost);
 
           var u = x / canvas.width, v = y / canvas.height;
@@ -365,7 +381,7 @@ html::before, html::after, body::before, body::after { content: none !important;
 })();
         `}</Script>
 
-        {/* ===== SCRIPT: Limpiar starfields externos y crear 10 estrellas UNA SOLA VEZ ===== */}
+        {/* ===== SCRIPT: Limpiar starfields externos y crear 20 estrellas (10 cercanas + 10 lejanas) ===== */}
         <Script id="tune-stars" strategy="afterInteractive">{`
 (function () {
   function nukeForeign(){
@@ -374,11 +390,13 @@ html::before, html::after, body::before, body::after { content: none !important;
     document.querySelectorAll(killSel).forEach(n => { if (!sky || !sky.contains(n)) try{ n.remove(); }catch(e){} });
     document.querySelectorAll('[id*="star"], [class*="star"]').forEach(n => {
       if (sky && sky.contains(n)) return;
-      if (n.classList && n.classList.contains('featured-star')) return;
+      if (n.classList && (n.classList.contains('featured-star') || n.classList.contains('distant-star'))) return;
       try { n.remove(); } catch(e){}
     });
   }
-  function ensureStars(N){
+
+  // Crea N estrellas cercanas (titilan) si faltan — no borra existentes
+  function ensureFeatured(N){
     const sky = document.getElementById('sky'); if (!sky) return;
     const holder = document.getElementById('stars') || sky;
     const curr = holder.querySelectorAll('.featured-star');
@@ -388,7 +406,7 @@ html::before, html::after, body::before, body::after { content: none !important;
       const s = document.createElement('span');
       s.className = 'featured-star';
       const dur   = 45 + Math.random()*45;  // 45–90s
-      const size  = 4 + Math.random()*1.8;
+      const size  = 4 + Math.random()*1.8;  // 4–5.8px
       const top   = Math.random()*100;
       const left  = Math.random()*100;
       const delay = -Math.random()*dur;
@@ -401,8 +419,32 @@ html::before, html::after, body::before, body::after { content: none !important;
       holder.appendChild(s);
     }
   }
+
+  // Crea M estrellas lejanas (NO titilan) más pequeñas y menos brillantes
+  function ensureDistant(M){
+    const sky = document.getElementById('sky'); if (!sky) return;
+    const holder = document.getElementById('stars') || sky;
+    const curr = holder.querySelectorAll('.distant-star');
+    const need = M - curr.length;
+    if (need <= 0) return;
+    for (let i=0; i<need; i++){
+      const s = document.createElement('span');
+      s.className = 'distant-star';
+      const size  = 1.4 + Math.random()*1.4; // 1.4–2.8px
+      const alpha = 0.35 + Math.random()*0.25; // 0.35–0.60
+      const top   = Math.random()*100;
+      const left  = Math.random()*100;
+      s.style.setProperty('--dsz', size.toFixed(2)+'px');
+      s.style.setProperty('--dalpha', alpha.toFixed(2));
+      s.style.top  = top.toFixed(2)+'vh';
+      s.style.left = left.toFixed(2)+'vw';
+      holder.appendChild(s);
+    }
+  }
+
   function init(){
-    ensureStars(10);
+    ensureFeatured(10); // 10 que titilan
+    ensureDistant(10);  // +10 lejanas sin titilar
     nukeForeign();
     const mo = new MutationObserver(() => { nukeForeign(); });
     mo.observe(document.documentElement, { childList: true, subtree: true });
@@ -412,6 +454,7 @@ html::before, html::after, body::before, body::after { content: none !important;
     const shield = document.getElementById('arcana-star-shield');
     if (shield) { setTimeout(() => { try{ shield.remove(); }catch(e){} }, 1200); }
   }
+
   if (document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', init, { once:true }); } else { init(); }
 })();
         `}</Script>
