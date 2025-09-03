@@ -16,6 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es" className="h-full">
       <head>
+        {/* Bloqueo de starfields ajenos en el primer paint */}
         <style id="arcana-star-shield">{`
 #stars2,#stars3,.stars2,.stars3,.starfield,.bg-stars,.twinkle,.twinkling,.particles,.particle,.dots,
 [id^="star"],[id$="star"],[id*="star-"],[id*="-star"],[class^="star"],[class$="star"],[class*=" star "],
@@ -45,19 +46,28 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${inter.variable} ${playfair.variable} min-h-screen antialiased relative`}
         style={{ background: "linear-gradient(180deg,#0a1120,#0b1530)", color: "#e5e7eb" }}
       >
+        {/* CIELO */}
         <div id="sky" aria-hidden>
           <div id="stars"></div>
 
-          {/* Nube única grande (80vw), amorfa, centro luminoso y bordes con neblina */}
+          {/* Nube principal (60vw) */}
           <div className="cloud-track track-main">
             <div className="rise rise-main">
               <canvas id="cloudMain" className="cloud cloud-main" />
+            </div>
+          </div>
+
+          {/* Nube superior (25vw) que sale desde la mitad superior */}
+          <div className="cloud-track track-top">
+            <div className="rise rise-top">
+              <canvas id="cloudTop" className="cloud cloud-top" />
             </div>
           </div>
         </div>
 
         <div className="relative z-10">{children}</div>
 
+        {/* ===== CSS ===== */}
         <style>{`
 #bg-root,.belt,.bank,.puffs,.cloud-svg,.nebula,.grain,.vignette{display:none!important;}
 html::before,html::after,body::before,body::after{content:none!important;display:none!important;}
@@ -71,28 +81,46 @@ html::before,html::after,body::before,body::after{content:none!important;display
 #sky{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:visible;visibility:hidden;}
 #sky.ready{visibility:visible;}
 
-/* Pista y movimiento */
+/* Pistas de movimiento */
 .cloud-track{position:absolute;left:0;width:100%;will-change:transform;}
-.track-main{top:34vh;animation:cloud-drift 320s linear infinite;animation-delay:-40s;}
-@keyframes cloud-drift{0%{transform:translateX(110vw)}100%{transform:translateX(-100vw)}}
-.rise-main{animation:cloud-rise 320s linear infinite;}
-@keyframes cloud-rise{0%{transform:translateY(0.8vh)}100%{transform:translateY(-9vh)}}
+/* Principal recorre la zona media-baja */
+.track-main{top:46vh;animation:cloud-drift-main 320s linear infinite;animation-delay:-40s;}
+@keyframes cloud-drift-main{0%{transform:translateX(110vw)}100%{transform:translateX(-100vw)}}
+/* Superior: nace en la mitad superior y “sale” desde la derecha */
+.track-top{top:22vh;animation:cloud-drift-top 300s linear infinite;animation-delay:-30s;}
+@keyframes cloud-drift-top{0%{transform:translateX(115vw)}100%{transform:translateX(-105vw)}}
 
-/* Tamaño solicitado: 80vw (cap 1200px) */
+/* Ascenso leve diferentes para romper paralelismo */
+.rise-main{animation:cloud-rise-main 320s linear infinite;}
+@keyframes cloud-rise-main{0%{transform:translateY(0.6vh)}100%{transform:translateY(-7vh)}}
+.rise-top{animation:cloud-rise-top 300s linear infinite;}
+@keyframes cloud-rise-top{0%{transform:translateY(0.8vh)}100%{transform:translateY(-5vh)}}
+
+/* Tamaños solicitados */
 .cloud{
   display:block;
-  width:min(80vw, 1200px);
-  height:calc(min(80vw, 1200px) * 0.36);
-  aspect-ratio:16/5.8;
   background:transparent;
-  filter: drop-shadow(0 10px 24px rgba(0,0,0,.06));
+  filter: drop-shadow(0 10px 22px rgba(0,0,0,.06));
 }
-@media (max-width:768px){
-  .track-main{top:42vh}
-  .cloud{width:96vw;height:calc(96vw*0.36)}
+.cloud-main{
+  width:min(60vw, 1100px);
+  height:calc(min(60vw, 1100px) * 0.36);
+  aspect-ratio:16/5.8;
+}
+.cloud-top{
+  width:min(25vw, 520px);
+  height:calc(min(25vw, 520px) * 0.36);
+  aspect-ratio:16/5.8;
 }
 
-/* Estrellas (mismas que ya gustaron) */
+@media (max-width:768px){
+  .track-main{top:54vh}
+  .track-top{top:26vh}
+  .cloud-main{width:88vw;height:calc(88vw*0.36)}
+  .cloud-top{width:56vw;height:calc(56vw*0.36)}
+}
+
+/* Estrellas (como ya están configuradas) */
 .featured-star{
   position:absolute;width:var(--sz,4.5px);height:var(--sz,4.5px);border-radius:999px;pointer-events:none;
   background:
@@ -120,11 +148,12 @@ html::before,html::after,body::before,body::after{content:none!important;display
 }
         `}</style>
 
-        {/* ===== Nube: centro más iluminado, figura amorfa y neblina en bordes ===== */}
+        {/* ===== PINTADO DE NUBES (amorfas, con neblina y centro luminoso) ===== */}
         <Script id="paint-clouds" strategy="afterInteractive">{`
 (function(){
-  // --- Ruido 2D y fBm ---
-  function fade(t){return t*t*t*(t*(t*6-15)+10)}
+  // ---------- Utilidades de ruido ----------
+  const fade=t=>t*t*t*(t*(t*6-15)+10);
+  const clamp=(x,a,b)=>x<a?a:(x>b?b:x);
   function hash(i,j,seed){const s=Math.sin(i*127.1 + j*311.7 + seed*0.123)*43758.5453;return s-Math.floor(s)}
   function v2(x,y,seed){
     const xi=Math.floor(x), yi=Math.floor(y), xf=x-xi, yf=y-yi, u=fade(xf), v=fade(yf);
@@ -137,130 +166,150 @@ html::before,html::after,body::before,body::after{content:none!important;display
       t += v2(rx,ry,seed+o*19)*amp; freq*=2.0; amp*=0.5; }
     return t;
   }
-  const clamp=(x,a,b)=>x<a?a:(x>b?b:x);
 
-  function paintCloud(canvas){
+  // --------- Render genérico de nube con config ---------
+  function renderCloud(canvas, cfg){
     const dpr=Math.max(1,Math.min(2,window.devicePixelRatio||1));
-    const wCSS=canvas.offsetWidth||1200, hCSS=canvas.offsetHeight||Math.round(wCSS*0.36);
+    const wCSS=canvas.offsetWidth||800, hCSS=canvas.offsetHeight||Math.round(wCSS*0.36);
     const W=Math.floor(wCSS*dpr), H=Math.floor(hCSS*dpr);
     canvas.width=W; canvas.height=H;
     const ctx=canvas.getContext('2d'); if(!ctx) return;
 
-    // --- Parámetros estéticos ---
-    const seed=5050;
-    const baseS = Math.min(W,H)*0.0130;   // features grandes (menos “grano”)
-    const detS  = baseS*3.0;              // detalle suave
-    const warpS = Math.min(W,H)*0.0055;   // warp de baja freq
-    const warpA = 3.8;                    // MÁS amorfa
+    const seed=cfg.seed||4040;
+    const baseS = Math.min(W,H)*(cfg.baseS ?? 0.0130);
+    const detS  = baseS*(cfg.detMul ?? 3.0);
+    const warpS = Math.min(W,H)*(cfg.warpS ?? 0.0058);
+    const warpA = (cfg.warpA ?? 3.6);
 
-    // Lóbulos irregulares (5) para silueta tipo nube
-    const L = [
+    // Lóbulos amorfos
+    const L = (cfg.lobes ?? [
       {x:W*0.48,y:H*0.52,a:W*0.36,b:H*0.26},
       {x:W*0.60,y:H*0.56,a:W*0.30,b:H*0.22},
       {x:W*0.38,y:H*0.58,a:W*0.28,b:H*0.20},
       {x:W*0.50,y:H*0.66,a:W*0.26,b:H*0.19},
       {x:W*0.70,y:H*0.60,a:W*0.22,b:H*0.18},
-    ];
+    ]);
     const lobe=(cx,cy,a,b,x,y)=>{const dx=(x-cx)/a, dy=(y-cy)/b; return Math.max(0,1-(dx*dx+dy*dy))};
     const su=(e1,e2)=>1-(1-e1)*(1-e2);
-    function ellipseUnion(x,y){
-      let e = 0;
-      for(let i=0;i<L.length;i++){
-        const li=L[i]; e = su(e, lobe(li.x,li.y,li.a,li.b,x,y));
-      }
-      return e;
+    function silhouette(x,y){
+      let e=0; for(let i=0;i<L.length;i++){ const li=L[i]; e=su(e, lobe(li.x,li.y,li.a,li.b,x,y)); } return e;
     }
 
     function fieldAt(x,y){
-      // Domain warping
       const wx = fbm(x/warpS, y/warpS, seed+501);
       const wy = fbm((x+90)/warpS, (y-60)/warpS, seed+907);
       const sx = x/baseS + (wx-0.5)*warpA;
       const sy = y/baseS + (wy-0.5)*warpA;
 
-      // Estructura + detalle
       const n1 = fbm(sx*0.7, sy*0.7, seed+11);
       const n2 = fbm(x/detS, y/detS, seed+77);
       let n = n1*0.72 + n2*0.55;
 
-      // Silueta
-      const e = ellipseUnion(x,y);
-
-      // Borde irregular
+      const e = silhouette(x,y);
       const edge = fbm(sx*0.20, sy*0.20, seed+7);
       n = n * Math.pow(e,0.60) * (0.78 + edge*0.32);
       return { n, e };
     }
 
-    // --- Capas: core (densa), body (forma nube), mist (neblina) ---
-    const thCore=0.46, softCore=0.22, curveCore=0.96, densCore=0.70; // centro compacto
-    const thBody=0.52, softBody=0.30, curveBody=1.00, densBody=0.36; // forma principal
-    const thMist=0.58, softMist=0.60, curveMist=1.05, densMist=0.22; // halo etéreo
+    // Capas (core/body/mist)
+    const thCore=cfg.thCore ?? 0.46, softCore=cfg.softCore ?? 0.22, curveCore=cfg.curveCore ?? 0.96, densCore=cfg.densCore ?? 0.70;
+    const thBody=cfg.thBody ?? 0.52, softBody=cfg.softBody ?? 0.30, curveBody=cfg.curveBody ?? 1.00, densBody=cfg.densBody ?? 0.36;
+    const thMist=cfg.thMist ?? 0.58, softMist=cfg.softMist ?? 0.60, curveMist=cfg.curveMist ?? 1.05, densMist=cfg.densMist ?? 0.22;
 
     const img=ctx.createImageData(W,H); const d=img.data;
     for(let y=0,k=0;y<H;y++){
       for(let x=0;x<W;x++,k+=4){
-        // Suavizado local para look “crema”
         const f0=fieldAt(x,y);
         const fN=fieldAt(x,y-2), fS=fieldAt(x,y+2), fE=fieldAt(x+2,y), fW=fieldAt(x-2,y);
         const n = (f0.n*0.64) + ((fN.n+fS.n+fE.n+fW.n)*0.09);
         const e = (f0.e*0.64) + ((fN.e+fS.e+fE.e+fW.e)*0.09);
 
-        let aCore = clamp((n - thCore) / softCore, 0, 1);
-        aCore = Math.pow(aCore, curveCore) * densCore;
-
-        let aBody = clamp((n - thBody) / softBody, 0, 1);
-        aBody = Math.pow(aBody, curveBody) * densBody;
-
-        let aMist = clamp((n - thMist) / (softMist + (1-e)*0.30), 0, 1);
-        aMist = Math.pow(aMist, curveMist) * densMist;
+        let aCore = Math.pow(clamp((n - thCore)/softCore,0,1), curveCore) * densCore;
+        let aBody = Math.pow(clamp((n - thBody)/softBody,0,1), curveBody) * densBody;
+        let aMist = Math.pow(clamp((n - thMist)/(softMist + (1-e)*0.30),0,1), curveMist) * densMist;
 
         const alpha = clamp(aCore + aBody + aMist, 0, 1);
         if(alpha<=0){ d[k+3]=0; continue; }
-
         d[k]=255; d[k+1]=255; d[k+2]=255; d[k+3]=Math.floor(alpha*255);
       }
     }
     ctx.putImageData(img,0,0);
 
-    // --- Luz central y tinte místico (más luminoso en el centro) ---
+    // Centro ligeramente más iluminado + tintes
     ctx.globalCompositeOperation='lighter';
     const pr=Math.min(W,H);
-
-    // Glow blanco central
-    const glow=ctx.createRadialGradient(W*0.50, H*0.55, 0, W*0.50, H*0.55, pr*0.42);
+    const cx=cfg.glowCx ?? 0.50, cy=cfg.glowCy ?? 0.55, r=cfg.glowR ?? 0.42;
+    const glow=ctx.createRadialGradient(W*cx, H*cy, 0, W*cx, H*cy, pr*r);
     glow.addColorStop(0.00,'rgba(255,255,255,0.18)');
     glow.addColorStop(0.35,'rgba(255,255,255,0.12)');
     glow.addColorStop(0.70,'rgba(255,255,255,0.04)');
     glow.addColorStop(1.00,'rgba(255,255,255,0)');
     ctx.fillStyle=glow; ctx.fillRect(0,0,W,H);
 
-    // Sutil magenta/morado
-    const mag=ctx.createRadialGradient(W*0.44,H*0.50,0,W*0.44,H*0.50,pr*0.55);
-    mag.addColorStop(0,'rgba(168,85,247,0.10)');
-    mag.addColorStop(1,'rgba(168,85,247,0)');
+    const mag=ctx.createRadialGradient(W*(cfg.magCx ?? 0.44),H*(cfg.magCy ?? 0.50),0,W*(cfg.magCx ?? 0.44),H*(cfg.magCy ?? 0.50),pr*(cfg.magR ?? 0.55));
+    mag.addColorStop(0,'rgba(168,85,247,0.10)'); mag.addColorStop(1,'rgba(168,85,247,0)');
     ctx.fillStyle=mag; ctx.fillRect(0,0,W,H);
 
-    const pink=ctx.createRadialGradient(W*0.60,H*0.60,0,W*0.60,H*0.60,pr*0.58);
-    pink.addColorStop(0,'rgba(244,114,182,0.08)');
-    pink.addColorStop(1,'rgba(244,114,182,0)');
+    const pink=ctx.createRadialGradient(W*(cfg.pinkCx ?? 0.60),H*(cfg.pinkCy ?? 0.60),0,W*(cfg.pinkCx ?? 0.60),H*(cfg.pinkCy ?? 0.60),pr*(cfg.pinkR ?? 0.58));
+    pink.addColorStop(0,'rgba(244,114,182,0.08)'); pink.addColorStop(1,'rgba(244,114,182,0)');
     ctx.fillStyle=pink; ctx.fillRect(0,0,W,H);
-
     ctx.globalCompositeOperation='source-over';
   }
 
   function init(){
-    const c=document.getElementById('cloudMain');
-    if(c) paintCloud(c);
-    const sky=document.getElementById('sky'); if(sky) sky.classList.add('ready');
+    const sky=document.getElementById('sky');
+    const main=document.getElementById('cloudMain');
+    const top =document.getElementById('cloudTop');
+
+    if(main) renderCloud(main, {
+      seed: 7001,
+      warpA: 3.8,
+      // Lobulado amplio para gran masa en zona media
+      lobes: [
+        {x:main.width*0.48,y:main.height*0.52,a:main.width*0.38,b:main.height*0.27},
+        {x:main.width*0.62,y:main.height*0.56,a:main.width*0.30,b:main.height*0.22},
+        {x:main.width*0.36,y:main.height*0.58,a:main.width*0.30,b:main.height*0.22},
+        {x:main.width*0.50,y:main.height*0.66,a:main.width*0.26,b:main.height*0.20},
+        {x:main.width*0.72,y:main.height*0.60,a:main.width*0.22,b:main.height*0.18},
+      ],
+      densCore: 0.70, thCore: 0.46, softCore: 0.22,
+      densBody: 0.38, thBody: 0.52, softBody: 0.30,
+      densMist: 0.22, thMist: 0.58, softMist: 0.60,
+      glowCx: 0.50, glowCy: 0.55, glowR: 0.42
+    });
+
+    if(top) renderCloud(top, {
+      seed: 9103,
+      warpA: 4.1, // aún más amorfa para diferenciarla
+      // Lobulado desplazado hacia arriba para que "salga" en la mitad superior
+      lobes: [
+        {x:top.width*0.42,y:top.height*0.44,a:top.width*0.28,b:top.height*0.20},
+        {x:top.width*0.58,y:top.height*0.46,a:top.width*0.22,b:top.height*0.18},
+        {x:top.width*0.34,y:top.height*0.50,a:top.width*0.20,b:top.height*0.16},
+        {x:top.width*0.50,y:top.height*0.54,a:top.width*0.18,b:top.height*0.15},
+      ],
+      // Un poco menos densa que la principal para efecto de profundidad
+      densCore: 0.62, thCore: 0.47, softCore: 0.22,
+      densBody: 0.32, thBody: 0.53, softBody: 0.30,
+      densMist: 0.24, thMist: 0.59, softMist: 0.65,
+      glowCx: 0.52, glowCy: 0.52, glowR: 0.38
+    });
+
+    if(sky) sky.classList.add('ready');
+
     let to=null;
-    window.addEventListener('resize',()=>{clearTimeout(to);to=setTimeout(()=>c&&paintCloud(c),120)},{passive:true});
+    function onResize(){ clearTimeout(to); to=setTimeout(()=>{
+      if(main) renderCloud(main, { seed:7001, warpA:3.8 });
+      if(top ) renderCloud(top , { seed:9103, warpA:4.1 });
+    },120)}
+    window.addEventListener('resize', onResize, {passive:true});
   }
+
   if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',init,{once:true});}else{init();}
 })();
         `}</Script>
 
-        {/* Estrellas */}
+        {/* ===== Estrellas (mantenemos las que ya gustaron) ===== */}
         <Script id="tune-stars" strategy="afterInteractive">{`
 (function () {
   function nukeForeign(){
