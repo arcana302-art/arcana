@@ -16,13 +16,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es" className="h-full">
       <head>
-        {/* Bloqueo de starfields externos en el primer paint */}
+        {/* Escudo para neutralizar starfields/partículas de cualquier lib antes del primer paint */}
         <style id="arcana-star-shield">{`
 #stars2,#stars3,.stars2,.stars3,.starfield,.bg-stars,.twinkle,.twinkling,.particles,.particle,.dots,
 [id^="star"],[id$="star"],[id*="star-"],[id*="-star"],[class^="star"],[class$="star"],[class*=" star "],
 [class*="star-"],[class*="-star"]{display:none!important;animation:none!important;transition:none!important;}
 #sky .featured-star,#sky .distant-star{display:block!important;}
         `}</style>
+
+        {/* Limpieza temprana de nodos de terceros */}
         <Script id="pre-nuke-stars" strategy="beforeInteractive">{`
 (function(){
   function nuke(){
@@ -46,18 +48,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${inter.variable} ${playfair.variable} min-h-screen antialiased relative`}
         style={{ background: "linear-gradient(180deg,#0a1120,#0b1530)", color: "#e5e7eb" }}
       >
-        {/* CIELO */}
+        {/* CIELO / BACKDROP */}
         <div id="sky" aria-hidden>
           <div id="stars"></div>
 
-          {/* Banco principal (60vw) */}
+          {/* Nube principal (60vw) */}
           <div className="cloud-track track-main">
             <div className="rise rise-main">
               <canvas id="cloudMain" className="cloud cloud-main" />
             </div>
           </div>
 
-          {/* Banco superior (25vw) saliendo desde mitad superior */}
+          {/* Nube superior (25vw) que aparece en la mitad superior */}
           <div className="cloud-track track-top">
             <div className="rise rise-top">
               <canvas id="cloudTop" className="cloud cloud-top" />
@@ -65,6 +67,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </div>
 
+        {/* CONTENIDO */}
         <div className="relative z-10">{children}</div>
 
         {/* ===== CSS ===== */}
@@ -85,7 +88,7 @@ html::before,html::after,body::before,body::after{content:none!important;display
 .cloud-track{position:absolute;left:0;width:100%;will-change:transform;}
 .track-main{top:46vh;animation:cloud-drift-main 320s linear infinite;animation-delay:-40s;}
 @keyframes cloud-drift-main{0%{transform:translateX(110vw)}100%{transform:translateX(-100vw)}}
-.track-top{top:24vh;animation:cloud-drift-top 300s linear infinite;animation-delay:-30s;}
+.track-top{top:22vh;animation:cloud-drift-top 300s linear infinite;animation-delay:-30s;}
 @keyframes cloud-drift-top{0%{transform:translateX(115vw)}100%{transform:translateX(-105vw)}}
 
 .rise-main{animation:cloud-rise-main 320s linear infinite;}
@@ -93,19 +96,20 @@ html::before,html::after,body::before,body::after{content:none!important;display
 .rise-top{animation:cloud-rise-top 300s linear infinite;}
 @keyframes cloud-rise-top{0%{transform:translateY(0.6vh)}100%{transform:translateY(-4.5vh)}}
 
-/* Tamaños solicitados (más altas para volumen) */
+/* Tamaños (más altos para dar volumen) */
 .cloud{display:block;background:transparent;filter:drop-shadow(0 10px 22px rgba(0,0,0,.06));}
-.cloud-main{width:min(60vw,1100px);height:calc(min(60vw,1100px)*0.42);aspect-ratio:16/6.7;}
-.cloud-top{width:min(25vw,520px);height:calc(min(25vw,520px)*0.42);aspect-ratio:16/6.7;}
+.cloud-main{width:min(60vw,1100px);height:calc(min(60vw,1100px)*0.42);aspect-ratio:16/6.7;opacity:.92;}
+.cloud-top{width:min(25vw,520px); height:calc(min(25vw,520px)*0.42); aspect-ratio:16/6.7; opacity:.88;}
 
 @media (max-width:768px){
   .track-main{top:54vh}
-  .track-top{top:28vh}
+  .track-top{top:26vh}
   .cloud-main{width:90vw;height:calc(90vw*0.42)}
   .cloud-top{width:58vw;height:calc(58vw*0.42)}
 }
 
-/* Estrellas (las que ya te gustan) */
+/* Estrellas (brillantes con glow sutil y titileo muy lento) */
+@keyframes featuredTwinkle{0%{opacity:.85}50%{opacity:.35}100%{opacity:.85}}
 .featured-star{
   position:absolute;width:var(--sz,4.5px);height:var(--sz,4.5px);border-radius:999px;pointer-events:none;
   background:
@@ -133,10 +137,10 @@ html::before,html::after,body::before,body::after{content:none!important;display
 }
         `}</style>
 
-        {/* ===== PINTADO DE NUBES (banco cumulus con domos + neblina) ===== */}
+        {/* ===== PINTADO DE NUBES (banco cumulus + halo etéreo + centro luminoso) ===== */}
         <Script id="paint-clouds" strategy="afterInteractive">{`
 (function(){
-  // Utilidades de ruido
+  // ---------- util ruido ----------
   const fade=t=>t*t*t*(t*(t*6-15)+10);
   const clamp=(x,a,b)=>x<a?a:(x>b?b:x);
   const fract=x=>x-Math.floor(x);
@@ -155,165 +159,141 @@ html::before,html::after,body::before,body::after{content:none!important;display
     return t;
   }
 
-  // Construye un BANCO de nubes tipo cumulus: base ancha + domos
+  // banco de nubes (base + domos)
   function buildBankLobes(W,H,seed,opts){
-    const o = Object.assign({
-      baseY: 0.64,        // altura base
-      baseA: 0.50,        // semieje X base (ancho)
-      baseB: 0.22,        // semieje Y base (altura)
-      domes: 7,           // cantidad de domos
-      spread: 0.68,       // cuánto se distribuyen horizontalmente
-      yJitter: 0.05,      // variación vertical de domos
-      aMin: 0.10, aMax: 0.18, // semiejes X de domos
-      bMin: 0.22, bMax: 0.30  // semiejes Y de domos
-    }, opts||{});
-
-    const L = [];
-    // Base ancha (levemente achatada) que une todo
-    L.push({ x: W*0.50, y: H*o.baseY, a: W*o.baseA, b: H*o.baseB });
-
-    // Domos distribuidos
-    const start = 0.5 - o.spread/2;
+    const o=Object.assign({
+      baseY:0.66, baseA:0.52, baseB:0.24,   // base ancha/alta
+      domes:5, spread:0.72, yJitter:0.05,
+      aMin:0.14, aMax:0.20,                 // domos grandes
+      bMin:0.26, bMax:0.34
+    },opts||{});
+    const L=[];
+    L.push({x:W*0.50,y:H*o.baseY,a:W*o.baseA,b:H*o.baseB});
+    const start=0.5-o.spread/2;
     for(let i=0;i<o.domes;i++){
-      const u = i/(o.domes-1);
-      const px = start + u*o.spread;
-      const r  = prng(i+11, seed);
-      const a  = W * (o.aMin + (o.aMax-o.aMin)*(0.45 + 0.55*r));
-      const b  = H * (o.bMin + (o.bMax-o.bMin)*(0.45 + 0.55*prng(i+33, seed)));
-      const y  = H * (o.baseY - 0.08 - o.yJitter*(0.5 - prng(i+77, seed)));
-      const x  = W * (0.12 + px*0.76 + (prng(i+55,seed)-0.5)*0.03); // ligero zig-zag
-      L.push({ x, y, a, b });
+      const u=i/(o.domes-1), px=start+u*o.spread;
+      const a=W*(o.aMin+(o.aMax-o.aMin)*(0.45+0.55*prng(i+11,seed)));
+      const b=H*(o.bMin+(o.bMax-o.bMin)*(0.45+0.55*prng(i+33,seed)));
+      const y=H*(o.baseY-0.09-o.yJitter*(0.5-prng(i+77,seed)));
+      const x=W*(0.12+px*0.76+(prng(i+55,seed)-0.5)*0.025);
+      L.push({x,y,a,b});
     }
     return L;
   }
 
-  function renderCloud(canvas, cfg){
+  function renderCloud(canvas,cfg){
     const dpr=Math.max(1,Math.min(2,window.devicePixelRatio||1));
     const wCSS=canvas.offsetWidth||800, hCSS=canvas.offsetHeight||Math.round(wCSS*0.42);
     const W=Math.floor(wCSS*dpr), H=Math.floor(hCSS*dpr);
     canvas.width=W; canvas.height=H;
     const ctx=canvas.getContext('2d'); if(!ctx) return;
 
-    // --- Config ---
-    const seed   = cfg.seed ?? 6001;
-    const baseS  = Math.min(W,H)*(cfg.baseS ?? 0.0125);
-    const detS   = baseS*(cfg.detMul ?? 3.0);
-    const warpS  = Math.min(W,H)*(cfg.warpS ?? 0.0052);
-    const warpA  = cfg.warpA ?? 3.6;
+    // ---- tuning anti-grano y bordes suaves ----
+    const seed=cfg.seed??6501;
+    const baseS=Math.min(W,H)*(cfg.baseS??0.0148); // escala mayor => menos puntitos
+    const detS =baseS*(cfg.detMul??2.1);          // menos detalle fino
+    const warpS=Math.min(W,H)*(cfg.warpS??0.0060);
+    const warpA=cfg.warpA??2.8;                   // menos “desgarro”
 
-    // Lobulado tipo banco (si no pasan lobes, los generamos)
-    const L = cfg.lobes ?? buildBankLobes(W,H,seed,cfg.bankOpts);
-
+    const L=cfg.lobes??buildBankLobes(W,H,seed,cfg.bankOpts);
     const lobe=(cx,cy,a,b,x,y)=>{const dx=(x-cx)/a, dy=(y-cy)/b; return Math.max(0,1-(dx*dx+dy*dy))};
     const su=(e1,e2)=>1-(1-e1)*(1-e2);
-    function silhouette(x,y){ let e=0; for(let i=0;i<L.length;i++){ const li=L[i]; e=su(e,lobe(li.x,li.y,li.a,li.b,x,y)); } return e; }
+    const silhouette=(x,y)=>{let e=0; for(let i=0;i<L.length;i++){const li=L[i]; e=su(e,lobe(li.x,li.y,li.a,li.b,x,y));} return e};
 
     function fieldAt(x,y){
-      // Warp para bordes amorfos
-      const wx = fbm(x/warpS, y/warpS, seed+501);
-      const wy = fbm((x+90)/warpS, (y-60)/warpS, seed+907);
-      const sx = x/baseS + (wx-0.5)*warpA;
-      const sy = y/baseS + (wy-0.5)*warpA;
-
-      // Estructura + detalle
-      const n1 = fbm(sx*0.7, sy*0.7, seed+11);
-      const n2 = fbm(x/detS, y/detS, seed+77);
-      let n = n1*0.72 + n2*0.55;
-
-      // Silueta de banco
-      const e = silhouette(x,y);
-
-      // Borde irregular + ligera “base plana” (más opaco arriba que abajo)
-      const edge = fbm(sx*0.18, sy*0.18, seed+7);
-      const baseMask = clamp(1 - (y/H - 0.74)*2.2, 0, 1); // suaviza la parte muy baja
-      n = n * Math.pow(e,0.60) * (0.78 + edge*0.32) * (0.85 + 0.15*baseMask);
-      return { n, e };
+      const wx=fbm(x/warpS,y/warpS,seed+501), wy=fbm((x+90)/warpS,(y-60)/warpS,seed+907);
+      const sx=x/baseS+(wx-0.5)*warpA, sy=y/baseS+(wy-0.5)*warpA;
+      const n1=fbm(sx*0.7,sy*0.7,seed+11), n2=fbm(x/detS,y/detS,seed+77);
+      let n=n1*0.72+n2*0.55;
+      const e=silhouette(x,y);
+      const edge=fbm(sx*0.18,sy*0.18,seed+7);
+      const baseMask=clamp(1- (y/H-0.74)*2.2,0,1); // suaviza base
+      n=n*Math.pow(e,0.60)*(0.78+edge*0.28)*(0.88+0.12*baseMask);
+      return {n,e};
     }
 
-    // Capas: núcleo (denso), cuerpo (nube), halo (neblina)
-    const thCore=cfg.thCore ?? 0.46, softCore=cfg.softCore ?? 0.22, curveCore=cfg.curveCore ?? 0.96, densCore=cfg.densCore ?? 0.70;
-    const thBody=cfg.thBody ?? 0.52, softBody=cfg.softBody ?? 0.30, curveBody=cfg.curveBody ?? 1.00, densBody=cfg.densBody ?? 0.38;
-    const thMist=cfg.thMist ?? 0.58, softMist=cfg.softMist ?? 0.62, curveMist=cfg.curveMist ?? 1.05, densMist=cfg.densMist ?? 0.22;
+    // capas con menos dureza y más cuerpo
+    const thCore=0.46, softCore=0.24, curveCore=0.96, densCore=0.66;
+    const thBody=0.51, softBody=0.34, curveBody=1.00, densBody=0.32;
+    const thMist=0.57, softMist=0.70, curveMist=1.05, densMist=0.18;
 
+    // pintado con suavizado 9-samples (menos “popcorn”)
     const img=ctx.createImageData(W,H); const d=img.data;
     for(let y=0,k=0;y<H;y++){
       for(let x=0;x<W;x++,k+=4){
-        const f0=fieldAt(x,y);
-        const fN=fieldAt(x,y-2), fS=fieldAt(x,y+2), fE=fieldAt(x+2,y), fW=fieldAt(x-2,y);
-        const n = (f0.n*0.64) + ((fN.n+fS.n+fE.n+fW.n)*0.09);
-        const e = (f0.e*0.64) + ((fN.e+fS.e+fE.e+fW.e)*0.09);
+        const p=[fieldAt(x,y),
+                 fieldAt(x+2,y),fieldAt(x-2,y),fieldAt(x,y+2),fieldAt(x,y-2),
+                 fieldAt(x+2,y+2),fieldAt(x-2,y-2),fieldAt(x+2,y-2),fieldAt(x-2,y+2)];
+        let n=p[0].n*0.44, e=p[0].e*0.44;
+        for(let i=1;i<p.length;i++){ n+=p[i].n*0.07; e+=p[i].e*0.07; }
 
-        let aCore = Math.pow(clamp((n - thCore)/softCore,0,1), curveCore) * densCore;
-        let aBody = Math.pow(clamp((n - thBody)/softBody,0,1), curveBody) * densBody;
-        let aMist = Math.pow(clamp((n - thMist)/(softMist + (1-e)*0.32),0,1), curveMist) * densMist;
+        let aCore = Math.pow(clamp((n-thCore)/softCore,0,1),curveCore)*densCore;
+        let aBody = Math.pow(clamp((n-thBody)/softBody,0,1),curveBody)*densBody;
+        let aMist = Math.pow(clamp((n-thMist)/(softMist+(1-e)*0.30),0,1),curveMist)*densMist;
 
-        const alpha = clamp(aCore + aBody + aMist, 0, 1);
-        if(alpha<=0){ d[k+3]=0; continue; }
+        const alpha=clamp(aCore+aBody+aMist,0,1);
+        if(alpha<=0){d[k+3]=0; continue;}
         d[k]=255; d[k+1]=255; d[k+2]=255; d[k+3]=Math.floor(alpha*255);
       }
     }
     ctx.putImageData(img,0,0);
 
-    // Luz central + tintes mágicos (muy sutil)
+    // ---- halo borroso detrás (verdadera neblina de borde) ----
+    const tmp=document.createElement('canvas'); tmp.width=W; tmp.height=H;
+    const tctx=tmp.getContext('2d'); tctx.putImageData(img,0,0);
+    ctx.save();
+    ctx.globalCompositeOperation='destination-over';
+    ctx.globalAlpha=0.55; ctx.filter='blur(10px)'; // halo suave
+    ctx.drawImage(tmp,-4,-4,W+8,H+8);
+    ctx.restore();
+    ctx.filter='none';
+
+    // ---- luz central sutil + tinte muy ligero ----
     ctx.globalCompositeOperation='lighter';
     const pr=Math.min(W,H);
-    const cx=cfg.glowCx ?? 0.50, cy=cfg.glowCy ?? 0.55, r=cfg.glowR ?? 0.42;
-    const glow=ctx.createRadialGradient(W*cx, H*cy, 0, W*cx, H*cy, pr*r);
-    glow.addColorStop(0.00,'rgba(255,255,255,0.18)');
-    glow.addColorStop(0.35,'rgba(255,255,255,0.12)');
-    glow.addColorStop(0.70,'rgba(255,255,255,0.04)');
-    glow.addColorStop(1.00,'rgba(255,255,255,0)');
+    const glow=ctx.createRadialGradient(W*0.50,H*0.54,0,W*0.50,H*0.54,pr*0.40);
+    glow.addColorStop(0,'rgba(255,255,255,0.16)');
+    glow.addColorStop(0.6,'rgba(255,255,255,0.06)');
+    glow.addColorStop(1,'rgba(255,255,255,0)');
     ctx.fillStyle=glow; ctx.fillRect(0,0,W,H);
 
-    const mag=ctx.createRadialGradient(W*(cfg.magCx ?? 0.44),H*(cfg.magCy ?? 0.50),0,W*(cfg.magCx ?? 0.44),H*(cfg.magCy ?? 0.50),pr*(cfg.magR ?? 0.55));
-    mag.addColorStop(0,'rgba(168,85,247,0.10)'); mag.addColorStop(1,'rgba(168,85,247,0)');
+    const mag=ctx.createRadialGradient(W*0.44,H*0.50,0,W*0.44,H*0.50,pr*0.52);
+    mag.addColorStop(0,'rgba(168,85,247,0.07)'); mag.addColorStop(1,'rgba(168,85,247,0)');
     ctx.fillStyle=mag; ctx.fillRect(0,0,W,H);
 
-    const pink=ctx.createRadialGradient(W*(cfg.pinkCx ?? 0.60),H*(cfg.pinkCy ?? 0.60),0,W*(cfg.pinkCx ?? 0.60),H*(cfg.pinkCy ?? 0.60),pr*(cfg.pinkR ?? 0.58));
-    pink.addColorStop(0,'rgba(244,114,182,0.08)'); pink.addColorStop(1,'rgba(244,114,182,0)');
+    const pink=ctx.createRadialGradient(W*0.60,H*0.60,0,W*0.60,H*0.60,pr*0.54);
+    pink.addColorStop(0,'rgba(244,114,182,0.06)'); pink.addColorStop(1,'rgba(244,114,182,0)');
     ctx.fillStyle=pink; ctx.fillRect(0,0,W,H);
     ctx.globalCompositeOperation='source-over';
   }
 
-  function init(){
-    const sky=document.getElementById('sky');
+  function paintAll(){
     const main=document.getElementById('cloudMain');
     const top =document.getElementById('cloudTop');
 
-    if(main) renderCloud(main, {
-      seed: 8009,
-      warpA: 3.6,
-      bankOpts: { domes: 7, spread: 0.74, baseY: 0.66, aMin:0.11, aMax:0.18, bMin:0.24, bMax:0.32 },
-      densCore: 0.72, thCore: 0.46, softCore: 0.22,
-      densBody: 0.40, thBody: 0.52, softBody: 0.30,
-      densMist: 0.22, thMist: 0.58, softMist: 0.62,
-      glowCx: 0.50, glowCy: 0.54, glowR: 0.44
+    if(main) renderCloud(main,{
+      seed: 8101, warpA: 2.8,
+      bankOpts:{ domes:5, spread:0.74, baseY:0.66, aMin:0.14, aMax:0.20, bMin:0.26, bMax:0.34 }
     });
 
-    if(top) renderCloud(top, {
-      seed: 9013,
-      warpA: 3.9,
-      bankOpts: { domes: 5, spread: 0.66, baseY: 0.62, aMin:0.10, aMax:0.16, bMin:0.22, bMax:0.28 },
-      densCore: 0.64, thCore: 0.47, softCore: 0.22,
-      densBody: 0.34, thBody: 0.53, softBody: 0.30,
-      densMist: 0.24, thMist: 0.59, softMist: 0.66,
-      glowCx: 0.52, glowCy: 0.52, glowR: 0.40
+    if(top) renderCloud(top,{
+      seed: 9053, warpA: 2.9,
+      bankOpts:{ domes:4, spread:0.64, baseY:0.62, aMin:0.12, aMax:0.18, bMin:0.24, bMax:0.30 }
     });
+  }
 
-    if(sky) sky.classList.add('ready');
-
+  function init(){
+    paintAll();
+    const sky=document.getElementById('sky'); if(sky) sky.classList.add('ready');
     let to=null;
-    function onResize(){ clearTimeout(to); to=setTimeout(()=>{
-      if(main) init(); // repintamos sencillo
-    },120)}
-    window.addEventListener('resize', onResize, {passive:true});
+    window.addEventListener('resize',()=>{clearTimeout(to);to=setTimeout(paintAll,140)},{passive:true});
   }
 
   if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',init,{once:true});}else{init();}
 })();
         `}</Script>
 
-        {/* ===== Estrellas (tuning) ===== */}
+        {/* ===== Estrellas (tuning lento + limpieza de intrusos) ===== */}
         <Script id="tune-stars" strategy="afterInteractive">{`
 (function () {
   function nukeForeign(){
