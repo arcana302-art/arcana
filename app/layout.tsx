@@ -16,12 +16,15 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" className="h-full">
-      <body className={`${inter.variable} ${playfair.variable} min-h-screen antialiased relative`} style={{ background: "linear-gradient(180deg,#0a1120,#0b1530)" }}>
-        {/* Estrellas: capa trasera (lejanas) + capa frontal (brillantes) */}
+      <body
+        className={`${inter.variable} ${playfair.variable} min-h-screen antialiased relative`}
+        style={{ background: "linear-gradient(180deg,#0a1120,#0b1530)" }}
+      >
+        {/* Estrellas (lejanas detrás, brillantes encima) */}
         <Stars />
-        {/* Nubes (entre ambas capas de estrellas) */}
+        {/* Nubes entre capas de estrellas */}
         <CloudBackdrop />
-        {/* Contenido */}
+
         <div className="relative z-10">{children}</div>
       </body>
     </html>
