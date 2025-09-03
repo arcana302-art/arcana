@@ -182,7 +182,7 @@ html::before, html::after, body::before, body::after { content: none !important;
 }
 @keyframes glowPulse{ 0% { opacity:.38; transform: scale(1); } 100% { opacity:.52; transform: scale(1.03); } }
 
-/* ===== Estrellas cercanas — DIM LENTO (45–90s) + GLOW ===== */
+/* ===== Estrellas cercanas — DIM LENTO (45–90s) + HALO + ESTELA ===== */
 .featured-star{
   position:absolute;
   width: var(--sz, 4.5px); height: var(--sz, 4.5px);
@@ -197,7 +197,6 @@ html::before, html::after, body::before, body::after { content: none !important;
     drop-shadow(0 0 22px rgba(168,85,247,.55))
     drop-shadow(0 0 28px rgba(244,114,182,.35));
   will-change: opacity;
-  transition: none !important;
   animation-name: featuredTwinkle !important;
   animation-duration: var(--ftDur, 80s) !important; /* default ~80s */
   animation-timing-function: cubic-bezier(.42,0,.58,1);
@@ -205,7 +204,7 @@ html::before, html::after, body::before, body::after { content: none !important;
   animation-fill-mode: both;
   animation-delay: var(--twDelay, 0s);
 }
-/* Halos de las estrellas cercanas */
+/* Halos (glow) */
 #sky .featured-star::before,
 #sky .featured-star::after{
   content: "" !important;
@@ -230,6 +229,34 @@ html::before, html::after, body::before, body::after { content: none !important;
   filter: blur(24px);
   opacity: .72;
 }
+/* Estela (hijo .tail) — sutil, alineada, mismo ritmo que el brillo */
+#sky .featured-star .tail{
+  position:absolute;
+  left:50%; top:50%;
+  width: var(--trailW, 48px);
+  height: var(--trailH, 10px);
+  transform:
+    translate(-24%,-50%)
+    rotate(var(--trailRot,-18deg))
+    scaleX(1);
+  transform-origin: 0% 50%;
+  border-radius: 999px;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  background:
+    radial-gradient(140% 90% at 0% 50%, rgba(255,255,255,.50) 0%, rgba(255,255,255,.18) 38%, rgba(255,255,255,0) 72%),
+    linear-gradient(90deg, rgba(168,85,247,.22) 0%, rgba(244,114,182,.16) 45%, rgba(255,255,255,0) 100%);
+  filter: blur(9px);
+  opacity: var(--trailAlpha,.55);
+  animation: tailPulse var(--ftDur, 80s) cubic-bezier(.42,0,.58,1) infinite;
+  animation-delay: var(--twDelay, 0s);
+}
+@keyframes tailPulse{
+  0%   { opacity: calc(var(--trailAlpha,.55) * .18); transform: translate(-26%,-50%) rotate(var(--trailRot,-18deg)) scaleX(.92); }
+  40%  { opacity: calc(var(--trailAlpha,.55) * .62); transform: translate(-24%,-50%) rotate(var(--trailRot,-18deg)) scaleX(1); }
+  60%  { opacity: calc(var(--trailAlpha,.55) * .88); }
+  100% { opacity: calc(var(--trailAlpha,.55) * .20); transform: translate(-26%,-50%) rotate(var(--trailRot,-18deg)) scaleX(.92); }
+}
 
 /* ===== Estrellas lejanas — sin titileo, más pequeñas y menos brillantes ===== */
 .distant-star{
@@ -245,7 +272,6 @@ html::before, html::after, body::before, body::after { content: none !important;
     drop-shadow(0 0 6px rgba(255,255,255,.35))
     drop-shadow(0 0 10px rgba(168,85,247,.20));
   opacity: var(--dalpha, .52); /* 0.35–0.60 desde JS */
-  /* sin animación */
 }
 
 /* Curvas de animación (para las cercanas) */
@@ -401,17 +427,41 @@ html::before, html::after, body::before, body::after { content: none !important;
     for (let i=0; i<need; i++){
       const s = document.createElement('span');
       s.className = 'featured-star';
+
+      // Timing y tamaño
       const dur   = 45 + Math.random()*45;  // 45–90s
       const size  = 4 + Math.random()*1.8;  // 4–5.8px
       const top   = Math.random()*100;
       const left  = Math.random()*100;
       const delay = -Math.random()*dur;
+
+      // Estela (random suave por estrella)
+      const tW = 40 + Math.random()*34;     // 40–74px
+      const tH = 6  + Math.random()*6;      // 6–12px
+      const tR = -22 + Math.random()*44;    // -22° a +22°
+      const tA = 0.42 + Math.random()*0.22; // 0.42–0.64
+
+      // tamaño/posicion
       s.style.setProperty('--sz', size.toFixed(2)+'px');
       s.style.top  = top.toFixed(2)+'vh';
       s.style.left = left.toFixed(2)+'vw';
+
+      // tiempo
       s.style.setProperty('--ftDur', dur.toFixed(2)+'s');
       s.style.setProperty('--twDelay', delay.toFixed(2)+'s');
       s.style.animationDelay = delay.toFixed(2)+'s';
+
+      // variables de estela
+      s.style.setProperty('--trailW', tW.toFixed(2)+'px');
+      s.style.setProperty('--trailH', tH.toFixed(2)+'px');
+      s.style.setProperty('--trailRot', tR.toFixed(2)+'deg');
+      s.style.setProperty('--trailAlpha', tA.toFixed(2));
+
+      // hijo .tail
+      const tail = document.createElement('span');
+      tail.className = 'tail';
+      s.appendChild(tail);
+
       holder.appendChild(s);
     }
   }
@@ -439,8 +489,8 @@ html::before, html::after, body::before, body::after { content: none !important;
   }
 
   function init(){
-    ensureFeatured(10); // 10 que titilan (con halo)
-    ensureDistant(20);  // <-- AHORA 20 lejanas sin titilar
+    ensureFeatured(10); // 10 que titilan (con halo + estela)
+    ensureDistant(20);  // 20 lejanas sin titilar
     nukeForeign();
     const mo = new MutationObserver(() => { nukeForeign(); });
     mo.observe(document.documentElement, { childList: true, subtree: true });
