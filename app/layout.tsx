@@ -16,7 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es" className="h-full">
       <head>
-        {/* Bloqueo de starfields ajenos en el primer paint */}
+        {/* Bloqueo de starfields externos en el primer paint */}
         <style id="arcana-star-shield">{`
 #stars2,#stars3,.stars2,.stars3,.starfield,.bg-stars,.twinkle,.twinkling,.particles,.particle,.dots,
 [id^="star"],[id$="star"],[id*="star-"],[id*="-star"],[class^="star"],[class$="star"],[class*=" star "],
@@ -50,14 +50,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div id="sky" aria-hidden>
           <div id="stars"></div>
 
-          {/* Nube principal (60vw) */}
+          {/* Banco principal (60vw) */}
           <div className="cloud-track track-main">
             <div className="rise rise-main">
               <canvas id="cloudMain" className="cloud cloud-main" />
             </div>
           </div>
 
-          {/* Nube superior (25vw) que sale desde la mitad superior */}
+          {/* Banco superior (25vw) saliendo desde mitad superior */}
           <div className="cloud-track track-top">
             <div className="rise rise-top">
               <canvas id="cloudTop" className="cloud cloud-top" />
@@ -81,46 +81,31 @@ html::before,html::after,body::before,body::after{content:none!important;display
 #sky{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:visible;visibility:hidden;}
 #sky.ready{visibility:visible;}
 
-/* Pistas de movimiento */
+/* Pistas y movimiento */
 .cloud-track{position:absolute;left:0;width:100%;will-change:transform;}
-/* Principal recorre la zona media-baja */
 .track-main{top:46vh;animation:cloud-drift-main 320s linear infinite;animation-delay:-40s;}
 @keyframes cloud-drift-main{0%{transform:translateX(110vw)}100%{transform:translateX(-100vw)}}
-/* Superior: nace en la mitad superior y “sale” desde la derecha */
-.track-top{top:22vh;animation:cloud-drift-top 300s linear infinite;animation-delay:-30s;}
+.track-top{top:24vh;animation:cloud-drift-top 300s linear infinite;animation-delay:-30s;}
 @keyframes cloud-drift-top{0%{transform:translateX(115vw)}100%{transform:translateX(-105vw)}}
 
-/* Ascenso leve diferentes para romper paralelismo */
 .rise-main{animation:cloud-rise-main 320s linear infinite;}
-@keyframes cloud-rise-main{0%{transform:translateY(0.6vh)}100%{transform:translateY(-7vh)}}
+@keyframes cloud-rise-main{0%{transform:translateY(0.4vh)}100%{transform:translateY(-6.5vh)}}
 .rise-top{animation:cloud-rise-top 300s linear infinite;}
-@keyframes cloud-rise-top{0%{transform:translateY(0.8vh)}100%{transform:translateY(-5vh)}}
+@keyframes cloud-rise-top{0%{transform:translateY(0.6vh)}100%{transform:translateY(-4.5vh)}}
 
-/* Tamaños solicitados */
-.cloud{
-  display:block;
-  background:transparent;
-  filter: drop-shadow(0 10px 22px rgba(0,0,0,.06));
-}
-.cloud-main{
-  width:min(60vw, 1100px);
-  height:calc(min(60vw, 1100px) * 0.36);
-  aspect-ratio:16/5.8;
-}
-.cloud-top{
-  width:min(25vw, 520px);
-  height:calc(min(25vw, 520px) * 0.36);
-  aspect-ratio:16/5.8;
-}
+/* Tamaños solicitados (más altas para volumen) */
+.cloud{display:block;background:transparent;filter:drop-shadow(0 10px 22px rgba(0,0,0,.06));}
+.cloud-main{width:min(60vw,1100px);height:calc(min(60vw,1100px)*0.42);aspect-ratio:16/6.7;}
+.cloud-top{width:min(25vw,520px);height:calc(min(25vw,520px)*0.42);aspect-ratio:16/6.7;}
 
 @media (max-width:768px){
   .track-main{top:54vh}
-  .track-top{top:26vh}
-  .cloud-main{width:88vw;height:calc(88vw*0.36)}
-  .cloud-top{width:56vw;height:calc(56vw*0.36)}
+  .track-top{top:28vh}
+  .cloud-main{width:90vw;height:calc(90vw*0.42)}
+  .cloud-top{width:58vw;height:calc(58vw*0.42)}
 }
 
-/* Estrellas (como ya están configuradas) */
+/* Estrellas (las que ya te gustan) */
 .featured-star{
   position:absolute;width:var(--sz,4.5px);height:var(--sz,4.5px);border-radius:999px;pointer-events:none;
   background:
@@ -148,12 +133,15 @@ html::before,html::after,body::before,body::after{content:none!important;display
 }
         `}</style>
 
-        {/* ===== PINTADO DE NUBES (amorfas, con neblina y centro luminoso) ===== */}
+        {/* ===== PINTADO DE NUBES (banco cumulus con domos + neblina) ===== */}
         <Script id="paint-clouds" strategy="afterInteractive">{`
 (function(){
-  // ---------- Utilidades de ruido ----------
+  // Utilidades de ruido
   const fade=t=>t*t*t*(t*(t*6-15)+10);
   const clamp=(x,a,b)=>x<a?a:(x>b?b:x);
+  const fract=x=>x-Math.floor(x);
+  const prng=(i,s)=>fract(Math.sin(i*133.3 + s*0.73)*43758.5453);
+
   function hash(i,j,seed){const s=Math.sin(i*127.1 + j*311.7 + seed*0.123)*43758.5453;return s-Math.floor(s)}
   function v2(x,y,seed){
     const xi=Math.floor(x), yi=Math.floor(y), xf=x-xi, yf=y-yi, u=fade(xf), v=fade(yf);
@@ -167,54 +155,85 @@ html::before,html::after,body::before,body::after{content:none!important;display
     return t;
   }
 
-  // --------- Render genérico de nube con config ---------
+  // Construye un BANCO de nubes tipo cumulus: base ancha + domos
+  function buildBankLobes(W,H,seed,opts){
+    const o = Object.assign({
+      baseY: 0.64,        // altura base
+      baseA: 0.50,        // semieje X base (ancho)
+      baseB: 0.22,        // semieje Y base (altura)
+      domes: 7,           // cantidad de domos
+      spread: 0.68,       // cuánto se distribuyen horizontalmente
+      yJitter: 0.05,      // variación vertical de domos
+      aMin: 0.10, aMax: 0.18, // semiejes X de domos
+      bMin: 0.22, bMax: 0.30  // semiejes Y de domos
+    }, opts||{});
+
+    const L = [];
+    // Base ancha (levemente achatada) que une todo
+    L.push({ x: W*0.50, y: H*o.baseY, a: W*o.baseA, b: H*o.baseB });
+
+    // Domos distribuidos
+    const start = 0.5 - o.spread/2;
+    for(let i=0;i<o.domes;i++){
+      const u = i/(o.domes-1);
+      const px = start + u*o.spread;
+      const r  = prng(i+11, seed);
+      const a  = W * (o.aMin + (o.aMax-o.aMin)*(0.45 + 0.55*r));
+      const b  = H * (o.bMin + (o.bMax-o.bMin)*(0.45 + 0.55*prng(i+33, seed)));
+      const y  = H * (o.baseY - 0.08 - o.yJitter*(0.5 - prng(i+77, seed)));
+      const x  = W * (0.12 + px*0.76 + (prng(i+55,seed)-0.5)*0.03); // ligero zig-zag
+      L.push({ x, y, a, b });
+    }
+    return L;
+  }
+
   function renderCloud(canvas, cfg){
     const dpr=Math.max(1,Math.min(2,window.devicePixelRatio||1));
-    const wCSS=canvas.offsetWidth||800, hCSS=canvas.offsetHeight||Math.round(wCSS*0.36);
+    const wCSS=canvas.offsetWidth||800, hCSS=canvas.offsetHeight||Math.round(wCSS*0.42);
     const W=Math.floor(wCSS*dpr), H=Math.floor(hCSS*dpr);
     canvas.width=W; canvas.height=H;
     const ctx=canvas.getContext('2d'); if(!ctx) return;
 
-    const seed=cfg.seed||4040;
-    const baseS = Math.min(W,H)*(cfg.baseS ?? 0.0130);
-    const detS  = baseS*(cfg.detMul ?? 3.0);
-    const warpS = Math.min(W,H)*(cfg.warpS ?? 0.0058);
-    const warpA = (cfg.warpA ?? 3.6);
+    // --- Config ---
+    const seed   = cfg.seed ?? 6001;
+    const baseS  = Math.min(W,H)*(cfg.baseS ?? 0.0125);
+    const detS   = baseS*(cfg.detMul ?? 3.0);
+    const warpS  = Math.min(W,H)*(cfg.warpS ?? 0.0052);
+    const warpA  = cfg.warpA ?? 3.6;
 
-    // Lóbulos amorfos
-    const L = (cfg.lobes ?? [
-      {x:W*0.48,y:H*0.52,a:W*0.36,b:H*0.26},
-      {x:W*0.60,y:H*0.56,a:W*0.30,b:H*0.22},
-      {x:W*0.38,y:H*0.58,a:W*0.28,b:H*0.20},
-      {x:W*0.50,y:H*0.66,a:W*0.26,b:H*0.19},
-      {x:W*0.70,y:H*0.60,a:W*0.22,b:H*0.18},
-    ]);
+    // Lobulado tipo banco (si no pasan lobes, los generamos)
+    const L = cfg.lobes ?? buildBankLobes(W,H,seed,cfg.bankOpts);
+
     const lobe=(cx,cy,a,b,x,y)=>{const dx=(x-cx)/a, dy=(y-cy)/b; return Math.max(0,1-(dx*dx+dy*dy))};
     const su=(e1,e2)=>1-(1-e1)*(1-e2);
-    function silhouette(x,y){
-      let e=0; for(let i=0;i<L.length;i++){ const li=L[i]; e=su(e, lobe(li.x,li.y,li.a,li.b,x,y)); } return e;
-    }
+    function silhouette(x,y){ let e=0; for(let i=0;i<L.length;i++){ const li=L[i]; e=su(e,lobe(li.x,li.y,li.a,li.b,x,y)); } return e; }
 
     function fieldAt(x,y){
+      // Warp para bordes amorfos
       const wx = fbm(x/warpS, y/warpS, seed+501);
       const wy = fbm((x+90)/warpS, (y-60)/warpS, seed+907);
       const sx = x/baseS + (wx-0.5)*warpA;
       const sy = y/baseS + (wy-0.5)*warpA;
 
+      // Estructura + detalle
       const n1 = fbm(sx*0.7, sy*0.7, seed+11);
       const n2 = fbm(x/detS, y/detS, seed+77);
       let n = n1*0.72 + n2*0.55;
 
+      // Silueta de banco
       const e = silhouette(x,y);
-      const edge = fbm(sx*0.20, sy*0.20, seed+7);
-      n = n * Math.pow(e,0.60) * (0.78 + edge*0.32);
+
+      // Borde irregular + ligera “base plana” (más opaco arriba que abajo)
+      const edge = fbm(sx*0.18, sy*0.18, seed+7);
+      const baseMask = clamp(1 - (y/H - 0.74)*2.2, 0, 1); // suaviza la parte muy baja
+      n = n * Math.pow(e,0.60) * (0.78 + edge*0.32) * (0.85 + 0.15*baseMask);
       return { n, e };
     }
 
-    // Capas (core/body/mist)
+    // Capas: núcleo (denso), cuerpo (nube), halo (neblina)
     const thCore=cfg.thCore ?? 0.46, softCore=cfg.softCore ?? 0.22, curveCore=cfg.curveCore ?? 0.96, densCore=cfg.densCore ?? 0.70;
-    const thBody=cfg.thBody ?? 0.52, softBody=cfg.softBody ?? 0.30, curveBody=cfg.curveBody ?? 1.00, densBody=cfg.densBody ?? 0.36;
-    const thMist=cfg.thMist ?? 0.58, softMist=cfg.softMist ?? 0.60, curveMist=cfg.curveMist ?? 1.05, densMist=cfg.densMist ?? 0.22;
+    const thBody=cfg.thBody ?? 0.52, softBody=cfg.softBody ?? 0.30, curveBody=cfg.curveBody ?? 1.00, densBody=cfg.densBody ?? 0.38;
+    const thMist=cfg.thMist ?? 0.58, softMist=cfg.softMist ?? 0.62, curveMist=cfg.curveMist ?? 1.05, densMist=cfg.densMist ?? 0.22;
 
     const img=ctx.createImageData(W,H); const d=img.data;
     for(let y=0,k=0;y<H;y++){
@@ -226,7 +245,7 @@ html::before,html::after,body::before,body::after{content:none!important;display
 
         let aCore = Math.pow(clamp((n - thCore)/softCore,0,1), curveCore) * densCore;
         let aBody = Math.pow(clamp((n - thBody)/softBody,0,1), curveBody) * densBody;
-        let aMist = Math.pow(clamp((n - thMist)/(softMist + (1-e)*0.30),0,1), curveMist) * densMist;
+        let aMist = Math.pow(clamp((n - thMist)/(softMist + (1-e)*0.32),0,1), curveMist) * densMist;
 
         const alpha = clamp(aCore + aBody + aMist, 0, 1);
         if(alpha<=0){ d[k+3]=0; continue; }
@@ -235,7 +254,7 @@ html::before,html::after,body::before,body::after{content:none!important;display
     }
     ctx.putImageData(img,0,0);
 
-    // Centro ligeramente más iluminado + tintes
+    // Luz central + tintes mágicos (muy sutil)
     ctx.globalCompositeOperation='lighter';
     const pr=Math.min(W,H);
     const cx=cfg.glowCx ?? 0.50, cy=cfg.glowCy ?? 0.55, r=cfg.glowR ?? 0.42;
@@ -262,45 +281,30 @@ html::before,html::after,body::before,body::after{content:none!important;display
     const top =document.getElementById('cloudTop');
 
     if(main) renderCloud(main, {
-      seed: 7001,
-      warpA: 3.8,
-      // Lobulado amplio para gran masa en zona media
-      lobes: [
-        {x:main.width*0.48,y:main.height*0.52,a:main.width*0.38,b:main.height*0.27},
-        {x:main.width*0.62,y:main.height*0.56,a:main.width*0.30,b:main.height*0.22},
-        {x:main.width*0.36,y:main.height*0.58,a:main.width*0.30,b:main.height*0.22},
-        {x:main.width*0.50,y:main.height*0.66,a:main.width*0.26,b:main.height*0.20},
-        {x:main.width*0.72,y:main.height*0.60,a:main.width*0.22,b:main.height*0.18},
-      ],
-      densCore: 0.70, thCore: 0.46, softCore: 0.22,
-      densBody: 0.38, thBody: 0.52, softBody: 0.30,
-      densMist: 0.22, thMist: 0.58, softMist: 0.60,
-      glowCx: 0.50, glowCy: 0.55, glowR: 0.42
+      seed: 8009,
+      warpA: 3.6,
+      bankOpts: { domes: 7, spread: 0.74, baseY: 0.66, aMin:0.11, aMax:0.18, bMin:0.24, bMax:0.32 },
+      densCore: 0.72, thCore: 0.46, softCore: 0.22,
+      densBody: 0.40, thBody: 0.52, softBody: 0.30,
+      densMist: 0.22, thMist: 0.58, softMist: 0.62,
+      glowCx: 0.50, glowCy: 0.54, glowR: 0.44
     });
 
     if(top) renderCloud(top, {
-      seed: 9103,
-      warpA: 4.1, // aún más amorfa para diferenciarla
-      // Lobulado desplazado hacia arriba para que "salga" en la mitad superior
-      lobes: [
-        {x:top.width*0.42,y:top.height*0.44,a:top.width*0.28,b:top.height*0.20},
-        {x:top.width*0.58,y:top.height*0.46,a:top.width*0.22,b:top.height*0.18},
-        {x:top.width*0.34,y:top.height*0.50,a:top.width*0.20,b:top.height*0.16},
-        {x:top.width*0.50,y:top.height*0.54,a:top.width*0.18,b:top.height*0.15},
-      ],
-      // Un poco menos densa que la principal para efecto de profundidad
-      densCore: 0.62, thCore: 0.47, softCore: 0.22,
-      densBody: 0.32, thBody: 0.53, softBody: 0.30,
-      densMist: 0.24, thMist: 0.59, softMist: 0.65,
-      glowCx: 0.52, glowCy: 0.52, glowR: 0.38
+      seed: 9013,
+      warpA: 3.9,
+      bankOpts: { domes: 5, spread: 0.66, baseY: 0.62, aMin:0.10, aMax:0.16, bMin:0.22, bMax:0.28 },
+      densCore: 0.64, thCore: 0.47, softCore: 0.22,
+      densBody: 0.34, thBody: 0.53, softBody: 0.30,
+      densMist: 0.24, thMist: 0.59, softMist: 0.66,
+      glowCx: 0.52, glowCy: 0.52, glowR: 0.40
     });
 
     if(sky) sky.classList.add('ready');
 
     let to=null;
     function onResize(){ clearTimeout(to); to=setTimeout(()=>{
-      if(main) renderCloud(main, { seed:7001, warpA:3.8 });
-      if(top ) renderCloud(top , { seed:9103, warpA:4.1 });
+      if(main) init(); // repintamos sencillo
     },120)}
     window.addEventListener('resize', onResize, {passive:true});
   }
@@ -309,7 +313,7 @@ html::before,html::after,body::before,body::after{content:none!important;display
 })();
         `}</Script>
 
-        {/* ===== Estrellas (mantenemos las que ya gustaron) ===== */}
+        {/* ===== Estrellas (tuning) ===== */}
         <Script id="tune-stars" strategy="afterInteractive">{`
 (function () {
   function nukeForeign(){
