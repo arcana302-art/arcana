@@ -1,3 +1,4 @@
+// app/components/CloudBackdrop.tsx
 "use client";
 
 import { useEffect, useRef } from "react";
@@ -23,16 +24,16 @@ const CFG = {
   tintMagenta: 0.06,
   tintPink: 0.04,
 
-  // Movimiento (más lento)
-  vx: -0.020,            // antes: -0.035 → desplazamiento horizontal aún más lento
+  // Movimiento lento
+  vx: -0.020,
   vy: 0,
   waveAmp: 10,
-  waveSpeed: 0.0012,     // “respiración” suave
+  waveSpeed: 0.0012,
 
   // Rendimiento
   maxDpr: 1.5,
 
-  // Bandas verticales (0..1 del alto de viewport)
+  // Bandas verticales
   bands: [
     { y: 0.16, spread: 0.04, clusters: 3 }, // superior
     { y: 0.48, spread: 0.06, clusters: 5 }, // principal
@@ -60,7 +61,7 @@ export default function CloudBackdrop() {
       canvas.width = W;
       canvas.height = H;
       seedClusters();
-      paint(performance.now()); // primer frame inmediato (sin “flash”)
+      paint(performance.now()); // primer frame inmediato
     };
 
     const seedClusters = () => {
@@ -137,7 +138,7 @@ export default function CloudBackdrop() {
           }
         }
 
-        // desplazamiento y recirculación (más lento por vx reducido)
+        // desplazamiento horizontal y recirculación
         c.cx += c.vx * (dt || 16.7);
         const off = 240 * DPR;
         if (c.cx < -off) c.cx = W + off * 0.5;
@@ -166,7 +167,7 @@ export default function CloudBackdrop() {
         height: "100vh",
         display: "block",
         pointerEvents: "none",
-        zIndex: 0,
+        zIndex: 1, // nubes encima de las estrellas
       }}
     />
   );
