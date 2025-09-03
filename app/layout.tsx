@@ -16,7 +16,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es" className="h-full">
       <head>
-        {/* Bloquea starfields externos en el primer paint */}
         <style id="arcana-star-shield">{`
 #stars2,#stars3,.stars2,.stars3,.starfield,.bg-stars,.twinkle,.twinkling,.particles,.particle,.dots,
 [id^="star"],[id$="star"],[id*="star-"],[id*="-star"],[class^="star"],[class$="star"],[class*=" star "],
@@ -46,20 +45,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${inter.variable} ${playfair.variable} min-h-screen antialiased relative`}
         style={{ background: "linear-gradient(180deg,#0a1120,#0b1530)", color: "#e5e7eb" }}
       >
-        {/* Cielo */}
+        {/* CIELO */}
         <div id="sky" aria-hidden>
           <div id="stars"></div>
 
-          {/* Tres pistas de nubes */}
+          {/* TRES PISTAS DE NUBES */}
           <div className="cloud-track track-a"><div className="rise rise-a"><div className="cloud-wrap wrap-a"><canvas id="cloudA" className="cloud cloud-a"/></div></div></div>
           <div className="cloud-track track-c"><div className="rise rise-c"><div className="cloud-wrap wrap-c"><canvas id="cloudC" className="cloud cloud-c"/></div></div></div>
           <div className="cloud-track track-b"><div className="rise rise-b"><div className="cloud-wrap wrap-b"><canvas id="cloudB" className="cloud cloud-b"/></div></div></div>
         </div>
 
-        {/* Contenido */}
         <div className="relative z-10">{children}</div>
 
-        {/* ===== CSS ===== */}
+        {/* ====== CSS ====== */}
         <style>{`
 #bg-root,.belt,.bank,.puffs,.cloud-svg,.nebula,.grain,.vignette{display:none!important;}
 html::before,html::after,body::before,body::after{content:none!important;display:none!important;}
@@ -74,7 +72,7 @@ html::before,html::after,body::before,body::after{content:none!important;display
 #sky.ready{visibility:visible;}
 
 .cloud-track{position:absolute;left:0;width:100%;will-change:transform;}
-/* Velocidad más LENTA */
+/* Velocidad LENTA y suave */
 .track-a{top:12vh;animation:cloud-drift-a 280s linear infinite;animation-delay:-40s;}
 .track-c{top:42vh;animation:cloud-drift-c 320s linear infinite;animation-delay:-60s;}
 .track-b{top:72vh;animation:cloud-drift-b 360s linear infinite;animation-delay:-80s;}
@@ -104,12 +102,12 @@ html::before,html::after,body::before,body::after{content:none!important;display
   height:calc(min(60vw,980px)*0.38);
   aspect-ratio:16/6.1;
   background:transparent;
-  filter: drop-shadow(0 10px 20px rgba(0,0,0,.10));
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,.08));
 }
 .cloud-c{width:min(64vw,1060px)}
 .cloud-b{width:min(68vw,1140px)}
 
-/* Estrellas (con glow/estela sutiles) */
+/* Estrellas (sin cambios) */
 .featured-star{
   position:absolute;width:var(--sz,4.5px);height:var(--sz,4.5px);border-radius:999px;pointer-events:none;
   background:
@@ -141,10 +139,6 @@ html::before,html::after,body::before,body::after{content:none!important;display
   filter:blur(9px);opacity:var(--trailAlpha,.48);
   animation:tailPulse var(--ftDur,80s) cubic-bezier(.42,0,.58,1) infinite;animation-delay:var(--twDelay,0s);
 }
-@keyframes featuredTwinkle{0%{opacity:0}30%{opacity:.18}55%{opacity:.95}75%{opacity:.92}100%{opacity:0}}
-@keyframes starHalo{0%{opacity:.22;transform:scale(.96)}35%{opacity:.54;transform:scale(1)}60%{opacity:.88;transform:scale(1.06)}80%{opacity:.64;transform:scale(1.02)}100%{opacity:.26;transform:scale(.96)}}
-@keyframes tailPulse{0%{opacity:calc(var(--trailAlpha,.48)*.18);transform:translate(-26%,-50%) rotate(var(--trailRot,-18deg)) scaleX(.92)}40%{opacity:calc(var(--trailAlpha,.48)*.56)}60%{opacity:calc(var(--trailAlpha,.48)*.78)}100%{opacity:calc(var(--trailAlpha,.48)*.20);transform:translate(-26%,-50%) rotate(var(--trailRot,-18deg)) scaleX(.92)}}
-
 .distant-star{
   position:absolute;width:var(--dsz,2px);height:var(--dsz,2px);border-radius:999px;pointer-events:none;
   background:
@@ -161,7 +155,7 @@ html::before,html::after,body::before,body::after{content:none!important;display
 }
         `}</style>
 
-        {/* ===== Nubes: muchas partículas pequeñas en 3 hileras (sin filtros) ===== */}
+        {/* ===== NUBES: sin columnas y menos sólidas ===== */}
         <Script id="paint-clouds" strategy="afterInteractive">{`
 (function(){
   function rng(seed){return function(){seed=(seed*1664525+1013904223)>>>0;return (seed&0xffffffff)/4294967296}}
@@ -174,10 +168,11 @@ html::before,html::after,body::before,body::after{content:none!important;display
   function puff(ctx,x,y,r,a){
     const g=ctx.createRadialGradient(x,y,0,x,y,r);
     g.addColorStop(0,'rgba(255,255,255,'+a.toFixed(3)+')');
-    g.addColorStop(0.45,'rgba(255,255,255,'+(a*0.6).toFixed(3)+')');
+    g.addColorStop(0.45,'rgba(255,255,255,'+(a*0.55).toFixed(3)+')');
     g.addColorStop(1,'rgba(255,255,255,0)');
     ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,r,0,6.283); ctx.fill();
   }
+
   function paint(canvas, variant){
     const dpr=Math.max(1,Math.min(2,window.devicePixelRatio||1));
     const wCSS=canvas.offsetWidth||800, hCSS=canvas.offsetHeight||Math.round(wCSS*0.38);
@@ -189,42 +184,48 @@ html::before,html::after,body::before,body::after{content:none!important;display
     const rnd=rng(variant===0?0xA11CE:variant===1?0xBADC0DE:0xC0FFEE);
     const nz =noise1(variant===0?1337:variant===1?7331:4242);
 
-    // Parámetros — más segmentos + radios pequeños = nube "borreguita"
-    const SEG   =(variant===0?150:variant===1?170:160);
-    const spread=(variant===0?0.84:variant===1?0.88:0.86);
+    // Más segmentos + radios más pequeños + alfa más baja = nube menos sólida
+    const SEG   =(variant===0?170:variant===1?190:180);
+    const spread=(variant===0?0.86:variant===1?0.90:0.88);
     const baseY =(variant===0?0.56:variant===1?0.58:0.57);
-    const baseR = H*(variant===0?0.045:variant===1?0.048:0.046); // radios más chicos
+    const baseR = H*(variant===0?0.038:variant===1?0.040:0.039);
     const margin=(1-spread)/2;
 
-    // 3 hileras con ligeros desplazamientos
+    // Tres hileras con FASE distinta (rompe columnas)
     const rows=[
-      {dy:-0.055, scale:0.92, jig:0.012},
-      {dy: 0.000, scale:1.00, jig:0.016},
-      {dy:+0.060, scale:0.88, jig:0.014},
+      {dy:-0.055, scale:0.92, jig:0.014, phase:rnd(), sinp:rnd()*6.283},
+      {dy: 0.000, scale:1.00, jig:0.018, phase:rnd(), sinp:rnd()*6.283},
+      {dy:+0.060, scale:0.88, jig:0.015, phase:rnd(), sinp:rnd()*6.283},
     ];
 
     ctx.globalCompositeOperation='lighter';
 
     rows.forEach(row=>{
       for(let i=0;i<SEG;i++){
-        const t=(i + rnd()*0.6)/(SEG-1 + 0.6);              // evita columnas
-        const x=((margin + t*spread) * W) + (rnd()-0.5)*W*row.jig;
-        // línea de base con sinusoides + ruido suave
+        // t con desplazamiento de fase + jitter → NO hay alineación vertical
+        const t = ((i + row.phase) / (SEG-1)) % 1;
+        // x con jitter y una ondita sutil para romper la rectitud
+        const xBase = (margin + t*spread) * W;
+        const x = xBase
+          + (rnd()-0.5)*W*row.jig
+          + Math.sin(t*10 + row.sinp)*W*0.004;
+
         const hump = Math.sin(t*Math.PI);
         const y = (baseY + row.dy
-                  - 0.05*Math.sin(t*2*Math.PI + rnd()*0.8)
-                  - 0.025*Math.sin(t*4*Math.PI + rnd()*1.6)
-                  - 0.030*nz(t*5 + rnd()*8)
-                  + (rnd()-0.5)*0.02) * H;
+                  - 0.045*Math.sin(t*2*Math.PI + row.sinp*0.6)
+                  - 0.022*Math.sin(t*4*Math.PI + row.sinp*1.1)
+                  - 0.028*nz(t*5 + row.sinp)
+                  + (rnd()-0.5)*0.018) * H;
 
-        const r = baseR * row.scale * (0.7 + 0.6*hump) * (0.9 + 0.25*rnd());
-        const a = 0.40 + 0.16*(1-(y/H));                    // alfa + brillo leve al centro
+        const r = baseR * row.scale * (0.70 + 0.60*hump) * (0.92 + 0.20*rnd());
+        const a = 0.30 + 0.10*(1-(y/H)); // ↓ menos sólido que antes
 
         puff(ctx,x,y,r,a);
-        // “wisps” secundarios para bordes algodonosos
-        if (rnd()<0.55){
-          const ang=rnd()*6.283, k=0.34+0.28*rnd();
-          puff(ctx, x+Math.cos(ang)*r*0.46, y+Math.sin(ang)*r*0.36, r*k, a*0.85);
+
+        // Wisps secundarios (más sutiles)
+        if (rnd()<0.45){
+          const ang=rnd()*6.283, k=0.30+0.26*rnd();
+          puff(ctx, x+Math.cos(ang)*r*0.42, y+Math.sin(ang)*r*0.34, r*k, a*0.80);
         }
       }
     });
@@ -243,7 +244,7 @@ html::before,html::after,body::before,body::after{content:none!important;display
 })();
         `}</Script>
 
-        {/* ===== Estrellas (igual) ===== */}
+        {/* ===== Estrellas ===== */}
         <Script id="tune-stars" strategy="afterInteractive">{`
 (function () {
   function nukeForeign(){
