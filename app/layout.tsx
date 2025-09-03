@@ -22,6 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 [id^="star"],[id$="star"],[id*="star-"],[id*="-star"],[class^="star"],[class$="star"],[class*=" star "],
 [class*="star-"],[class*="-star"]{display:none!important;animation:none!important;transition:none!important;}
 #sky .featured-star,#sky .distant-star{display:block!important;}
+#sky #stars{display:block!important;}
         `}</style>
 
         <Script id="pre-nuke-stars" strategy="beforeInteractive">{`
@@ -70,11 +71,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         {/* ===== CSS ===== */}
         <style>{`
-/* Desactivar efectos externos */
+/* Desactivar efectos externos agresivos, pero sin tocar #stars nuestro */
 #bg-root,.belt,.bank,.puffs,.cloud-svg,.nebula,.grain,.vignette{display:none!important;}
 :where(.starfield,.bg-stars,.twinkle,.twinkling,.particles,.particle,.dots){display:none!important;}
-:where([id^="stars"],[class^="stars"],[class*=" stars"],[id*="starfield"],[class*="starfield"]){display:none!important;}
+/* No ocultamos [id^="stars"] para no matar nuestro contenedor #stars */
+:where([id*="starfield"],[class*="starfield"]){display:none!important;}
 :where([id*="star"],[class*="star"])::before,:where([id*="star"],[class*="star"])::after{content:none!important;background:none!important;box-shadow:none!important;}
+/* Excepciones permanentes para nuestro cielo */
+#sky #stars{display:block!important;}
+#sky .featured-star,#sky .distant-star{display:block!important;}
 
 #sky{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:visible;visibility:visible;} /* visible YA */
 
@@ -134,7 +139,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* ===== NUBES SUAVES (cumulus) — SIN GRANULADO y SIN DELAY ===== */}
         <Script id="paint-clouds" strategy="beforeInteractive">{`
 (function(){
-  // -------- util ----------
   const clamp=(x,a,b)=>x<a?a:(x>b?b:x);
   const fade=t=>t*t*t*(t*(t*6-15)+10);
   const fract=x=>x-Math.floor(x);
@@ -154,13 +158,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   }
   const smoothstep=(a,b,x)=>{const t=clamp((x-a)/(b-a),0,1); return t*t*(3-2*t);};
 
-  // Banco de nubes (base + domos amplios)
   function buildBankLobes(W,H,seed,opts){
-    const o=Object.assign({
-      baseY:0.66, baseA:0.55, baseB:0.26,  // base más grande para volumen
-      domes:4,  spread:0.70, yJitter:0.05,
-      aMin:0.18,aMax:0.24, bMin:0.30,bMax:0.36
-    },opts||{});
+    const o=Object.assign({ baseY:0.66, baseA:0.55, baseB:0.26, domes:4, spread:0.70, yJitter:0.05,
+                            aMin:0.18,aMax:0.24, bMin:0.30,bMax:0.36 },opts||{});
     const L=[];
     L.push({x:W*0.50,y:H*o.baseY,a:W*o.baseA,b:H*o.baseB});
     const start=0.5-o.spread/2;
@@ -189,21 +189,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     const su=(e1,e2)=>1-(1-e1)*(1-e2);
     const silhouette=(x,y)=>{let e=0; for(let i=0;i<L.length;i++){const li=L[i]; e=su(e,lobe(li.x,li.y,li.a,li.b,x,y));} return e};
 
-    // Escalas de ruido muy BAJAS (solo para borde)
     const edgeScale = Math.min(W,H)*0.020;
     const mistScale = Math.min(W,H)*0.012;
 
     const img=ctx.createImageData(W,H); const d=img.data;
     for(let y=0,k=0;y<H;y++){
       for(let x=0;x<W;x++,k+=4){
-        const e = silhouette(x,y);                // 0..1 masa base
-        // Bordes: ruido low-freq que solo afecta cerca del borde
+        const e = silhouette(x,y);
         const nEdge = fbm(x/edgeScale, y/edgeScale, seed+123);
-        const edgeMask = smoothstep(0.20, 0.65, e);    // dentro sólido
-        const rim = (1-edgeMask);                      // cerca del borde
-        const rimNoise = rim * (0.45 + 0.55*nEdge);    // ondulación suave
+        const edgeMask = smoothstep(0.20, 0.65, e);
+        const rim = (1-edgeMask);
+        const rimNoise = rim * (0.45 + 0.55*nEdge);
 
-        // Alfa por capas: núcleo liso + cuerpo + halo etéreo
         const core = smoothstep(0.58, 0.78, e) * 0.68;
         const body = smoothstep(0.38, 0.65, e) * 0.34;
         const mist = smoothstep(0.22, 0.38 + 0.10*fbm(x/mistScale,y/mistScale,seed+333), e) * 0.18 * (0.85 + 0.15*nEdge);
@@ -217,7 +214,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     }
     ctx.putImageData(img,0,0);
 
-    // Halo borroso detrás (niebla suave)
     const tmp=document.createElement('canvas'); tmp.width=W; tmp.height=H;
     const tctx=tmp.getContext('2d'); tctx.putImageData(img,0,0);
     ctx.save();
@@ -227,7 +223,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     ctx.restore();
     ctx.filter='none';
 
-    // Luz central sutil + tinte mágico ligero
     ctx.globalCompositeOperation='lighter';
     const pr=Math.min(W,H);
     const glow=ctx.createRadialGradient(W*0.50,H*0.54,0,W*0.50,H*0.54,pr*0.40);
@@ -253,14 +248,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     if(top ) renderCloud(top ,{ seed: 9057, bankOpts:{ domes:3, spread:0.62, baseY:0.62 } });
   }
 
-  // Pintar en DOMContentLoaded (antes de la hidratación) para evitar "tiempo muerto"
   if(document.readyState==='loading'){
     document.addEventListener('DOMContentLoaded',paintAll,{once:true});
   }else{
     paintAll();
   }
 
-  // Repaint en resize
   let to=null;
   window.addEventListener('resize',()=>{clearTimeout(to);to=setTimeout(paintAll,120)},{passive:true});
 })();
@@ -277,14 +270,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       const s=document.createElement('span'); s.className='featured-star';
       const dur=50+Math.random()*50, size=4+Math.random()*1.6;
       const top=Math.random()*100, left=Math.random()*100, delay=-Math.random()*dur;
-      const tW=38+Math.random()*30, tH=6+Math.random()*6, tR=-22+Math.random()*44, tA=0.40+Math.random()*0.20;
       s.style.setProperty('--sz',size.toFixed(2)+'px');
       s.style.top=top.toFixed(2)+'vh'; s.style.left=left.toFixed(2)+'vw';
       s.style.setProperty('--ftDur',dur.toFixed(2)+'s'); s.style.setProperty('--twDelay',delay.toFixed(2)+'s');
       s.style.animationDelay=delay.toFixed(2)+'s';
-      s.style.setProperty('--trailW',tW.toFixed(2)+'px'); s.style.setProperty('--trailH',tH.toFixed(2)+'px');
-      s.style.setProperty('--trailRot',tR.toFixed(2)+'deg'); s.style.setProperty('--trailAlpha',tA.toFixed(2));
-      const tail=document.createElement('span'); tail.className='tail'; s.appendChild(tail);
       holder.appendChild(s);
     }
   }
