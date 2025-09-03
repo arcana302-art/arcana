@@ -182,7 +182,7 @@ html::before, html::after, body::before, body::after { content: none !important;
 }
 @keyframes glowPulse{ 0% { opacity:.38; transform: scale(1); } 100% { opacity:.52; transform: scale(1.03); } }
 
-/* ===== Estrellas cercanas — DIM LENTO (45–90s) + HALO + ESTELA ===== */
+/* ===== Estrellas cercanas — DIM LENTO + HALO + ESTELA (glow ligeramente reducido) ===== */
 .featured-star{
   position:absolute;
   width: var(--sz, 4.5px); height: var(--sz, 4.5px);
@@ -192,19 +192,20 @@ html::before, html::after, body::before, body::after { content: none !important;
     radial-gradient(circle at 50% 50%, rgba(255,255,255,1) 0%, rgba(255,255,255,.95) 28%, rgba(255,255,255,0) 62%),
     radial-gradient(circle at 50% 50%, rgba(168,85,247,.58) 0%, rgba(168,85,247,0) 70%),
     radial-gradient(circle at 50% 50%, rgba(244,114,182,.48) 0%, rgba(244,114,182,0) 78%);
+  /* ↓ glow un poquito menor */
   filter:
-    drop-shadow(0 0 12px rgba(255,255,255,.75))
-    drop-shadow(0 0 22px rgba(168,85,247,.55))
-    drop-shadow(0 0 28px rgba(244,114,182,.35));
+    drop-shadow(0 0 12px rgba(255,255,255,.68))
+    drop-shadow(0 0 22px rgba(168,85,247,.48))
+    drop-shadow(0 0 28px rgba(244,114,182,.30));
   will-change: opacity;
   animation-name: featuredTwinkle !important;
-  animation-duration: var(--ftDur, 80s) !important; /* default ~80s */
+  animation-duration: var(--ftDur, 80s) !important;
   animation-timing-function: cubic-bezier(.42,0,.58,1);
   animation-iteration-count: infinite;
   animation-fill-mode: both;
   animation-delay: var(--twDelay, 0s);
 }
-/* Halos (glow) */
+/* Halos (ligeramente menos intensos) */
 #sky .featured-star::before,
 #sky .featured-star::after{
   content: "" !important;
@@ -214,22 +215,22 @@ html::before, html::after, body::before, body::after { content: none !important;
   pointer-events: none;
   background:
     radial-gradient(circle at 50% 50%,
-      rgba(255,255,255,.58) 0%,
-      rgba(255,255,255,.42) 24%,
-      rgba(168,85,247,.36) 44%,
-      rgba(244,114,182,.28) 60%,
+      rgba(255,255,255,.54) 0%,
+      rgba(255,255,255,.38) 24%,
+      rgba(168,85,247,.32) 44%,
+      rgba(244,114,182,.24) 60%,
       rgba(255,255,255,0) 80%);
   filter: blur(14px);
-  opacity: .92;
+  opacity: .86; /* antes .92 */
   animation: starHalo var(--ftDur, 80s) cubic-bezier(.42,0,.58,1) infinite;
   animation-delay: var(--twDelay, 0s);
 }
 #sky .featured-star::after{
   inset: -24px;
   filter: blur(24px);
-  opacity: .72;
+  opacity: .66; /* antes .72 */
 }
-/* Estela (hijo .tail) — sutil, alineada, mismo ritmo que el brillo */
+/* Estela (ligeramente más sutil) */
 #sky .featured-star .tail{
   position:absolute;
   left:50%; top:50%;
@@ -244,21 +245,21 @@ html::before, html::after, body::before, body::after { content: none !important;
   pointer-events: none;
   mix-blend-mode: screen;
   background:
-    radial-gradient(140% 90% at 0% 50%, rgba(255,255,255,.50) 0%, rgba(255,255,255,.18) 38%, rgba(255,255,255,0) 72%),
-    linear-gradient(90deg, rgba(168,85,247,.22) 0%, rgba(244,114,182,.16) 45%, rgba(255,255,255,0) 100%);
+    radial-gradient(140% 90% at 0% 50%, rgba(255,255,255,.46) 0%, rgba(255,255,255,.16) 38%, rgba(255,255,255,0) 72%),
+    linear-gradient(90deg, rgba(168,85,247,.18) 0%, rgba(244,114,182,.14) 45%, rgba(255,255,255,0) 100%);
   filter: blur(9px);
-  opacity: var(--trailAlpha,.55);
+  opacity: var(--trailAlpha,.48); /* antes .55 */
   animation: tailPulse var(--ftDur, 80s) cubic-bezier(.42,0,.58,1) infinite;
   animation-delay: var(--twDelay, 0s);
 }
 @keyframes tailPulse{
-  0%   { opacity: calc(var(--trailAlpha,.55) * .18); transform: translate(-26%,-50%) rotate(var(--trailRot,-18deg)) scaleX(.92); }
-  40%  { opacity: calc(var(--trailAlpha,.55) * .62); transform: translate(-24%,-50%) rotate(var(--trailRot,-18deg)) scaleX(1); }
-  60%  { opacity: calc(var(--trailAlpha,.55) * .88); }
-  100% { opacity: calc(var(--trailAlpha,.55) * .20); transform: translate(-26%,-50%) rotate(var(--trailRot,-18deg)) scaleX(.92); }
+  0%   { opacity: calc(var(--trailAlpha,.48) * .18); transform: translate(-26%,-50%) rotate(var(--trailRot,-18deg)) scaleX(.92); }
+  40%  { opacity: calc(var(--trailAlpha,.48) * .56); transform: translate(-24%,-50%) rotate(var(--trailRot,-18deg)) scaleX(1); }
+  60%  { opacity: calc(var(--trailAlpha,.48) * .78); }
+  100% { opacity: calc(var(--trailAlpha,.48) * .20); transform: translate(-26%,-50%) rotate(var(--trailRot,-18deg)) scaleX(.92); }
 }
 
-/* ===== Estrellas lejanas — sin titileo, más pequeñas y menos brillantes ===== */
+/* ===== Estrellas lejanas — sin titileo ===== */
 .distant-star{
   position:absolute;
   width: var(--dsz, 2px); height: var(--dsz, 2px);
@@ -271,7 +272,7 @@ html::before, html::after, body::before, body::after { content: none !important;
   filter:
     drop-shadow(0 0 6px rgba(255,255,255,.35))
     drop-shadow(0 0 10px rgba(168,85,247,.20));
-  opacity: var(--dalpha, .52); /* 0.35–0.60 desde JS */
+  opacity: var(--dalpha, .52);
 }
 
 /* Curvas de animación (para las cercanas) */
@@ -283,11 +284,11 @@ html::before, html::after, body::before, body::after { content: none !important;
   100% { opacity: 0;   }
 }
 @keyframes starHalo {
-  0%   { opacity: .25; transform: scale(0.96); }
-  35%  { opacity: .60; transform: scale(1.00); }
-  60%  { opacity: .96; transform: scale(1.06); }
-  80%  { opacity: .70; transform: scale(1.02); }
-  100% { opacity: .30; transform: scale(0.96); }
+  0%   { opacity: .22; transform: scale(0.96); }
+  35%  { opacity: .54; transform: scale(1.00); }
+  60%  { opacity: .88; transform: scale(1.06); } /* antes .96 */
+  80%  { opacity: .64; transform: scale(1.02); }
+  100% { opacity: .26; transform: scale(0.96); }
 }
 
 /* Responsivo */
