@@ -50,7 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div id="sky" aria-hidden>
           <div id="stars"></div>
 
-          {/* UNA sola nube orgánica (más densa y amorfa) */}
+          {/* UNA sola nube—más pequeña, compacta y amorfa */}
           <div className="cloud-track track-main">
             <div className="rise rise-main">
               <canvas id="cloudMain" className="cloud cloud-main" />
@@ -77,23 +77,29 @@ html::before,html::after,body::before,body::after{content:none!important;display
 
 /* Una pista, movimiento suave */
 .cloud-track{position:absolute;left:0;width:100%;will-change:transform;}
-.track-main{top:40vh;animation:cloud-drift 320s linear infinite;animation-delay:-40s;}
+/* Colócala un poco más alta para despegarla de cards */
+.track-main{top:36vh;animation:cloud-drift 320s linear infinite;animation-delay:-40s;}
 @keyframes cloud-drift{0%{transform:translateX(110vw)}100%{transform:translateX(-100vw)}}
 
 .rise-main{animation:cloud-rise 320s linear infinite;}
-@keyframes cloud-rise{0%{transform:translateY(1vh)}100%{transform:translateY(-10vh)}}
+@keyframes cloud-rise{0%{transform:translateY(1vh)}100%{transform:translateY(-8vh)}}
 
-/* Canvas de la nube */
+/* Canvas de la nube — TAMAÑO ~MITAD DEL ANTERIOR */
 .cloud{
   display:block;
-  width:min(90vw,1500px);
-  height:calc(min(90vw,1500px)*0.36);
+  width:min(45vw, 800px);             /* ↓ antes ~90vw → ahora ~45vw */
+  height:calc(min(45vw, 800px)*0.36);
   aspect-ratio:16/5.8;
   background:transparent;
-  filter: drop-shadow(0 10px 24px rgba(0,0,0,.07));
+  filter: drop-shadow(0 8px 20px rgba(0,0,0,.06));
 }
 
-/* Estrellas (como te gustaron) */
+@media (max-width:768px){
+  .track-main{top:42vh}
+  .cloud{width:72vw;height:calc(72vw*0.36)}
+}
+
+/* Estrellas (como estaban) */
 .featured-star{
   position:absolute;width:var(--sz,4.5px);height:var(--sz,4.5px);border-radius:999px;pointer-events:none;
   background:
@@ -101,14 +107,14 @@ html::before,html::after,body::before,body::after{content:none!important;display
     radial-gradient(circle at 50% 50%,rgba(168,85,247,.50) 0%,rgba(168,85,247,0) 70%),
     radial-gradient(circle at 50% 50%,rgba(244,114,182,.38) 0%,rgba(244,114,182,0) 78%);
   filter:
-    drop-shadow(0 0 10px rgba(255,255,255,.62))
-    drop-shadow(0 0 18px rgba(168,85,247,.40))
-    drop-shadow(0 0 22px rgba(244,114,182,.24));
+    drop-shadow(0 0 10px rgba(255,255,255,.60))
+    drop-shadow(0 0 18px rgba(168,85,247,.38))
+    drop-shadow(0 0 22px rgba(244,114,182,.22));
   animation:featuredTwinkle var(--ftDur,80s) cubic-bezier(.42,0,.58,1) infinite both;
   animation-delay:var(--twDelay,0s);
 }
-#sky .featured-star::before{content:"";position:absolute;inset:-14px;border-radius:999px;filter:blur(14px);opacity:.70;
-  background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.42) 0%,rgba(168,85,247,.25) 45%,rgba(244,114,182,.17) 65%,rgba(255,255,255,0) 85%);
+#sky .featured-star::before{content:"";position:absolute;inset:-14px;border-radius:999px;filter:blur(14px);opacity:.68;
+  background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.40) 0%,rgba(168,85,247,.24) 45%,rgba(244,114,182,.16) 65%,rgba(255,255,255,0) 85%);
 }
 .distant-star{
   position:absolute;width:var(--dsz,2px);height:var(--dsz,2px);border-radius:999px;pointer-events:none;
@@ -119,125 +125,107 @@ html::before,html::after,body::before,body::after{content:none!important;display
   filter:drop-shadow(0 0 6px rgba(255,255,255,.35)) drop-shadow(0 0 10px rgba(168,85,247,.20));
   opacity:var(--dalpha,.52);
 }
-
-@media (max-width:768px){
-  .track-main{top:46vh}
-  .cloud{width:96vw;height:calc(96vw*0.36)}
-}
         `}</style>
 
-        {/* ===== NUBE ORGÁNICA (fBm + domain-warping + 3 lóbulos) ===== */}
+        {/* ===== NUBE ORGÁNICA — más densa, amorfa y etérea ===== */}
         <Script id="paint-clouds" strategy="afterInteractive">{`
 (function(){
-  // ---- Utilidades de ruido 2D ----
+  // --------- Ruido 2D y fBm ----------
   function fade(t){return t*t*t*(t*(t*6-15)+10)}
-  function rng(seed){return function(){seed=(seed*1664525+1013904223)>>>0;return (seed&0xffffffff)/4294967296}}
-  function hash(i,j,seed){
-    const s = Math.sin(i*127.1 + j*311.7 + seed*0.123) * 43758.5453;
-    return s - Math.floor(s); // 0..1
-  }
+  function hash(i,j,seed){const s=Math.sin(i*127.1 + j*311.7 + seed*0.123)*43758.5453;return s-Math.floor(s)}
   function value2(x,y,seed){
-    const xi=Math.floor(x), yi=Math.floor(y);
-    const xf=x-xi, yf=y-yi, u=fade(xf), v=fade(yf);
-    const v00=hash(xi,yi,seed),   v10=hash(xi+1,yi,seed);
-    const v01=hash(xi,yi+1,seed), v11=hash(xi+1,yi+1,seed);
-    const x1=v00+(v10-v00)*u, x2=v01+(v11-v01)*u;
-    return x1+(x2-x1)*v; // 0..1
+    const xi=Math.floor(x), yi=Math.floor(y), xf=x-xi, yf=y-yi, u=fade(xf), v=fade(yf);
+    const v00=hash(xi,yi,seed), v10=hash(xi+1,yi,seed), v01=hash(xi,yi+1,seed), v11=hash(xi+1,yi+1,seed);
+    const x1=v00+(v10-v00)*u, x2=v01+(v11-v01)*u; return x1+(x2-x1)*v;
   }
   function fbm(x,y,seed){
-    // 5 octavas + rotación ligera para evitar direcciones marcadas
-    let t=0, amp=0.5, freq=1.0;
-    const rot=0.45, cs=Math.cos(rot), sn=Math.sin(rot);
+    let t=0, amp=0.55, freq=1.0; const rot=0.42, cs=Math.cos(rot), sn=Math.sin(rot);
     for(let o=0;o<5;o++){
       const rx=x*freq*cs - y*freq*sn, ry=x*freq*sn + y*freq*cs;
-      t += value2(rx,ry,seed+o*23)*amp;
-      freq*=2.0; amp*=0.5;
+      t += value2(rx,ry,seed+o*19)*amp; freq*=2.0; amp*=0.5;
     }
-    return t; // ~0..1
+    return t;
   }
 
   function paintCloud(canvas){
     const dpr=Math.max(1,Math.min(2,window.devicePixelRatio||1));
-    const wCSS=canvas.offsetWidth||1200, hCSS=canvas.offsetHeight||Math.round(wCSS*0.36);
+    const wCSS=canvas.offsetWidth||800, hCSS=canvas.offsetHeight||Math.round(wCSS*0.36);
     const W=Math.floor(wCSS*dpr), H=Math.floor(hCSS*dpr);
     canvas.width=W; canvas.height=H;
     const ctx=canvas.getContext('2d'); if(!ctx) return;
-    const img=ctx.createImageData(W,H); const d=img.data;
 
-    // === Parámetros de forma/densidad ===
-    const seed=1337;
-    // Escalas (más detalle y amorfo mediante domain-warp)
-    const baseS = Math.min(W,H)*0.0115;     // escala base
-    const detS  = baseS*2.4;                // detalle fino
-    const warpS = Math.min(W,H)*0.0055;     // escala del warp (muy baja freq)
-    const warpA = 2.6;                      // amplitud del warp (mayor = más amorfo)
+    // ---------- Parámetros de diseño ----------
+    const seed=2025;
+    const baseS = Math.min(W,H)*0.0135;     // ↑ tamaño de features → menos "granito"
+    const detS  = baseS*3.0;                // detalle más suave
+    const warpS = Math.min(W,H)*0.0060;     // domain warp (baja freq)
+    const warpA = 2.8;                      // ↑ amorfo sin romper bordes
+    const th=0.49;      // ↓ umbral → más densa
+    const soft=0.30;    // ↑ suavidad de borde → etérea
+    const curve=0.95;   // gamma (> densidad media)
+    const dens=0.56;    // multiplicador final de alfa (más compacta)
 
-    // Densidad: más densa
-    const th=0.52;      // umbral (↓ = más denso)
-    const soft=0.24;    // suavidad del borde
-    const curve=0.95;   // gamma ( <1 = sube densidad media )
-    const dens=0.48;    // multiplicador final de alfa
+    // Lóbulos (forma orgánica no cuadrada)
+    const c1={x:W*0.50,y:H*0.52,a:W*0.42,b:H*0.30};
+    const c2={x:W*0.62,y:H*0.58,a:W*0.36,b:H*0.28};
+    const c3={x:W*0.38,y:H*0.60,a:W*0.34,b:H*0.26};
+    const c4={x:W*0.47,y:H*0.64,a:W*0.30,b:H*0.24}; // lóbulo extra pequeño para evitar “rectángulo”
+    const smoothUnion=(e1,e2)=>1-(1-e1)*(1-e2);
+    const lobe=(cx,cy,a,b,x,y)=>{const dx=(x-cx)/a, dy=(y-cy)/b; return Math.max(0,1-(dx*dx+dy*dy))};
 
-    // Máscara de forma: unión suave de 3 lóbulos (no banda recta)
-    const c1={x:W*0.45,y:H*0.50,a:W*0.58,b:H*0.42};
-    const c2={x:W*0.62,y:H*0.56,a:W*0.54,b:H*0.40};
-    const c3={x:W*0.36,y:H*0.58,a:W*0.44,b:H*0.38};
-    function lobe(cx,cy,a,b,x,y){
-      const dx=(x-cx)/a, dy=(y-cy)/b; return Math.max(0, 1-(dx*dx+dy*dy));
+    // Campo de densidad encapsulado (nos permite suavizado local)
+    function fieldAt(x,y){
+      const wx = fbm(x/warpS, y/warpS, seed+501);
+      const wy = fbm((x+90)/warpS, (y-60)/warpS, seed+907);
+      const sx = x/baseS + (wx-0.5)*warpA;
+      const sy = y/baseS + (wy-0.5)*warpA;
+      const n1 = fbm(sx*0.7, sy*0.7, seed+11);
+      const n2 = fbm(x/detS, y/detS, seed+77);
+      let n = n1*0.72 + n2*0.55;
+
+      // unión suave de 4 lóbulos
+      const e = smoothUnion(
+                  smoothUnion(lobe(c1.x,c1.y,c1.a,c1.b,x,y), lobe(c2.x,c2.y,c2.a,c2.b,x,y)),
+                  smoothUnion(lobe(c3.x,c3.y,c3.a,c3.b,x,y), lobe(c4.x,c4.y,c4.a,c4.b,x,y))
+                );
+
+      // ondulación de borde grande
+      const edge = fbm(sx*0.20, sy*0.20, seed+7);
+      n = n * Math.pow(e,0.62) * (0.78 + edge*0.32);
+      return n;
     }
-    function smoothUnion(e1,e2){ return 1 - (1-e1)*(1-e2); }
 
+    // Pintado con suavizado local (reduce “grano” y da look crema)
+    const img=ctx.createImageData(W,H); const d=img.data;
     for(let y=0,k=0;y<H;y++){
       for(let x=0;x<W;x++,k+=4){
-        // Domain warping: deforma coordenadas con ruido de baja freq
-        const wx = fbm(x/warpS, y/warpS, seed+501);
-        const wy = fbm((x+100)/warpS, (y-60)/warpS, seed+907);
-        const sx = x/baseS + (wx-0.5)*warpA;
-        const sy = y/baseS + (wy-0.5)*warpA;
+        // mezcla con vecinos cercanos para evitar pixelado/arena
+        const n0 = fieldAt(x,y);
+        const nN = fieldAt(x, y-2);
+        const nS = fieldAt(x, y+2);
+        const nE = fieldAt(x+2, y);
+        const nW = fieldAt(x-2, y);
+        let n = (n0*0.64) + ((nN+nS+nE+nW)*0.09); // 0.64 + 4*0.09 = 1.0
 
-        // Estructura grande + detalle fino
-        const n1 = fbm(sx*0.7, sy*0.7, seed+11);
-        const n2 = fbm(x/detS, y/detS, seed+77);
-        let n = n1*0.7 + n2*0.6;
-
-        // Unión suave de lóbulos para la silueta general
-        const e1=lobe(c1.x,c1.y,c1.a,c1.b,x,y);
-        const e2=lobe(c2.x,c2.y,c2.a,c2.b,x,y);
-        const e3=lobe(c3.x,c3.y,c3.a,c3.b,x,y);
-        const ell = smoothUnion( smoothUnion(e1,e2), e3 );
-
-        // Bordes irregulares (otra capa de ruido grande)
-        const edge = fbm(sx*0.18, sy*0.18, seed+7);
-        n = n * Math.pow(ell, 0.60) * (0.78 + edge*0.35);
-
-        // Umbral suave y densidad final
         let a = (n - th) / soft;
         a = Math.max(0, Math.min(1, a));
         a = Math.pow(a, curve) * dens;
 
         if(a<=0){ d[k+3]=0; continue; }
-
-        d[k  ] = 255;
-        d[k+1] = 255;
-        d[k+2] = 255;
-        d[k+3] = Math.floor(a*255);
+        d[k  ] = 255; d[k+1] = 255; d[k+2] = 255; d[k+3] = Math.floor(a*255);
       }
     }
     ctx.putImageData(img,0,0);
 
-    // Color y brillo (muy sutil), sumado sobre la nube existente
+    // Luz/tono muy sutil (solo para “vida”)
     ctx.globalCompositeOperation='lighter';
     const pr=Math.min(W,H);
-    const mag=ctx.createRadialGradient(W*0.38,H*0.46,0,W*0.38,H*0.46,pr*0.55);
-    mag.addColorStop(0,'rgba(168,85,247,0.12)');
-    mag.addColorStop(1,'rgba(168,85,247,0)');
+    const mag=ctx.createRadialGradient(W*0.40,H*0.50,0,W*0.40,H*0.50,pr*0.55);
+    mag.addColorStop(0,'rgba(168,85,247,0.10)'); mag.addColorStop(1,'rgba(168,85,247,0)');
     ctx.fillStyle=mag; ctx.fillRect(0,0,W,H);
-
-    const pink=ctx.createRadialGradient(W*0.60,H*0.60,0,W*0.60,H*0.60,pr*0.58);
-    pink.addColorStop(0,'rgba(244,114,182,0.10)');
-    pink.addColorStop(1,'rgba(244,114,182,0)');
+    const pink=ctx.createRadialGradient(W*0.58,H*0.60,0,W*0.58,H*0.60,pr*0.58);
+    pink.addColorStop(0,'rgba(244,114,182,0.08)'); pink.addColorStop(1,'rgba(244,114,182,0)');
     ctx.fillStyle=pink; ctx.fillRect(0,0,W,H);
-
     ctx.globalCompositeOperation='source-over';
   }
 
