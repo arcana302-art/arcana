@@ -4,18 +4,10 @@
 import { useEffect, useRef } from "react";
 
 type Puff = { ox: number; oy: number; r: number; a: number };
-type Cluster = {
-  cx: number;
-  cy: number;
-  vx: number;
-  vy: number;
-  puffs: Puff[];
-  wavePhase: number;
-};
+type Cluster = { cx: number; cy: number; vx: number; vy: number; puffs: Puff[]; wavePhase: number };
 type Band = { y: number; spread: number; clusters: number };
 
 const CFG = {
-  // Apariencia
   puffsPerCluster: 28,
   rMin: 40,
   rMax: 120,
@@ -23,20 +15,14 @@ const CFG = {
   alphaMax: 0.07,
   tintMagenta: 0.06,
   tintPink: 0.04,
-
-  // Movimiento lento
-  vx: -0.020,
+  vx: -0.020,    // desplazamiento lento
   vy: 0,
   waveAmp: 10,
   waveSpeed: 0.0012,
-
-  // Rendimiento
   maxDpr: 1.5,
-
-  // Bandas verticales
   bands: [
-    { y: 0.16, spread: 0.04, clusters: 3 }, // superior
-    { y: 0.48, spread: 0.06, clusters: 5 }, // principal
+    { y: 0.16, spread: 0.04, clusters: 3 },
+    { y: 0.48, spread: 0.06, clusters: 5 },
   ] as Band[],
 };
 
@@ -60,11 +46,11 @@ export default function CloudBackdrop() {
       H = Math.floor(window.innerHeight * DPR);
       canvas.width = W;
       canvas.height = H;
-      seedClusters();
-      paint(performance.now()); // primer frame inmediato
+      seed();
+      paint(performance.now());
     };
 
-    const seedClusters = () => {
+    const seed = () => {
       const clusters: Cluster[] = [];
       for (const band of CFG.bands) {
         for (let i = 0; i < band.clusters; i++) {
@@ -82,8 +68,7 @@ export default function CloudBackdrop() {
             };
           });
           clusters.push({
-            cx,
-            cy,
+            cx, cy,
             vx: CFG.vx * DPR,
             vy: CFG.vy * DPR,
             puffs,
@@ -95,80 +80,52 @@ export default function CloudBackdrop() {
     };
 
     const paint = (now: number) => {
-      const dt = now - t0;
-      t0 = now;
-
+      const dt = now - t0; t0 = now;
       ctx.clearRect(0, 0, W, H);
       ctx.globalCompositeOperation = "lighter";
 
       for (const c of clustersRef.current) {
         const wave = Math.sin(now * CFG.waveSpeed + c.wavePhase) * CFG.waveAmp * DPR;
-
         for (const p of c.puffs) {
           const x = c.cx + p.ox;
           const y = c.cy + p.oy + wave;
 
-          // núcleo blanco
           const g = ctx.createRadialGradient(x, y, 0, x, y, p.r);
           g.addColorStop(0, `rgba(240,240,255,${p.a})`);
           g.addColorStop(1, "rgba(255,255,255,0)");
-          ctx.fillStyle = g;
-          ctx.beginPath();
-          ctx.arc(x, y, p.r, 0, Math.PI * 2);
-          ctx.fill();
+          ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, p.r, 0, Math.PI * 2); ctx.fill();
 
-          // halos sutiles
           if (CFG.tintMagenta > 0) {
             const g2 = ctx.createRadialGradient(x, y, 0, x, y, p.r * 1.1);
             g2.addColorStop(0, `rgba(168,85,247,${CFG.tintMagenta * p.a})`);
             g2.addColorStop(1, "rgba(168,85,247,0)");
-            ctx.fillStyle = g2;
-            ctx.beginPath();
-            ctx.arc(x, y, p.r * 1.1, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.fillStyle = g2; ctx.beginPath(); ctx.arc(x, y, p.r * 1.1, 0, Math.PI * 2); ctx.fill();
           }
           if (CFG.tintPink > 0) {
             const g3 = ctx.createRadialGradient(x, y, 0, x, y, p.r * 1.15);
             g3.addColorStop(0, `rgba(244,114,182,${CFG.tintPink * p.a})`);
             g3.addColorStop(1, "rgba(244,114,182,0)");
-            ctx.fillStyle = g3;
-            ctx.beginPath();
-            ctx.arc(x, y, p.r * 1.15, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.fillStyle = g3; ctx.beginPath(); ctx.arc(x, y, p.r * 1.15, 0, Math.PI * 2); ctx.fill();
           }
         }
-
-        // desplazamiento horizontal y recirculación
         c.cx += c.vx * (dt || 16.7);
         const off = 240 * DPR;
         if (c.cx < -off) c.cx = W + off * 0.5;
       }
-
       rafRef.current = requestAnimationFrame(paint);
     };
 
     fit();
     rafRef.current = requestAnimationFrame(paint);
     window.addEventListener("resize", fit);
-    return () => {
-      window.removeEventListener("resize", fit);
-      cancelAnimationFrame(rafRef.current);
-    };
+    return () => { window.removeEventListener("resize", fit); cancelAnimationFrame(rafRef.current); };
   }, []);
 
   return (
     <canvas
       ref={canvasRef}
       aria-hidden
-      style={{
-        position: "fixed",
-        inset: 0,
-        width: "100vw",
-        height: "100vh",
-        display: "block",
-        pointerEvents: "none",
-        zIndex: 1, // nubes encima de las estrellas
-      }}
+      style={{ position: "fixed", inset: 0, width: "100vw", height: "100vh", display: "block", pointerEvents: "none", zIndex: 1 }}
     />
   );
 }
