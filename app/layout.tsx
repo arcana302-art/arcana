@@ -26,7 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   animation: none !important;
   transition: none !important;
 }
-/* Permitimos explícitamente nuestras estrellas propias si ya existen */
+/* Permitimos explícitamente nuestras estrellas */
 #sky .featured-star{ display:block !important; }
 #sky .distant-star{ display:block !important; }
         `}</style>
@@ -40,7 +40,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     document.querySelectorAll(killSel).forEach(function(n){
       if (!sky || !sky.contains(n)) { try{ n.remove(); }catch(e){} }
     });
-    // Quita elementos con "star" en id/clase fuera de #sky (sin tocar las nuestras)
     document.querySelectorAll('[id*="star"],[class*="star"]').forEach(function(n){
       if (sky && sky.contains(n)) return;
       if (n.classList && (n.classList.contains('featured-star') || n.classList.contains('distant-star'))) return;
@@ -48,10 +47,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     });
   }
   nuke();
-  // Observa durante el arranque para evitar FOUC
   var mo = new MutationObserver(nuke);
   mo.observe(document.documentElement,{childList:true,subtree:true});
-  // Desconecta tras la carga inicial
   window.addEventListener('load', function(){ setTimeout(function(){ mo.disconnect(); }, 2000); });
 })();
         `}</Script>
@@ -240,7 +237,6 @@ html::before, html::after, body::before, body::after { content: none !important;
   width: var(--dsz, 2px); height: var(--dsz, 2px);
   border-radius: 999px;
   pointer-events:none;
-  /* brillo sutil y tamaño menor para sensación de profundidad */
   background:
     radial-gradient(circle at 50% 50%, rgba(255,255,255,.75) 0%, rgba(255,255,255,.55) 30%, rgba(255,255,255,0) 65%),
     radial-gradient(circle at 50% 50%, rgba(168,85,247,.18) 0%, rgba(168,85,247,0) 70%),
@@ -249,7 +245,7 @@ html::before, html::after, body::before, body::after { content: none !important;
     drop-shadow(0 0 6px rgba(255,255,255,.35))
     drop-shadow(0 0 10px rgba(168,85,247,.20));
   opacity: var(--dalpha, .52); /* 0.35–0.60 desde JS */
-  /* sin animación: no titilean */
+  /* sin animación */
 }
 
 /* Curvas de animación (para las cercanas) */
@@ -381,7 +377,7 @@ html::before, html::after, body::before, body::after { content: none !important;
 })();
         `}</Script>
 
-        {/* ===== SCRIPT: Limpiar starfields externos y crear 20 estrellas (10 cercanas + 10 lejanas) ===== */}
+        {/* ===== SCRIPT: Limpiar starfields y crear 10 cercanas + 20 lejanas ===== */}
         <Script id="tune-stars" strategy="afterInteractive">{`
 (function () {
   function nukeForeign(){
@@ -420,7 +416,7 @@ html::before, html::after, body::before, body::after { content: none !important;
     }
   }
 
-  // Crea M estrellas lejanas (NO titilan) más pequeñas y menos brillantes
+  // Crea M estrellas lejanas (NO titilan) — pequeñas y menos brillantes
   function ensureDistant(M){
     const sky = document.getElementById('sky'); if (!sky) return;
     const holder = document.getElementById('stars') || sky;
@@ -430,8 +426,8 @@ html::before, html::after, body::before, body::after { content: none !important;
     for (let i=0; i<need; i++){
       const s = document.createElement('span');
       s.className = 'distant-star';
-      const size  = 1.4 + Math.random()*1.4; // 1.4–2.8px
-      const alpha = 0.35 + Math.random()*0.25; // 0.35–0.60
+      const size  = 1.4 + Math.random()*1.4;    // 1.4–2.8px
+      const alpha = 0.35 + Math.random()*0.25;  // 0.35–0.60
       const top   = Math.random()*100;
       const left  = Math.random()*100;
       s.style.setProperty('--dsz', size.toFixed(2)+'px');
@@ -443,14 +439,13 @@ html::before, html::after, body::before, body::after { content: none !important;
   }
 
   function init(){
-    ensureFeatured(10); // 10 que titilan
-    ensureDistant(10);  // +10 lejanas sin titilar
+    ensureFeatured(10); // 10 que titilan (con halo)
+    ensureDistant(20);  // <-- AHORA 20 lejanas sin titilar
     nukeForeign();
     const mo = new MutationObserver(() => { nukeForeign(); });
     mo.observe(document.documentElement, { childList: true, subtree: true });
     setTimeout(nukeForeign, 800);
     setTimeout(nukeForeign, 2500);
-    // quitamos el escudo CSS una vez estable (opcional)
     const shield = document.getElementById('arcana-star-shield');
     if (shield) { setTimeout(() => { try{ shield.remove(); }catch(e){} }, 1200); }
   }
