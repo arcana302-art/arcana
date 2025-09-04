@@ -1,143 +1,63 @@
-/* ===== Arcana – Site Theme (MORADO)  v2 ===== */
+/* ===== Arcana – CTAs Morados (aislados) ===== */
 
-/* Paleta base morada */
-:root {
-  --cta-400: #a78bfa;
-  --cta-500: #8b5cf6;
-  --cta-600: #7c3aed;
-  --cta-700: #6d28d9;
-  --cta-800: #5b21b6;
-
-  --cta-text: #ffffff;
-  --cta-glow: 0 8px 22px rgba(109, 40, 217, 0.35), 0 2px 8px rgba(139, 92, 246, 0.28);
-
-  /* también cambiamos el acento global que usas en textos/estrellita */
-  --arcana-accent: var(--cta-500);
+:root{
+  --violet-400:#a78bfa;
+  --violet-500:#8b5cf6;
+  --violet-600:#7c3aed;
+  --violet-700:#6d28d9;
+  --cta-text:#fff;
 }
 
-/* =========================
-   BOTONES – estilo forzado
-   ========================= */
-
-/* Base del botón */
-.btn-arcana,
-a.btn-arcana,
-button.btn-arcana {
-  border-radius: 12px !important;
-  font-weight: 700 !important;
-  padding: 12px 20px !important;
-  text-decoration: none !important;
-  border: 0 !important;
-  color: var(--cta-text) !important;
-  transition: transform .15s ease, box-shadow .15s ease, background .2s ease !important;
-  -webkit-tap-highlight-color: transparent;
+/* Botón base: clase nueva que NO existe en tu código anterior */
+.arcana-cta{
+  -webkit-appearance:none;
+  appearance:none;
+  border:0;
+  border-radius:12px;
+  padding:12px 20px;
+  font-weight:700;
+  color:var(--cta-text);
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:.5rem;
+  line-height:1.1;
+  cursor:pointer;
+  transition:transform .15s ease, box-shadow .15s ease, background .2s ease;
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
 }
 
-/* Primario (morados sólidos con gradiente + glow) */
-.btn-arcana.btn-arcana--primary,
-a.btn-arcana.btn-arcana--primary,
-button.btn-arcana.btn-arcana--primary {
-  background: linear-gradient(180deg, var(--cta-500) 0%, var(--cta-700) 100%) !important;
-  box-shadow: var(--cta-glow) !important;
-  color: var(--cta-text) !important;
+/* Primario morado */
+.arcana-cta--primary{
+  background:linear-gradient(180deg,var(--violet-500),var(--violet-700));
+  box-shadow:0 8px 22px rgba(109,40,217,.35), 0 2px 8px rgba(139,92,246,.28);
+}
+.arcana-cta--primary:hover,
+.arcana-cta--primary:focus-visible{
+  background:linear-gradient(180deg,var(--violet-400),var(--violet-600));
+  transform:translateY(-1px);
+  box-shadow:0 10px 26px rgba(109,40,217,.45), 0 4px 12px rgba(139,92,246,.34);
+  outline:none;
+}
+.arcana-cta--primary:active{ transform:none; }
+
+/* Secundario sólido (no translúcido) */
+.arcana-cta--secondary{
+  background:#2b2150;
+  border:2px solid var(--violet-600);
+  box-shadow:0 6px 18px rgba(139,92,246,.18), inset 0 -1px 0 rgba(255,255,255,.05);
+}
+.arcana-cta--secondary:hover,
+.arcana-cta--secondary:focus-visible{
+  background:#352462;
+  border-color:var(--violet-400);
+  transform:translateY(-1px);
+  outline:none;
 }
 
-/* Hover / Focus del primario */
-.btn-arcana.btn-arcana--primary:hover,
-a.btn-arcana.btn-arcana--primary:hover,
-button.btn-arcana.btn-arcana--primary:hover,
-.btn-arcana.btn-arcana--primary:focus-visible,
-a.btn-arcana.btn-arcana--primary:focus-visible,
-button.btn-arcana.btn-arcana--primary:focus-visible {
-  background: linear-gradient(180deg, var(--cta-400) 0%, var(--cta-600) 100%) !important;
-  transform: translateY(-1px);
-  box-shadow: 0 10px 26px rgba(109, 40, 217, 0.45), 0 4px 12px rgba(139, 92, 246, 0.34) !important;
-  outline: none !important;
-}
-
-/* Active del primario */
-.btn-arcana.btn-arcana--primary:active,
-a.btn-arcana.btn-arcana--primary:active,
-button.btn-arcana.btn-arcana--primary:active {
-  transform: translateY(0);
-  box-shadow: 0 4px 12px rgba(109, 40, 217, 0.35), 0 1px 4px rgba(139, 92, 246, 0.28) !important;
-}
-
-/* Secundario (morado oscuro con borde) */
-.btn-arcana.btn-arcana--outline,
-a.btn-arcana.btn-arcana--outline,
-button.btn-arcana.btn-arcana--outline {
-  background: #2b2150 !important;
-  color: var(--cta-text) !important;
-  border: 2px solid var(--cta-600) !important;
-  box-shadow: 0 6px 18px rgba(139, 92, 246, 0.18), inset 0 -1px 0 rgba(255,255,255,.05) !important;
-}
-
-.btn-arcana.btn-arcana--outline:hover,
-a.btn-arcana.btn-arcana--outline:hover,
-button.btn-arcana.btn-arcana--outline:hover,
-.btn-arcana.btn-arcana--outline:focus-visible,
-a.btn-arcana.btn-arcana--outline:focus-visible,
-button.btn-arcana.btn-arcana--outline:focus-visible {
-  background: #352462 !important;
-  border-color: var(--cta-400) !important;
-  transform: translateY(-1px);
-  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.26) !important;
-  outline: none !important;
-}
-
-/* ===================================================
-   “Mata-amarillo”: caza utilidades/estilos en amarillo
-   =================================================== */
-
-/* Cualquier clase utilitaria de Tailwind que arrastre “amber/yellow” */
-[class*="bg-amber-"],
-[class*="from-amber-"],
-[class*="to-amber-"],
-[class*="text-amber-"],
-[class*="ring-amber-"],
-[class*="border-amber-"],
-[class*="bg-yellow-"],
-[class*="from-yellow-"],
-[class*="to-yellow-"],
-[class*="text-yellow-"],
-[class*="ring-yellow-"],
-[class*="border-yellow-"] {
-  /* Convertimos a morado sólido/gradiente y texto blanco */
-  background: linear-gradient(180deg, var(--cta-500) 0%, var(--cta-700) 100%) !important;
-  color: var(--cta-text) !important;
-  border-color: transparent !important;
-  --tw-ring-color: var(--cta-600) !important;
-}
-
-/* Por si el tema antiguo usa variables doradas para acento */
-:where(html, body) {
-  --arcana-accent: var(--cta-500) !important;
-}
-
-/* Chips/links hover que usan el acento */
-.hover\:text-\[var\(--arcana-accent\)\]:hover,
-.hover\:border-accent:hover,
-.hover\:text-accent:hover {
-  color: var(--cta-500) !important;
-  border-color: var(--cta-500) !important;
-}
-
-/* Acento aplicado directamente */
-.text-\[var\(--arcana-accent\)\] {
-  color: var(--cta-500) !important;
-}
-
-/* Por si algún botón venía con transparencia (no queremos translucidez sobre nubes) */
-.btn-arcana,
-a.btn-arcana,
-button.btn-arcana {
-  backdrop-filter: none !important;
-  background-clip: padding-box !important;
-}
-
-/* Opcional: bordes y focos consistentes */
-.btn-arcana:focus-visible {
-  outline: 2px solid var(--cta-400) !important;
-  outline-offset: 2px !important;
+/* Estados utilitarios */
+.arcana-cta:disabled{
+  opacity:.6; cursor:not-allowed; transform:none;
 }
