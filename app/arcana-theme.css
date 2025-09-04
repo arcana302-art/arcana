@@ -1,0 +1,63 @@
+/* app/arcana-theme.css */
+/* === Arcana CTA overrides (cargado al final) === */
+:root{
+  --violet-400:#a78bfa; --violet-500:#8b5cf6; --violet-600:#7c3aed; --violet-700:#6d28d9;
+}
+
+/* Objetivo EXACTO que compartiste:
+   <a class="btn-arcana btn-arcana--primary ...">...</a>
+   <button class="btn-arcana btn-arcana--primary ...">...</button>
+   Usamos selectores con coincidencia por clase (~=) para que el orden no importe. */
+
+a[class~="btn-arcana"][class~="btn-arcana--primary"],
+button[class~="btn-arcana"][class~="btn-arcana--primary"],
+/* Extra especificidad por si hay reglas muy fuertes: repetimos clases */
+a.btn-arcana.btn-arcana--primary.btn-arcana.btn-arcana--primary,
+button.btn-arcana.btn-arcana--primary.btn-arcana.btn-arcana--primary {
+  background: linear-gradient(180deg, var(--violet-500) 0%, var(--violet-700) 100%) !important;
+  color:#fff !important;
+  border:0 !important;
+  border-radius:12px !important;
+  font-weight:700 !important;
+  padding:12px 20px !important;
+  text-decoration:none !important;
+  box-shadow: 0 8px 22px rgba(109,40,217,.35), 0 2px 8px rgba(139,92,246,.28) !important;
+  position: relative;
+  cursor: pointer;
+}
+
+a[class~="btn-arcana"][class~="btn-arcana--primary"]:hover,
+button[class~="btn-arcana"][class~="btn-arcana--primary"]:hover {
+  background: linear-gradient(180deg, var(--violet-400) 0%, var(--violet-600) 100%) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 26px rgba(109,40,217,.45), 0 4px 12px rgba(139,92,246,.34) !important;
+}
+
+/* Mata cualquier overlay/gradiente amarillo en descendientes y pseudo-elementos */
+a[class~="btn-arcana"][class~="btn-arcana--primary"] *,
+a[class~="btn-arcana"][class~="btn-arcana--primary"] *::before,
+a[class~="btn-arcana"][class~="btn-arcana--primary"] *::after,
+a[class~="btn-arcana"][class~="btn-arcana--primary"]::before,
+a[class~="btn-arcana"][class~="btn-arcana--primary"]::after,
+button[class~="btn-arcana"][class~="btn-arcana--primary"] *,
+button[class~="btn-arcana"][class~="btn-arcana--primary"] *::before,
+button[class~="btn-arcana"][class~="btn-arcana--primary"] *::after,
+button[class~="btn-arcana"][class~="btn-arcana--primary"]::before,
+button[class~="btn-arcana"][class~="btn-arcana--primary"]::after {
+  background: transparent !important;
+  background-image: none !important;
+  filter: none !important;
+  box-shadow: none !important;
+}
+
+/* (Opcional) estilo para secundarios si usas .btn-arcana--secondary */
+a[class~="btn-arcana"][class~="btn-arcana--secondary"],
+button[class~="btn-arcana"][class~="btn-arcana--secondary"]{
+  background:#2b2150 !important; color:#fff !important; border:2px solid var(--violet-600) !important;
+  border-radius:12px !important; font-weight:700 !important; padding:12px 20px !important;
+  box-shadow: 0 6px 18px rgba(139,92,246,.18), inset 0 -1px 0 rgba(255,255,255,.05) !important;
+}
+a[class~="btn-arcana"][class~="btn-arcana--secondary"]:hover,
+button[class~="btn-arcana"][class~="btn-arcana--secondary"]:hover{
+  background:#352462 !important; border-color: var(--violet-400) !important; transform: translateY(-1px);
+}
