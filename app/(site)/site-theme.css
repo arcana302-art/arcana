@@ -79,8 +79,18 @@ button.btn-arcana--outline:hover{
 /* Asegura texto blanco dentro del CTA primario */
 .btn-arcana--primary *{ color:#fff !important; }
 
+/* ============================
+   2) Chips y acentos
+   ============================ */
+.text-accent   { color: var(--cta-500) !important; }
+.border-accent { border-color: var(--cta-500) !important; }
+.chip:hover{
+  border-color: var(--cta-500) !important;
+  color: var(--cta-500) !important;
+}
+
 /* =====================================================
-   2) Mata-AMARILLO/YELLOW para elementos tipo “CTA”
+   3) Mata-AMARILLO/YELLOW para elementos tipo “CTA”
    (botón o <a> con padding/redondeado como botón)
    ===================================================== */
 
@@ -149,32 +159,30 @@ button.btn-arcana--outline:hover{
 }
 
 /* ============================
-   3) Chips y links con acento
-   ============================ */
-.text-accent   { color: var(--cta-500) !important; }
-.border-accent { border-color: var(--cta-500) !important; }
-.chip:hover{
-  border-color: var(--cta-500) !important;
-  color: var(--cta-500) !important;
-}
-
-/* ============================
-   4) Extras de robustez
+   4) Overrides “nucleares” específicos
    ============================ */
 
-/* Si algún CTA trae inline-style de fondo, fuerza nuestro gradiente */
-.btn-arcana--primary[style],
-a.btn-arcana--primary[style],
-button.btn-arcana--primary[style]{
-  background: linear-gradient(180deg, var(--cta-500), var(--cta-700)) !important;
-  background-image: linear-gradient(180deg, var(--cta-500), var(--cta-700)) !important;
+/* CTA principal exacto que nos pasaste (ancla con clases) */
+html body a.btn-arcana.btn-arcana--primary{
+  /* fuerza gradiente morado aunque haya utilidades/variables previas */
+  --tw-gradient-from: #8b5cf6 !important; /* violet-500 */
+  --tw-gradient-to:   #6d28d9 !important; /* violet-700 */
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+
+  background: linear-gradient(180deg,#8b5cf6,#6d28d9) !important;
+  background-image: linear-gradient(180deg,#8b5cf6,#6d28d9) !important;
   color:#fff !important;
+  border:0 !important;
+  box-shadow: 0 8px 22px rgba(109,40,217,.35), 0 2px 8px rgba(139,92,246,.28) !important;
+  filter:none !important;
+  -webkit-text-fill-color:#fff !important;
 }
-
-/* Evita translucidez accidental en CTAs (por backdrop/opacity ajena) */
-.btn-arcana--primary, .btn-arcana--outline,
-a.btn-arcana--primary, a.btn-arcana--outline,
-button.btn-arcana--primary, button.btn-arcana--outline{
-  backdrop-filter: none !important;
-  opacity: 1 !important;
+html body a.btn-arcana.btn-arcana--primary:hover{
+  --tw-gradient-from:#a78bfa !important; /* violet-400 */
+  --tw-gradient-to:#7c3aed !important;   /* violet-600 */
+  background-image: linear-gradient(180deg,#a78bfa,#7c3aed) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 26px rgba(109,40,217,.45), 0 4px 12px rgba(139,92,246,.34) !important;
 }
+/* asegura texto blanco dentro del CTA */
+html body a.btn-arcana.btn-arcana--primary *{ color:#fff !important; }
