@@ -1,5 +1,4 @@
 /* app/(site)/site-theme.css */
-/* Tema morado SOLO para el segmento (site) */
 :root {
   --arcana-accent: #a78bfa; /* morado para ✶ y hovers */
 }
@@ -23,11 +22,11 @@ button.btn-arcana.btn-arcana--primary:hover {
   box-shadow: 0 10px 26px rgba(109,40,217,.45), 0 4px 12px rgba(139,92,246,.34) !important;
 }
 
-/* Botón secundario sólido (no translúcido) */
-a.btn-arcana.btn-arcana--outline,
-button.btn-arcana.btn-arcana--outline,
+/* Botón secundario sólido (sin transparencia) */
 a.btn-arcana.btn-arcana--secondary,
-button.btn-arcana.btn-arcana--secondary {
+button.btn-arcana.btn-arcana--secondary,
+a.btn-arcana.btn-arcana--outline,
+button.btn-arcana.btn-arcana--outline {
   background: #2b2150 !important;
   color: #fff !important;
   border: 2px solid #7c3aed !important;
@@ -37,10 +36,10 @@ button.btn-arcana.btn-arcana--secondary {
   text-decoration: none !important;
   box-shadow: 0 6px 18px rgba(139,92,246,.18), inset 0 -1px 0 rgba(255,255,255,.05) !important;
 }
-a.btn-arcana.btn-arcana--outline:hover,
-button.btn-arcana.btn-arcana--outline:hover,
 a.btn-arcana.btn-arcana--secondary:hover,
-button.btn-arcana.btn-arcana--secondary:hover {
+button.btn-arcana.btn-arcana--secondary:hover,
+a.btn-arcana.btn-arcana--outline:hover,
+button.btn-arcana.btn-arcana--outline:hover {
   background: #352462 !important;
   border-color: #a78bfa !important;
   transform: translateY(-1px);
