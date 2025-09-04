@@ -1,4 +1,7 @@
 // app/(site)/page.tsx
+"use client";
+import { useState, type FormEvent } from "react";
+
 export default function Page() {
   const categorias = [
     "Tarot","Astrología","Numerología","Sinastría","Runas",
@@ -11,6 +14,12 @@ export default function Page() {
     desc: "200+ lecturas • 4.9★",
   }));
 
+  const [sentAgenda, setSentAgenda] = useState(false);
+  const [sentUnete, setSentUnete] = useState(false);
+
+  const onSubmitAgenda = (e: FormEvent<HTMLFormElement>) => { e.preventDefault(); setSentAgenda(true); };
+  const onSubmitUnete  = (e: FormEvent<HTMLFormElement>) => { e.preventDefault(); setSentUnete(true);  };
+
   return (
     <>
       {/* HERO */}
@@ -18,16 +27,18 @@ export default function Page() {
         <div className="mx-auto max-w-6xl px-4 pb-20 pt-16 text-center">
           <h1 className="font-display text-4xl font-semibold tracking-tight md:text-6xl">
             Lecturas en vivo con{" "}
-            <span className="rounded px-2 text-[var(--arcana-accent)]">expertos certificados</span>
+            <span className="rounded px-2 text-[#8b5cf6]">expertos certificados</span>
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-zinc-300">
             Tarot, Astrología, Numerología y más. Agenda en minutos y conéctate por videollamada en un entorno cuidado.
           </p>
           <div className="mt-6 flex items-center justify-center gap-3">
-            <a href="#agenda" className="btn-arcana btn-arcana--primary rounded-xl px-4 py-2 font-medium">
+            {/* CTA PRIMARIO (nuevo) */}
+            <a href="#agenda" className="arcana-cta arcana-cta--primary">
               Agendar una consulta
             </a>
-            <a href="#unete" className="btn-arcana btn-arcana--secondary rounded-xl px-4 py-2 font-medium text-white">
+            {/* CTA SECUNDARIO (nuevo) */}
+            <a href="#unete" className="arcana-cta arcana-cta--secondary">
               Únete como especialista
             </a>
           </div>
@@ -48,7 +59,7 @@ export default function Page() {
             <a
               key={c}
               href="#especialistas"
-              className="chip rounded-full px-3 py-1 text-sm text-zinc-200 transition-colors hover:text-[var(--arcana-accent)]"
+              className="chip rounded-full px-3 py-1 text-sm text-zinc-200 transition-colors hover:border-[#8b5cf6] hover:text-[#8b5cf6]"
             >
               {c}
             </a>
@@ -67,9 +78,9 @@ export default function Page() {
           ].map((s) => (
             <div
               key={s.t}
-              className="glass rounded-2xl p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(139,92,246,.18)]"
+              className="glass rounded-2xl p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(109,40,217,.18)]"
             >
-              <div className="mb-2 inline-flex h-7 w-7 items-center justify-center rounded-full border border-[var(--arcana-accent)] bg-white/5 text-sm text-[var(--arcana-accent)]">
+              <div className="mb-2 inline-flex h-7 w-7 items-center justify-center rounded-full border border-[#8b5cf6] bg-white/5 text-sm text-[#8b5cf6]">
                 {s.n}
               </div>
               <p className="text-lg font-medium text-white">{s.t}</p>
@@ -83,17 +94,17 @@ export default function Page() {
       <section id="especialistas" className="mx-auto mt-12 max-w-6xl px-4">
         <div className="flex items-end justify-between">
           <h2 className="font-display text-2xl font-semibold tracking-tight">Especialistas disponibles</h2>
-          <a href="#agenda" className="text-sm text-zinc-300 transition-colors hover:text-[var(--arcana-accent)]">Ver agenda</a>
+          <a href="#agenda" className="text-sm text-zinc-300 transition-colors hover:text-[#8b5cf6]">Ver agenda</a>
         </div>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 md:grid-cols-3">
           {especialistas.map((e) => (
             <article
               key={e.nombre}
-              className="glass group rounded-2xl p-4 transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/10 hover:shadow-[0_10px_30px_rgba(139,92,246,.16)]"
+              className="glass group rounded-2xl p-4 transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/10 hover:shadow-[0_10px_30px_rgba(109,40,217,.16)]"
             >
               <div className="flex items-center gap-3">
-                {/* Avatar morado (sin amarillos) */}
-                <div className="h-12 w-12 shrink-0 rounded-full bg-gradient-to-br from-violet-300/70 to-fuchsia-400/70 ring-2 ring-violet-300/30" />
+                {/* Quitamos el amarillo y usamos violeta/fucsia */}
+                <div className="h-12 w-12 shrink-0 rounded-full bg-gradient-to-br from-violet-400/70 to-fuchsia-400/70 ring-2 ring-violet-400/30" />
                 <div>
                   <h3 className="font-medium text-white">{e.nombre}</h3>
                   <p className="text-sm text-zinc-300">{e.desc}</p>
@@ -101,70 +112,106 @@ export default function Page() {
               </div>
               <div className="mt-3 flex justify-between">
                 <span className="text-sm font-medium text-zinc-200">desde $399</span>
-                <a href="#agenda" className="text-sm text-zinc-200 transition-colors hover:text-[var(--arcana-accent)]">Agendar</a>
+                <a href="#agenda" className="text-sm text-zinc-200 transition-colors hover:text-[#8b5cf6]">Agendar</a>
               </div>
             </article>
           ))}
         </div>
       </section>
 
-      {/* AGENDA (demo, sin lógica cliente) */}
+      {/* AGENDA (demo) */}
       <section id="agenda" className="mx-auto mt-16 max-w-6xl px-4">
         <div className="glass rounded-2xl p-6">
           <h2 className="font-display text-xl font-semibold text-white">Agendar una consulta</h2>
-          <form className="mt-4 grid gap-4 md:grid-cols-2" action="#" method="post">
-            <div className="grid gap-1">
-              <label className="text-sm text-zinc-300">Nombre</label>
-              <input className="rounded border border-white/15 bg-white/5 px-3 py-2 text-white placeholder-zinc-400" placeholder="Tu nombre" required name="nombre" />
-            </div>
-            <div className="grid gap-1">
-              <label className="text-sm text-zinc-300">Correo</label>
-              <input type="email" className="rounded border border-white/15 bg-white/5 px-3 py-2 text-white placeholder-zinc-400" placeholder="tucorreo@ejemplo.com" required name="correo" />
-            </div>
-            <div className="grid gap-1">
-              <label className="text-sm text-zinc-300">Categoría</label>
-              <select className="rounded border border-white/15 bg-white/5 px-3 py-2 text-white" name="categoria">
-                {categorias.map(c => (
-                  <option key={c} className="bg-[var(--arcana-bg)] text-white">{c}</option>
-                ))}
-              </select>
-            </div>
-            <div className="grid gap-1">
-              <label className="text-sm text-zinc-300">Fecha deseada</label>
-              <input type="date" className="rounded border border-white/15 bg-white/5 px-3 py-2 text-white" name="fecha" />
-            </div>
-            <div className="md:col-span-2">
-              <button className="btn-arcana btn-arcana--primary rounded-xl px-4 py-2 font-medium">Enviar solicitud</button>
-            </div>
-          </form>
+          {sentAgenda ? (
+            <p className="mt-2 text-sm text-emerald-300">Solicitud enviada ✅. Te contactamos por correo.</p>
+          ) : (
+            <form className="mt-4 grid gap-4 md:grid-cols-2" onSubmit={onSubmitAgenda}>
+              <div className="grid gap-1">
+                <label className="text-sm text-zinc-300">Nombre</label>
+                <input
+                  className="rounded border border-white/15 bg-white/5 px-3 py-2 text-white placeholder-zinc-400"
+                  placeholder="Tu nombre"
+                  required
+                  name="nombre"
+                />
+              </div>
+              <div className="grid gap-1">
+                <label className="text-sm text-zinc-300">Correo</label>
+                <input
+                  type="email"
+                  className="rounded border border-white/15 bg-white/5 px-3 py-2 text-white placeholder-zinc-400"
+                  placeholder="tucorreo@ejemplo.com"
+                  required
+                  name="correo"
+                />
+              </div>
+              <div className="grid gap-1">
+                <label className="text-sm text-zinc-300">Categoría</label>
+                <select className="rounded border border-white/15 bg-white/5 px-3 py-2 text-white" name="categoria">
+                  {categorias.map(c => (
+                    <option key={c} className="bg-[#0a1120] text-white">{c}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="grid gap-1">
+                <label className="text-sm text-zinc-300">Fecha deseada</label>
+                <input type="date" className="rounded border border-white/15 bg-white/5 px-3 py-2 text-white" name="fecha" />
+              </div>
+              <div className="md:col-span-2">
+                {/* Botón nuevo primario */}
+                <button className="arcana-cta arcana-cta--primary">Enviar solicitud</button>
+              </div>
+            </form>
+          )}
         </div>
       </section>
 
-      {/* ÚNETE (demo, sin lógica cliente) */}
+      {/* ÚNETE (demo) */}
       <section id="unete" className="mx-auto mt-10 max-w-6xl px-4">
         <div className="glass rounded-2xl p-6">
           <h2 className="font-display text-xl font-semibold text-white">Únete como especialista</h2>
-          <form className="mt-4 grid gap-4 md:grid-cols-2" action="#" method="post">
-            <div className="grid gap-1">
-              <label className="text-sm text-zinc-300">Nombre artístico</label>
-              <input className="rounded border border-white/15 bg-white/5 px-3 py-2 text-white placeholder-zinc-400" placeholder="Ej. Luna Arcana" required name="nombreArtistico" />
-            </div>
-            <div className="grid gap-1">
-              <label className="text-sm text-zinc-300">Correo</label>
-              <input type="email" className="rounded border border-white/15 bg-white/5 px-3 py-2 text-white placeholder-zinc-400" placeholder="tucorreo@ejemplo.com" required name="correo" />
-            </div>
-            <div className="grid gap-1">
-              <label className="text-sm text-zinc-300">Categorías</label>
-              <input placeholder="Tarot, Astrología..." className="rounded border border-white/15 bg-white/5 px-3 py-2 text-white placeholder-zinc-400" name="categorias" />
-            </div>
-            <div className="grid gap-1">
-              <label className="text-sm text-zinc-300">Precio desde ($)</label>
-              <input type="number" className="rounded border border-white/15 bg-white/5 px-3 py-2 text-white" name="precio" />
-            </div>
-            <div className="md:col-span-2">
-              <button className="btn-arcana btn-arcana--secondary rounded-xl px-4 py-2 font-medium text-white">Enviar aplicación</button>
-            </div>
-          </form>
+          {sentUnete ? (
+            <p className="mt-2 text-sm text-emerald-300">Aplicación enviada ✅. Te escribimos para el proceso.</p>
+          ) : (
+            <form className="mt-4 grid gap-4 md:grid-cols-2" onSubmit={onSubmitUnete}>
+              <div className="grid gap-1">
+                <label className="text-sm text-zinc-300">Nombre artístico</label>
+                <input
+                  className="rounded border border-white/15 bg-white/5 px-3 py-2 text-white placeholder-zinc-400"
+                  placeholder="Ej. Luna Arcana"
+                  required
+                  name="nombreArtistico"
+                />
+              </div>
+              <div className="grid gap-1">
+                <label className="text-sm text-zinc-300">Correo</label>
+                <input
+                  type="email"
+                  className="rounded border border-white/15 bg-white/5 px-3 py-2 text-white placeholder-zinc-400"
+                  placeholder="tucorreo@ejemplo.com"
+                  required
+                  name="correo"
+                />
+              </div>
+              <div className="grid gap-1">
+                <label className="text-sm text-zinc-300">Categorías</label>
+                <input
+                  placeholder="Tarot, Astrología..."
+                  className="rounded border border-white/15 bg-white/5 px-3 py-2 text-white placeholder-zinc-400"
+                  name="categorias"
+                />
+              </div>
+              <div className="grid gap-1">
+                <label className="text-sm text-zinc-300">Precio desde ($)</label>
+                <input type="number" className="rounded border border-white/15 bg-white/5 px-3 py-2 text-white" name="precio" />
+              </div>
+              <div className="md:col-span-2">
+                {/* Botón nuevo secundario */}
+                <button className="arcana-cta arcana-cta--secondary">Enviar aplicación</button>
+              </div>
+            </form>
+          )}
         </div>
       </section>
     </>
