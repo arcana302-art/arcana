@@ -1,6 +1,6 @@
 // app/(site)/layout.tsx
 import type { Metadata } from "next";
-import "./site-theme.css"; // << importa overrides morados SOLO para este segmento
+import "./site-theme.css"; // << Tema morado del segmento
 
 export const metadata: Metadata = {
   title: "Arcana — Landing",
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      {/* === FONDO ANIMADO VISIBLE (z-0) === */}
+      {/* Fondo animado (z-0) */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
         <div className="stars-fine" />
         <div className="stars-med" />
@@ -20,7 +20,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
         <div className="cloud cloud-3" />
       </div>
 
-      {/* === CONTENIDO (z-10) === */}
+      {/* Contenido (z-10) */}
       <div className="relative z-10">
         <header className="sticky top-0 z-20 border-b border-white/10 bg-white/5 backdrop-blur">
           <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
@@ -48,9 +48,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
             <div className="flex flex-col justify-between gap-6 md:flex-row">
               <div>
                 <div className="mb-2 flex items-center gap-2">
-                  <span className="font-display text-lg">
-                    Arcana<span className="text-[var(--arcana-accent)]">✶</span>
-                  </span>
+                  <span className="font-display text-lg">Arcana<span className="text-[var(--arcana-accent)]">✶</span></span>
                 </div>
                 <p>Guía mística con especialistas verificados.</p>
               </div>
