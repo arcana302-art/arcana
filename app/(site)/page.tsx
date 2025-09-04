@@ -33,10 +33,12 @@ export default function Page() {
             Tarot, Astrología, Numerología y más. Agenda en minutos y conéctate por videollamada en un entorno cuidado.
           </p>
           <div className="mt-6 flex items-center justify-center gap-3">
+            {/* PRINCIPAL: mantenemos tus clases y las estilizamos en layout.tsx */}
             <a href="#agenda" className="btn-arcana btn-arcana--primary rounded-xl px-4 py-2 font-medium">
               Agendar una consulta
             </a>
-            <a href="#unete" className="btn-arcana btn-arcana--outline rounded-xl px-4 py-2 font-medium text-white">
+            {/* OUTLINE -> lo convertimos en secundario sólido (sin transparencia) */}
+            <a href="#unete" className="btn-arcana btn-arcana--secondary rounded-xl px-4 py-2 font-medium text-white">
               Únete como especialista
             </a>
           </div>
@@ -57,7 +59,7 @@ export default function Page() {
             <a
               key={c}
               href="#especialistas"
-              className="chip rounded-full px-3 py-1 text-sm text-zinc-200 transition-colors hover:border-accent hover:text-accent"
+              className="chip rounded-full px-3 py-1 text-sm text-zinc-200 transition-colors hover:text-[var(--arcana-accent)]"
             >
               {c}
             </a>
@@ -76,7 +78,7 @@ export default function Page() {
           ].map((s) => (
             <div
               key={s.t}
-              className="glass rounded-2xl p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(212,175,55,.15)]"
+              className="glass rounded-2xl p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(139,92,246,.18)]"
             >
               <div className="mb-2 inline-flex h-7 w-7 items-center justify-center rounded-full border border-[var(--arcana-accent)] bg-white/5 text-sm text-[var(--arcana-accent)]">
                 {s.n}
@@ -98,10 +100,11 @@ export default function Page() {
           {especialistas.map((e) => (
             <article
               key={e.nombre}
-              className="glass group rounded-2xl p-4 transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/10 hover:shadow-[0_10px_30px_rgba(212,175,55,.12)]"
+              className="glass group rounded-2xl p-4 transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/10 hover:shadow-[0_10px_30px_rgba(139,92,246,.16)]"
             >
               <div className="flex items-center gap-3">
-                <div className="h-12 w-12 shrink-0 rounded-full bg-gradient-to-br from-yellow-300/70 to-fuchsia-400/70 ring-2 ring-yellow-300/30" />
+                {/* Avatar: quitamos amarillos -> morados */}
+                <div className="h-12 w-12 shrink-0 rounded-full bg-gradient-to-br from-violet-300/70 to-fuchsia-400/70 ring-2 ring-violet-300/30" />
                 <div>
                   <h3 className="font-medium text-white">{e.nombre}</h3>
                   <p className="text-sm text-zinc-300">{e.desc}</p>
@@ -205,7 +208,7 @@ export default function Page() {
                 <input type="number" className="rounded border border-white/15 bg-white/5 px-3 py-2 text-white" name="precio" />
               </div>
               <div className="md:col-span-2">
-                <button className="btn-arcana btn-arcana--outline rounded-xl px-4 py-2 font-medium text-white">
+                <button className="btn-arcana btn-arcana--secondary rounded-xl px-4 py-2 font-medium text-white">
                   Enviar aplicación
                 </button>
               </div>
