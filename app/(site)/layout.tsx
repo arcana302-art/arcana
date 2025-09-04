@@ -79,6 +79,65 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
           </div>
         </footer>
       </div>
+
+      {/* ======= OVERRIDES MORADOS (ganan en este segmento) ======= */}
+      <style jsx global>{`
+        /* Cambia la marca/acento a morado (afecta nav y detallitos ✶) */
+        :root {
+          --arcana-accent: #a78bfa; /* morado */
+        }
+
+        /* Botón principal EXACTO que usas: .btn-arcana .btn-arcana--primary */
+        a.btn-arcana.btn-arcana--primary,
+        button.btn-arcana.btn-arcana--primary {
+          background: linear-gradient(180deg, #8b5cf6 0%, #6d28d9 100%) !important;
+          color: #fff !important;
+          border: 0 !important;
+          border-radius: 12px !important;
+          font-weight: 700 !important;
+          padding: 12px 20px !important;
+          text-decoration: none !important;
+          box-shadow: 0 8px 22px rgba(109, 40, 217, 0.35), 0 2px 8px rgba(139, 92, 246, 0.28) !important;
+        }
+        a.btn-arcana.btn-arcana--primary:hover,
+        button.btn-arcana.btn-arcana--primary:hover {
+          background: linear-gradient(180deg, #a78bfa 0%, #7c3aed 100%) !important;
+          transform: translateY(-1px);
+          box-shadow: 0 10px 26px rgba(109, 40, 217, 0.45), 0 4px 12px rgba(139, 92, 246, 0.34) !important;
+        }
+
+        /* Botón outline SIN transparencia (sólido oscuro con borde morado) */
+        a.btn-arcana.btn-arcana--outline,
+        button.btn-arcana.btn-arcana--outline {
+          background: #2b2150 !important;
+          color: #fff !important;
+          border: 2px solid #7c3aed !important;
+          border-radius: 12px !important;
+          font-weight: 700 !important;
+          padding: 12px 20px !important;
+          text-decoration: none !important;
+          box-shadow: 0 6px 18px rgba(139, 92, 246, 0.18), inset 0 -1px 0 rgba(255, 255, 255, 0.05) !important;
+        }
+        a.btn-arcana.btn-arcana--outline:hover,
+        button.btn-arcana.btn-arcana--outline:hover {
+          background: #352462 !important;
+          border-color: #a78bfa !important;
+          transform: translateY(-1px);
+        }
+
+        /* Si alguna capa interna/pseudo aún pinta amarillo, la neutralizamos */
+        a.btn-arcana.btn-arcana--primary *,
+        a.btn-arcana.btn-arcana--primary *::before,
+        a.btn-arcana.btn-arcana--primary *::after,
+        button.btn-arcana.btn-arcana--primary *,
+        button.btn-arcana.btn-arcana--primary *::before,
+        button.btn-arcana.btn-arcana--primary *::after {
+          background: transparent !important;
+          background-image: none !important;
+          box-shadow: none !important;
+          filter: none !important;
+        }
+      `}</style>
     </>
   );
 }
