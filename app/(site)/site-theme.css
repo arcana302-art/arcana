@@ -1,7 +1,8 @@
-/* app/(site)/site-theme.css
-   — Pegar y reemplazar COMPLETO — */
+/* ==========================================================
+   ARCANA THEME (FORZADO MORADO) — Pegar y reemplazar completo
+   ========================================================== */
 
-/* Paleta morada para CTAs */
+/* Paleta morada */
 :root{
   --cta-300:#c4b5fd; /* violet-300 */
   --cta-400:#a78bfa; /* violet-400 */
@@ -10,7 +11,9 @@
   --cta-700:#6d28d9; /* violet-700 */
 }
 
-/* Base botón Arcana */
+/* ============================
+   1) Botones Arcana (CTA)
+   ============================ */
 .btn-arcana,
 a.btn-arcana,
 button.btn-arcana{
@@ -18,58 +21,70 @@ button.btn-arcana{
   font-weight:700 !important;
   text-decoration:none !important;
   line-height:1.1;
+  border:0 !important;
 }
 
-/* PRIMARY -> MORADO sólido con degradado */
+/* Primario MORADO (sin transparencias) */
 .btn-arcana--primary,
 a.btn-arcana--primary,
 button.btn-arcana--primary{
-  background:linear-gradient(180deg,var(--cta-500),var(--cta-700)) !important;
+  /* si el CTA tiene utilidades de gradiente de Tailwind, pisamos sus variables */
+  --tw-gradient-from: var(--cta-500) !important;
+  --tw-gradient-to:   var(--cta-700) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+
+  background: linear-gradient(180deg, var(--cta-500), var(--cta-700)) !important;
+  background-image: linear-gradient(180deg, var(--cta-500), var(--cta-700)) !important;
   color:#fff !important;
-  border:0 !important;
   box-shadow:
     0 8px 22px rgba(109,40,217,.35),
     0 2px  8px rgba(139,92,246,.28) !important;
-  transition:transform .15s ease, box-shadow .15s ease, filter .15s ease;
+  transition: transform .15s ease, box-shadow .15s ease, filter .15s ease !important;
 }
-
 .btn-arcana--primary:hover,
 a.btn-arcana--primary:hover,
 button.btn-arcana--primary:hover{
-  background:linear-gradient(180deg,var(--cta-400),var(--cta-600)) !important;
-  transform:translateY(-1px);
+  --tw-gradient-from: var(--cta-400) !important;
+  --tw-gradient-to:   var(--cta-600) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+
+  background: linear-gradient(180deg, var(--cta-400), var(--cta-600)) !important;
+  background-image: linear-gradient(180deg, var(--cta-400), var(--cta-600)) !important;
+  transform: translateY(-1px);
   box-shadow:
     0 10px 26px rgba(109,40,217,.45),
     0  4px 12px rgba(139,92,246,.34) !important;
 }
 
-/* OUTLINE -> no translúcido (sólido oscuro) con borde morado */
+/* Secundario sólido (sin translucidez) */
 .btn-arcana--outline,
 a.btn-arcana--outline,
 button.btn-arcana--outline{
-  background:#2b2150 !important;               /* evita ver nubes/estrellas */
+  background:#2b2150 !important;  /* sólido para que no “traspase” el fondo */
   color:#fff !important;
   border:2px solid var(--cta-600) !important;
   box-shadow:
     0 6px 18px rgba(139,92,246,.18),
     inset 0 -1px 0 rgba(255,255,255,.05) !important;
-  transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease !important;
 }
-
 .btn-arcana--outline:hover,
 a.btn-arcana--outline:hover,
 button.btn-arcana--outline:hover{
   background:#352462 !important;
   border-color:var(--cta-400) !important;
-  transform:translateY(-1px);
+  transform: translateY(-1px);
 }
 
-/* ─────────────────────────────────────────────
-   “Mata-amarillo” de seguridad SOLO en botones
-   (no toca chips ni enlaces de texto)
-   ───────────────────────────────────────────── */
+/* Asegura texto blanco dentro del CTA primario */
+.btn-arcana--primary *{ color:#fff !important; }
 
-/* Cualquier botón/anchor con padding de CTA y clases amber/yellow */
+/* =====================================================
+   2) Mata-AMARILLO/YELLOW para elementos tipo “CTA”
+   (botón o <a> con padding/redondeado como botón)
+   ===================================================== */
+
+/* Fondo/gradientes amarillos -> forzamos violeta */
 :where(
   button,
   a[class*="rounded"],
@@ -77,48 +92,21 @@ button.btn-arcana--outline:hover{
   a[class*="px-"][class*="py-"]
 ):not([class*="pill"])
 [class*="bg-amber"],
-:where(
-  button,
-  a[class*="rounded"],
-  a[class*="rounded-"],
-  a[class*="px-"][class*="py-"]
-):not([class*="pill"])
-[class*="from-amber"],
-:where(
-  button,
-  a[class*="rounded"],
-  a[class*="rounded-"],
-  a[class*="px-"][class*="py-"]
-):not([class*="pill"])
-[class*="to-amber"],
-:where(
-  button,
-  a[class*="rounded"],
-  a[class*="rounded-"],
-  a[class*="px-"][class*="py-"]
-):not([class*="pill"])
-[class*="bg-yellow"],
-:where(
-  button,
-  a[class*="rounded"],
-  a[class*="rounded-"],
-  a[class*="px-"][class*="py-"]
-):not([class*="pill"])
-[class*="from-yellow"],
-:where(
-  button,
-  a[class*="rounded"],
-  a[class*="rounded-"],
-  a[class*="px-"][class*="py-"]
-):not([class*="pill"])
-[class*="to-yellow"]
-{
-  background:linear-gradient(180deg,var(--cta-500),var(--cta-700)) !important;
+:where(button,a[class*="rounded"],a[class*="rounded-"],a[class*="px-"][class*="py-"]):not([class*="pill"])[class*="from-amber"],
+:where(button,a[class*="rounded"],a[class*="rounded-"],a[class*="px-"][class*="py-"]):not([class*="pill"])[class*="to-amber"],
+:where(button,a[class*="rounded"],a[class*="rounded-"],a[class*="px-"][class*="py-"]):not([class*="pill"])[class*="bg-yellow"],
+:where(button,a[class*="rounded"],a[class*="rounded-"],a[class*="px-"][class*="py-"]):not([class*="pill"])[class*="from-yellow"],
+:where(button,a[class*="rounded"],a[class*="rounded-"],a[class*="px-"][class*="py-"]):not([class*="pill"])[class*="to-yellow"]{
+  --tw-gradient-from: var(--cta-500) !important;
+  --tw-gradient-to:   var(--cta-700) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+  background: linear-gradient(180deg, var(--cta-500), var(--cta-700)) !important;
+  background-image: linear-gradient(180deg, var(--cta-500), var(--cta-700)) !important;
   color:#fff !important;
-  border-color:transparent !important;
+  border-color: transparent !important;
 }
 
-/* Si quedara texto/borde “amber” en CTAs, pásalo a morado/blanco */
+/* Texto/borde amarillo en CTAs -> morado/blanco */
 :where(
   button,
   a[class*="rounded"],
@@ -134,8 +122,59 @@ button.btn-arcana--outline:hover{
 ):not([class*="pill"])
 [class*="border-amber"]{
   color:#fff !important;
-  border-color:var(--cta-600) !important;
+  border-color: var(--cta-600) !important;
 }
 
-/* Extra: asegura contraste del texto dentro de los primary */
-.btn-arcana--primary *{ color:#fff !important; }
+/* Ring amarillo en CTAs -> ring morado */
+:where(
+  button,
+  a[class*="rounded"],
+  a[class*="rounded-"],
+  a[class*="px-"][class*="py-"]
+):not([class*="pill"])
+[class*="ring-amber"],
+:where(
+  button,
+  a[class*="rounded"],
+  a[class*="rounded-"],
+  a[class*="px-"][class*="py-"]
+):not([class*="pill"])
+[class*="ring-yellow"]{
+  --tw-ring-color: var(--cta-600) !important;
+}
+
+/* Sombras doradas en hovers de tarjetas tipo CTA -> sombra violeta */
+.glass:hover{
+  box-shadow: 0 10px 30px rgba(109,40,217,.15) !important;
+}
+
+/* ============================
+   3) Chips y links con acento
+   ============================ */
+.text-accent   { color: var(--cta-500) !important; }
+.border-accent { border-color: var(--cta-500) !important; }
+.chip:hover{
+  border-color: var(--cta-500) !important;
+  color: var(--cta-500) !important;
+}
+
+/* ============================
+   4) Extras de robustez
+   ============================ */
+
+/* Si algún CTA trae inline-style de fondo, fuerza nuestro gradiente */
+.btn-arcana--primary[style],
+a.btn-arcana--primary[style],
+button.btn-arcana--primary[style]{
+  background: linear-gradient(180deg, var(--cta-500), var(--cta-700)) !important;
+  background-image: linear-gradient(180deg, var(--cta-500), var(--cta-700)) !important;
+  color:#fff !important;
+}
+
+/* Evita translucidez accidental en CTAs (por backdrop/opacity ajena) */
+.btn-arcana--primary, .btn-arcana--outline,
+a.btn-arcana--primary, a.btn-arcana--outline,
+button.btn-arcana--primary, button.btn-arcana--outline{
+  backdrop-filter: none !important;
+  opacity: 1 !important;
+}
