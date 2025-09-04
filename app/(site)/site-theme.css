@@ -1,65 +1,141 @@
 /* app/(site)/site-theme.css
-   Este archivo se carga DESPUÉS del root y domina el tema del segmento.
-   Fuerza morado y neutraliza cualquier estilo amarillo heredado. */
+   — Pegar y reemplazar COMPLETO — */
 
+/* Paleta morada para CTAs */
 :root{
-  --arcana-accent:     #8b5cf6;
-  --arcana-400:        #a78bfa;
-  --arcana-500:        #8b5cf6;
-  --arcana-600:        #7c3aed;
-  --arcana-700:        #6d28d9;
+  --cta-300:#c4b5fd; /* violet-300 */
+  --cta-400:#a78bfa; /* violet-400 */
+  --cta-500:#8b5cf6; /* violet-500 */
+  --cta-600:#7c3aed; /* violet-600 */
+  --cta-700:#6d28d9; /* violet-700 */
 }
 
-/* --- Botones Arcana --- */
-html body .btn-arcana{
-  border-radius: 12px !important;
-  padding: 12px 20px !important;
-  font-weight: 700 !important;
-  text-decoration: none !important;
-  border: 0 !important;
+/* Base botón Arcana */
+.btn-arcana,
+a.btn-arcana,
+button.btn-arcana{
+  border-radius:12px !important;
+  font-weight:700 !important;
+  text-decoration:none !important;
+  line-height:1.1;
 }
 
-/* Primario: morado */
-html body .btn-arcana.btn-arcana--primary{
+/* PRIMARY -> MORADO sólido con degradado */
+.btn-arcana--primary,
+a.btn-arcana--primary,
+button.btn-arcana--primary{
+  background:linear-gradient(180deg,var(--cta-500),var(--cta-700)) !important;
   color:#fff !important;
-  background: linear-gradient(180deg, var(--arcana-500) 0%, var(--arcana-700) 100%) !important;
-  box-shadow: 0 8px 22px rgba(109,40,217,.35), 0 2px 8px rgba(139,92,246,.28) !important;
-}
-html body .btn-arcana.btn-arcana--primary:hover,
-html body .btn-arcana.btn-arcana--primary:focus-visible{
-  background: linear-gradient(180deg, var(--arcana-400) 0%, var(--arcana-600) 100%) !important;
-  transform: translateY(-1px);
-  box-shadow: 0 10px 26px rgba(109,40,217,.45), 0 4px 12px rgba(139,92,246,.34) !important;
+  border:0 !important;
+  box-shadow:
+    0 8px 22px rgba(109,40,217,.35),
+    0 2px  8px rgba(139,92,246,.28) !important;
+  transition:transform .15s ease, box-shadow .15s ease, filter .15s ease;
 }
 
-/* Secundario 100% opaco (sin translúcidos) */
-html body .btn-arcana.btn-arcana--outline{
-  color:#fff !important;
-  background:#2b2150 !important;
-  border:2px solid var(--arcana-600) !important;
-  box-shadow: 0 6px 18px rgba(139,92,246,.18), inset 0 -1px 0 rgba(255,255,255,.05) !important;
+.btn-arcana--primary:hover,
+a.btn-arcana--primary:hover,
+button.btn-arcana--primary:hover{
+  background:linear-gradient(180deg,var(--cta-400),var(--cta-600)) !important;
+  transform:translateY(-1px);
+  box-shadow:
+    0 10px 26px rgba(109,40,217,.45),
+    0  4px 12px rgba(139,92,246,.34) !important;
 }
-html body .btn-arcana.btn-arcana--outline:hover,
-html body .btn-arcana.btn-arcana--outline:focus-visible{
+
+/* OUTLINE -> no translúcido (sólido oscuro) con borde morado */
+.btn-arcana--outline,
+a.btn-arcana--outline,
+button.btn-arcana--outline{
+  background:#2b2150 !important;               /* evita ver nubes/estrellas */
+  color:#fff !important;
+  border:2px solid var(--cta-600) !important;
+  box-shadow:
+    0 6px 18px rgba(139,92,246,.18),
+    inset 0 -1px 0 rgba(255,255,255,.05) !important;
+  transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+
+.btn-arcana--outline:hover,
+a.btn-arcana--outline:hover,
+button.btn-arcana--outline:hover{
   background:#352462 !important;
-  border-color: var(--arcana-400) !important;
-  transform: translateY(-1px);
+  border-color:var(--cta-400) !important;
+  transform:translateY(-1px);
 }
 
-/* Chips y acentos */
-.text-accent   { color: var(--arcana-accent) !important; }
-.border-accent { border-color: var(--arcana-accent) !important; }
-.chip:hover{ border-color: var(--arcana-accent) !important; color: var(--arcana-accent) !important; }
+/* ─────────────────────────────────────────────
+   “Mata-amarillo” de seguridad SOLO en botones
+   (no toca chips ni enlaces de texto)
+   ───────────────────────────────────────────── */
 
-/* --- Neutralizador de “amarillos” heredados --- */
+/* Cualquier botón/anchor con padding de CTA y clases amber/yellow */
 :where(
-  [class*="bg-amber"], [class*="bg-yellow"],
-  [class*="from-amber"], [class*="from-yellow"],
-  [class*="to-amber"],   [class*="to-yellow"],
-  [class*="ring-amber"], [class*="ring-yellow"]
-){
-  background: linear-gradient(180deg, var(--arcana-500) 0%, var(--arcana-700) 100%) !important;
+  button,
+  a[class*="rounded"],
+  a[class*="rounded-"],
+  a[class*="px-"][class*="py-"]
+):not([class*="pill"])
+[class*="bg-amber"],
+:where(
+  button,
+  a[class*="rounded"],
+  a[class*="rounded-"],
+  a[class*="px-"][class*="py-"]
+):not([class*="pill"])
+[class*="from-amber"],
+:where(
+  button,
+  a[class*="rounded"],
+  a[class*="rounded-"],
+  a[class*="px-"][class*="py-"]
+):not([class*="pill"])
+[class*="to-amber"],
+:where(
+  button,
+  a[class*="rounded"],
+  a[class*="rounded-"],
+  a[class*="px-"][class*="py-"]
+):not([class*="pill"])
+[class*="bg-yellow"],
+:where(
+  button,
+  a[class*="rounded"],
+  a[class*="rounded-"],
+  a[class*="px-"][class*="py-"]
+):not([class*="pill"])
+[class*="from-yellow"],
+:where(
+  button,
+  a[class*="rounded"],
+  a[class*="rounded-"],
+  a[class*="px-"][class*="py-"]
+):not([class*="pill"])
+[class*="to-yellow"]
+{
+  background:linear-gradient(180deg,var(--cta-500),var(--cta-700)) !important;
   color:#fff !important;
-  border-color: var(--arcana-600) !important;
-  box-shadow: 0 8px 22px rgba(109,40,217,.25) !important;
+  border-color:transparent !important;
 }
+
+/* Si quedara texto/borde “amber” en CTAs, pásalo a morado/blanco */
+:where(
+  button,
+  a[class*="rounded"],
+  a[class*="rounded-"],
+  a[class*="px-"][class*="py-"]
+):not([class*="pill"])
+[class*="text-amber"],
+:where(
+  button,
+  a[class*="rounded"],
+  a[class*="rounded-"],
+  a[class*="px-"][class*="py-"]
+):not([class*="pill"])
+[class*="border-amber"]{
+  color:#fff !important;
+  border-color:var(--cta-600) !important;
+}
+
+/* Extra: asegura contraste del texto dentro de los primary */
+.btn-arcana--primary *{ color:#fff !important; }
