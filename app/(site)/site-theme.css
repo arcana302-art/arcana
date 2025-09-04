@@ -1,138 +1,65 @@
-/* app/(site)/site-theme.css */
-/* Tema morado SOLO para el segmento (site) */
-:root {
-  --arcana-accent: #a78bfa; /* morado para ✶ y hovers */
+/* app/(site)/site-theme.css
+   Este archivo se carga DESPUÉS del root y domina el tema del segmento.
+   Fuerza morado y neutraliza cualquier estilo amarillo heredado. */
+
+:root{
+  --arcana-accent:     #8b5cf6;
+  --arcana-400:        #a78bfa;
+  --arcana-500:        #8b5cf6;
+  --arcana-600:        #7c3aed;
+  --arcana-700:        #6d28d9;
 }
 
-/* ===========================
-   CTAs EXACTOS QUE USAS
-   =========================== */
-a.btn-arcana.btn-arcana--primary,
-button.btn-arcana.btn-arcana--primary {
-  background: linear-gradient(180deg, #8b5cf6 0%, #6d28d9 100%) !important;
-  color: #fff !important;
-  border: 0 !important;
+/* --- Botones Arcana --- */
+html body .btn-arcana{
   border-radius: 12px !important;
-  font-weight: 700 !important;
   padding: 12px 20px !important;
+  font-weight: 700 !important;
   text-decoration: none !important;
+  border: 0 !important;
+}
+
+/* Primario: morado */
+html body .btn-arcana.btn-arcana--primary{
+  color:#fff !important;
+  background: linear-gradient(180deg, var(--arcana-500) 0%, var(--arcana-700) 100%) !important;
   box-shadow: 0 8px 22px rgba(109,40,217,.35), 0 2px 8px rgba(139,92,246,.28) !important;
 }
-a.btn-arcana.btn-arcana--primary:hover,
-button.btn-arcana.btn-arcana--primary:hover {
-  background: linear-gradient(180deg, #a78bfa 0%, #7c3aed 100%) !important;
+html body .btn-arcana.btn-arcana--primary:hover,
+html body .btn-arcana.btn-arcana--primary:focus-visible{
+  background: linear-gradient(180deg, var(--arcana-400) 0%, var(--arcana-600) 100%) !important;
   transform: translateY(-1px);
   box-shadow: 0 10px 26px rgba(109,40,217,.45), 0 4px 12px rgba(139,92,246,.34) !important;
 }
 
-/* Secundario sólido (sin transparencia) */
-a.btn-arcana.btn-arcana--secondary,
-button.btn-arcana.btn-arcana--secondary,
-a.btn-arcana.btn-arcana--outline,
-button.btn-arcana.btn-arcana--outline {
-  background: #2b2150 !important;
-  color: #fff !important;
-  border: 2px solid #7c3aed !important;
-  border-radius: 12px !important;
-  font-weight: 700 !important;
-  padding: 12px 20px !important;
-  text-decoration: none !important;
+/* Secundario 100% opaco (sin translúcidos) */
+html body .btn-arcana.btn-arcana--outline{
+  color:#fff !important;
+  background:#2b2150 !important;
+  border:2px solid var(--arcana-600) !important;
   box-shadow: 0 6px 18px rgba(139,92,246,.18), inset 0 -1px 0 rgba(255,255,255,.05) !important;
 }
-a.btn-arcana.btn-arcana--secondary:hover,
-button.btn-arcana.btn-arcana--secondary:hover,
-a.btn-arcana.btn-arcana--outline:hover,
-button.btn-arcana.btn-arcana--outline:hover {
-  background: #352462 !important;
-  border-color: #a78bfa !important;
+html body .btn-arcana.btn-arcana--outline:hover,
+html body .btn-arcana.btn-arcana--outline:focus-visible{
+  background:#352462 !important;
+  border-color: var(--arcana-400) !important;
   transform: translateY(-1px);
 }
 
-/* Neutraliza overlays internos que pudieran teñir el CTA */
-a.btn-arcana.btn-arcana--primary *,
-a.btn-arcana.btn-arcana--primary *::before,
-a.btn-arcana.btn-arcana--primary *::after,
-button.btn-arcana.btn-arcana--primary *,
-button.btn-arcana.btn-arcana--primary *::before,
-button.btn-arcana.btn-arcana--primary *::after {
-  background: transparent !important;
-  background-image: none !important;
-  box-shadow: none !important;
-  filter: none !important;
-}
+/* Chips y acentos */
+.text-accent   { color: var(--arcana-accent) !important; }
+.border-accent { border-color: var(--arcana-accent) !important; }
+.chip:hover{ border-color: var(--arcana-accent) !important; color: var(--arcana-accent) !important; }
 
-/* ===========================
-   “MATA-AMARILLOS” GENERALES
-   =========================== */
-
-/* Fondos/gradientes amber/yellow -> violeta */
-:where([class*="bg-amber"], [class*="bg-yellow"],
-       [class*="from-amber"], [class*="from-yellow"],
-       [class*="to-amber"], [class*="to-yellow"]) {
-  background: linear-gradient(180deg, #8b5cf6 0%, #6d28d9 100%) !important;
-  color: #fff !important;
-  border-color: transparent !important;
-}
-
-/* Texto amber/yellow -> acento violeta */
-:where([class*="text-amber"], [class*="text-yellow"]) {
-  color: #a78bfa !important;
-}
-
-/* Bordes amber/yellow -> violeta */
-:where([class*="border-amber"], [class*="border-yellow"]) {
-  border-color: #7c3aed !important;
-}
-
-/* Ring amber/yellow -> violeta */
-:where([class*="ring-amber"], [class*="ring-yellow"]) {
-  --tw-ring-color: #7c3aed !important;
-}
-
-/* Sombra amarilla declarada con bracket -> violeta suave */
-:where([class*="shadow-[0_10px_30px_rgba(212,175,55"]){
-  box-shadow: 0 10px 30px rgba(139,92,246,.18) !important;
-}
-
-/* =========================================
-   MARTILLO FINAL MORADO (máxima especificidad)
-   ========================================= */
-html body a.btn-arcana.btn-arcana--primary.btn-arcana.btn-arcana--primary,
-html body button.btn-arcana.btn-arcana--primary.btn-arcana.btn-arcana--primary {
-  background: linear-gradient(180deg, #8b5cf6 0%, #6d28d9 100%) !important;
-  color: #fff !important;
-  border: 0 !important;
-  border-radius: 12px !important;
-  font-weight: 700 !important;
-  padding: 12px 20px !important;
-  text-decoration: none !important;
-  box-shadow: 0 8px 22px rgba(109,40,217,.35), 0 2px 8px rgba(139,92,246,.28) !important;
-}
-html body a.btn-arcana.btn-arcana--primary.btn-arcana.btn-arcana--primary:hover,
-html body button.btn-arcana.btn-arcana--primary.btn-arcana.btn-arcana--primary:hover {
-  background: linear-gradient(180deg, #a78bfa 0%, #7c3aed 100%) !important;
-  transform: translateY(-1px);
-  box-shadow: 0 10px 26px rgba(109,40,217,.45), 0 4px 12px rgba(139,92,246,.34) !important;
-}
-
-html body a.btn-arcana.btn-arcana--secondary.btn-arcana.btn-arcana--secondary,
-html body button.btn-arcana.btn-arcana--secondary.btn-arcana.btn-arcana--secondary,
-html body a.btn-arcana.btn-arcana--outline.btn-arcana.btn-arcana--outline,
-html body button.btn-arcana.btn-arcana--outline.btn-arcana.btn-arcana--outline {
-  background: #2b2150 !important;
-  color: #fff !important;
-  border: 2px solid #7c3aed !important;
-  border-radius: 12px !important;
-  font-weight: 700 !important;
-  padding: 12px 20px !important;
-  text-decoration: none !important;
-  box-shadow: 0 6px 18px rgba(139,92,246,.18), inset 0 -1px 0 rgba(255,255,255,.05) !important;
-}
-html body a.btn-arcana.btn-arcana--secondary.btn-arcana.btn-arcana--secondary:hover,
-html body button.btn-arcana.btn-arcana--secondary.btn-arcana.btn-arcana--secondary:hover,
-html body a.btn-arcana.btn-arcana--outline.btn-arcana.btn-arcana--outline:hover,
-html body button.btn-arcana.btn-arcana--outline.btn-arcana.btn-arcana--outline:hover {
-  background: #352462 !important;
-  border-color: #a78bfa !important;
-  transform: translateY(-1px);
+/* --- Neutralizador de “amarillos” heredados --- */
+:where(
+  [class*="bg-amber"], [class*="bg-yellow"],
+  [class*="from-amber"], [class*="from-yellow"],
+  [class*="to-amber"],   [class*="to-yellow"],
+  [class*="ring-amber"], [class*="ring-yellow"]
+){
+  background: linear-gradient(180deg, var(--arcana-500) 0%, var(--arcana-700) 100%) !important;
+  color:#fff !important;
+  border-color: var(--arcana-600) !important;
+  box-shadow: 0 8px 22px rgba(109,40,217,.25) !important;
 }
