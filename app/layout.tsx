@@ -1,60 +1,35 @@
-/* app/(site)/site-theme.css */
-/* Tema morado SOLO para el segmento (site) */
-:root {
-  --arcana-accent: #a78bfa; /* morado para ✶ y hovers */
-}
+// app/layout.tsx
+import type { Metadata } from "next";
+import { Inter, Playfair_Display } from "next/font/google";
+import "./globals.css";
 
-/* Botón principal EXACTO que usas */
-a.btn-arcana.btn-arcana--primary,
-button.btn-arcana.btn-arcana--primary {
-  background: linear-gradient(180deg, #8b5cf6 0%, #6d28d9 100%) !important;
-  color: #fff !important;
-  border: 0 !important;
-  border-radius: 12px !important;
-  font-weight: 700 !important;
-  padding: 12px 20px !important;
-  text-decoration: none !important;
-  box-shadow: 0 8px 22px rgba(109,40,217,.35), 0 2px 8px rgba(139,92,246,.28) !important;
-}
-a.btn-arcana.btn-arcana--primary:hover,
-button.btn-arcana.btn-arcana--primary:hover {
-  background: linear-gradient(180deg, #a78bfa 0%, #7c3aed 100%) !important;
-  transform: translateY(-1px);
-  box-shadow: 0 10px 26px rgba(109,40,217,.45), 0 4px 12px rgba(139,92,246,.34) !important;
-}
+import Stars from "./components/Stars";
+import CloudBackdrop from "./components/CloudBackdrop";
+import SceneOverlays from "./components/SceneOverlays";
 
-/* Botón secundario sólido (no translúcido) */
-a.btn-arcana.btn-arcana--outline,
-button.btn-arcana.btn-arcana--outline,
-a.btn-arcana.btn-arcana--secondary,
-button.btn-arcana.btn-arcana--secondary {
-  background: #2b2150 !important;
-  color: #fff !important;
-  border: 2px solid #7c3aed !important;
-  border-radius: 12px !important;
-  font-weight: 700 !important;
-  padding: 12px 20px !important;
-  text-decoration: none !important;
-  box-shadow: 0 6px 18px rgba(139,92,246,.18), inset 0 -1px 0 rgba(255,255,255,.05) !important;
-}
-a.btn-arcana.btn-arcana--outline:hover,
-button.btn-arcana.btn-arcana--outline:hover,
-a.btn-arcana.btn-arcana--secondary:hover,
-button.btn-arcana.btn-arcana--secondary:hover {
-  background: #352462 !important;
-  border-color: #a78bfa !important;
-  transform: translateY(-1px);
-}
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-display" });
 
-/* Neutraliza overlays internos amarillos si existieran */
-a.btn-arcana.btn-arcana--primary *,
-a.btn-arcana.btn-arcana--primary *::before,
-a.btn-arcana.btn-arcana--primary *::after,
-button.btn-arcana.btn-arcana--primary *,
-button.btn-arcana.btn-arcana--primary *::before,
-button.btn-arcana.btn-arcana--primary *::after {
-  background: transparent !important;
-  background-image: none !important;
-  box-shadow: none !important;
-  filter: none !important;
+export const metadata: Metadata = {
+  title: "Arcana",
+  description: "Guía mística con especialistas verificados",
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="es" className="h-full">
+      <body
+        className={`${inter.variable} ${playfair.variable} min-h-screen antialiased relative`}
+        style={{ background: "linear-gradient(180deg,#0a1120,#0b1530)" }}
+      >
+        {/* Fondo global */}
+        <Stars />
+        <CloudBackdrop />
+        <SceneOverlays />
+
+        {/* Contenido */}
+        <div className="relative z-10">{children}</div>
+      </body>
+    </html>
+  );
 }
