@@ -1,6 +1,6 @@
 // app/(site)/layout.tsx
 import type { Metadata } from "next";
-import "./site-theme.css"; // << overrides morados de este segmento
+import "./site-theme.css"; // <<--- ESTE CSS se inyecta DESPUÉS y gana a cualquier amarillo
 
 export const metadata: Metadata = {
   title: "Arcana — Landing",
@@ -10,18 +10,21 @@ export const metadata: Metadata = {
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      {/* === FONDO ANIMADO (z-0) === */}
+      {/* === FONDO ANIMADO VISIBLE (z-0) === */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        {/* Estrellas en 3 tamaños (visibles) */}
         <div className="stars-fine" />
         <div className="stars-med" />
         <div className="stars-big" />
+        {/* Nubes/nebulosas */}
         <div className="cloud cloud-1" />
         <div className="cloud cloud-2" />
         <div className="cloud cloud-3" />
       </div>
 
-      {/* === CONTENIDO (z-10) === */}
+      {/* === CONTENIDO SOBRE EL FONDO (z-10) === */}
       <div className="relative z-10">
+        {/* Header */}
         <header className="sticky top-0 z-20 border-b border-white/10 bg-white/5 backdrop-blur">
           <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
             <a href="/" className="flex items-center gap-2">
@@ -41,8 +44,10 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
           </div>
         </header>
 
+        {/* Contenido de cada página del segmento */}
         <main>{children}</main>
 
+        {/* Footer */}
         <footer className="mt-16 border-t border-white/10 bg-white/5">
           <div className="mx-auto max-w-6xl px-4 py-10 text-sm text-zinc-300">
             <div className="flex flex-col justify-between gap-6 md:flex-row">
