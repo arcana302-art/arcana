@@ -1,63 +1,127 @@
-/* ===== Arcana – CTAs Morados (aislados) ===== */
-
+/* ===== Arcana – Tema MORADO “a prueba de balas” ===== */
 :root{
+  --violet-300:#c4b5fd;
   --violet-400:#a78bfa;
   --violet-500:#8b5cf6;
   --violet-600:#7c3aed;
   --violet-700:#6d28d9;
-  --cta-text:#fff;
+  --violet-800:#5b21b6;
+  --cta-text:#ffffff;
+  --arcana-accent: var(--violet-500);
 }
 
-/* Botón base: clase nueva que NO existe en tu código anterior */
-.arcana-cta{
-  -webkit-appearance:none;
-  appearance:none;
-  border:0;
-  border-radius:12px;
-  padding:12px 20px;
-  font-weight:700;
-  color:var(--cta-text);
-  text-decoration:none;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:.5rem;
-  line-height:1.1;
-  cursor:pointer;
-  transition:transform .15s ease, box-shadow .15s ease, background .2s ease;
-  user-select:none;
-  -webkit-tap-highlight-color:transparent;
+/* --------- RESETEO DE AMARILLOS / DORADOS --------- */
+/* Caza cualquier utilidad de Tailwind/tema heredado */
+[class*="amber-"], [class*="yellow-"],
+[class*="bg-amber-"], [class*="bg-yellow-"],
+[class*="from-amber-"], [class*="from-yellow-"],
+[class*="to-amber-"], [class*="to-yellow-"],
+[class*="text-amber-"], [class*="text-yellow-"],
+[class*="ring-amber-"], [class*="ring-yellow-"],
+[class*="border-amber-"], [class*="border-yellow-"] {
+  background: linear-gradient(180deg, var(--violet-500) 0%, var(--violet-700) 100%) !important;
+  color: var(--cta-text) !important;
+  border-color: transparent !important;
+  --tw-ring-color: var(--violet-600) !important;
 }
 
-/* Primario morado */
-.arcana-cta--primary{
-  background:linear-gradient(180deg,var(--violet-500),var(--violet-700));
-  box-shadow:0 8px 22px rgba(109,40,217,.35), 0 2px 8px rgba(139,92,246,.28);
-}
-.arcana-cta--primary:hover,
-.arcana-cta--primary:focus-visible{
-  background:linear-gradient(180deg,var(--violet-400),var(--violet-600));
-  transform:translateY(-1px);
-  box-shadow:0 10px 26px rgba(109,40,217,.45), 0 4px 12px rgba(139,92,246,.34);
-  outline:none;
-}
-.arcana-cta--primary:active{ transform:none; }
-
-/* Secundario sólido (no translúcido) */
-.arcana-cta--secondary{
-  background:#2b2150;
-  border:2px solid var(--violet-600);
-  box-shadow:0 6px 18px rgba(139,92,246,.18), inset 0 -1px 0 rgba(255,255,255,.05);
-}
-.arcana-cta--secondary:hover,
-.arcana-cta--secondary:focus-visible{
-  background:#352462;
-  border-color:var(--violet-400);
-  transform:translateY(-1px);
-  outline:none;
+/* --------- CTAs MORADOS (clases antiguas) --------- */
+.btn-arcana,
+a.btn-arcana,
+button.btn-arcana {
+  border-radius: 12px !important;
+  font-weight: 700 !important;
+  padding: 12px 20px !important;
+  text-decoration: none !important;
+  color: var(--cta-text) !important;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .15s ease, box-shadow .15s ease, background .2s ease !important;
 }
 
-/* Estados utilitarios */
-.arcana-cta:disabled{
-  opacity:.6; cursor:not-allowed; transform:none;
+.btn-arcana--primary,
+a.btn-arcana--primary,
+button.btn-arcana--primary {
+  background: linear-gradient(180deg, var(--violet-500) 0%, var(--violet-700) 100%) !important;
+  box-shadow: 0 8px 22px rgba(109,40,217,.35), 0 2px 8px rgba(139,92,246,.28) !important;
+}
+
+.btn-arcana--primary:hover,
+a.btn-arcana--primary:hover,
+button.btn-arcana--primary:hover,
+.btn-arcana--primary:focus-visible,
+a.btn-arcana--primary:focus-visible,
+button.btn-arcana--primary:focus-visible {
+  background: linear-gradient(180deg, var(--violet-400) 0%, var(--violet-600) 100%) !important;
+  transform: translateY(-1px);
+  outline: none !important;
+  box-shadow: 0 10px 26px rgba(109,40,217,.45), 0 4px 12px rgba(139,92,246,.34) !important;
+}
+
+/* Secundario sólido NO translúcido */
+.btn-arcana--outline,
+a.btn-arcana--outline,
+button.btn-arcana--outline {
+  background: #2b2150 !important;
+  color: var(--cta-text) !important;
+  border: 2px solid var(--violet-600) !important;
+  box-shadow: 0 6px 18px rgba(139,92,246,.18), inset 0 -1px 0 rgba(255,255,255,.05) !important;
+}
+
+.btn-arcana--outline:hover,
+a.btn-arcana--outline:hover,
+button.btn-arcana--outline:hover,
+.btn-arcana--outline:focus-visible,
+a.btn-arcana--outline:focus-visible,
+button.btn-arcana--outline:focus-visible {
+  background: #352462 !important;
+  border-color: var(--violet-400) !important;
+  transform: translateY(-1px);
+  outline: none !important;
+}
+
+/* --------- CTAs por atributo (por si no traen clase) --------- */
+a[href="#agenda"],
+a[href="#unete"],
+:is(a,button)[data-cta="primary"] {
+  border-radius: 12px !important;
+  font-weight: 700 !important;
+  padding: 12px 20px !important;
+  color: var(--cta-text) !important;
+  background: linear-gradient(180deg, var(--violet-500) 0%, var(--violet-700) 100%) !important;
+  text-decoration: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 8px 22px rgba(109,40,217,.35), 0 2px 8px rgba(139,92,246,.28) !important;
+}
+a[href="#agenda"]:hover,
+a[href="#unete"]:hover,
+:is(a,button)[data-cta="primary"]:hover,
+a[href="#agenda"]:focus-visible,
+a[href="#unete"]:focus-visible,
+:is(a,button)[data-cta="primary"]:focus-visible {
+  background: linear-gradient(180deg, var(--violet-400) 0%, var(--violet-600) 100%) !important;
+  transform: translateY(-1px);
+  outline: none !important;
+  box-shadow: 0 10px 26px rgba(109,40,217,.45), 0 4px 12px rgba(139,92,246,.34) !important;
+}
+
+/* --------- Acentos y chips --------- */
+.text-\[var\(--arcana-accent\)\],
+.hover\:text-\[var\(--arcana-accent\)\]:hover,
+.hover\:text-accent:hover {
+  color: var(--violet-500) !important;
+}
+.hover\:border-accent:hover {
+  border-color: var(--violet-500) !important;
+}
+
+/* Quita translucidez en CTAs sobre nubes/estrellas */
+.btn-arcana,
+a.btn-arcana,
+button.btn-arcana,
+a[href="#agenda"],
+a[href="#unete"] {
+  backdrop-filter: none !important;
+  background-clip: padding-box !important;
 }
