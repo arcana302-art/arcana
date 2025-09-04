@@ -1,6 +1,6 @@
 // app/(site)/layout.tsx
 import type { Metadata } from "next";
-import "./site-theme.css"; // << Tema morado del segmento
+import "./site-theme.css"; // << overrides morados de este segmento
 
 export const metadata: Metadata = {
   title: "Arcana — Landing",
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      {/* Fondo animado (z-0) */}
+      {/* === FONDO ANIMADO (z-0) === */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
         <div className="stars-fine" />
         <div className="stars-med" />
@@ -20,7 +20,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
         <div className="cloud cloud-3" />
       </div>
 
-      {/* Contenido (z-10) */}
+      {/* === CONTENIDO (z-10) === */}
       <div className="relative z-10">
         <header className="sticky top-0 z-20 border-b border-white/10 bg-white/5 backdrop-blur">
           <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
