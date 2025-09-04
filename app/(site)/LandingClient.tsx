@@ -102,6 +102,7 @@ export default function LandingClient() {
               className="glass group rounded-2xl p-4 transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/10 hover:shadow-[0_10px_30px_rgba(139,92,246,.16)]"
             >
               <div className="flex items-center gap-3">
+                {/* Avatar: tonos morados (no amarillos) */}
                 <div className="h-12 w-12 shrink-0 rounded-full bg-gradient-to-br from-violet-300/70 to-fuchsia-400/70 ring-2 ring-violet-300/30" />
                 <div>
                   <h3 className="font-medium text-white">{e.nombre}</h3>
