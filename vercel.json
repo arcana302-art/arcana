@@ -1,0 +1,6 @@
+{
+  "framework": "nextjs",
+  "installCommand": "cd arcana && npm ci",
+  "buildCommand": "cd arcana && npm run build",
+  "outputDirectory": "arcana/.next"
+}
