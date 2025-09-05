@@ -130,4 +130,32 @@ export default function Page() {
         <div className="glass rounded-2xl p-6">
           <h2 className="font-display text-xl font-semibold text-white">Únete como especialista</h2>
           {sentUnete ? (
-            <p className="mt-2 text-sm text-emerald-300">Aplicación enviada
+            <p className="mt-2 text-sm text-emerald-300">Aplicación enviada ✅. Te escribimos para el proceso.</p>
+          ) : (
+            <form className="mt-4 grid gap-4 md:grid-cols-2" onSubmit={onSubmitUnete}>
+              <div className="grid gap-1">
+                <label className="text-sm text-zinc-300">Nombre artístico</label>
+                <input className="rounded border border-white/15 bg-white/5 px-3 py-2 text-white placeholder-zinc-400" placeholder="Ej. Luna Arcana" required name="nombreArtistico" />
+              </div>
+              <div className="grid gap-1">
+                <label className="text-sm text-zinc-300">Correo</label>
+                <input type="email" className="rounded border border-white/15 bg-white/5 px-3 py-2 text-white placeholder-zinc-400" placeholder="tucorreo@ejemplo.com" required name="correo" />
+              </div>
+              <div className="grid gap-1">
+                <label className="text-sm text-zinc-300">Categorías</label>
+                <input placeholder="Tarot, Astrología..." className="rounded border border-white/15 bg-white/5 px-3 py-2 text-white placeholder-zinc-400" name="categorias" />
+              </div>
+              <div className="grid gap-1">
+                <label className="text-sm text-zinc-300">Precio desde ($)</label>
+                <input type="number" className="rounded border border-white/15 bg-white/5 px-3 py-2 text-white" name="precio" />
+              </div>
+              <div className="md:col-span-2">
+                <button className="btn-arcana btn-arcana--outline rounded-xl px-4 py-2 font-medium text-white">Enviar aplicación</button>
+              </div>
+            </form>
+          )}
+        </div>
+      </section>
+    </>
+  );
+}
